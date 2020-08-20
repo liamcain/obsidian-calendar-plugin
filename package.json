@@ -1,0 +1,26 @@
+{
+  "name": "calendar",
+  "version": "0.0.1",
+  "description": "Calendar view of your daily notes",
+  "main": "dist/calendar.js",
+  "dependencies": {
+    "clsx": "^1.1.1",
+    "core-js": "^3.6.5",
+    "handlebars": "^4.7.6",
+    "moment": "^2.27.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.10.5",
+    "@babel/core": "^7.11.0",
+    "@babel/preset-env": "^7.11.0",
+    "nodemon": "^2.0.4",
+    "parcel-bundler": "^1.12.4"
+  },
+  "scripts": {
+    "build": "babel src -d dist",
+    "build:watch": "nodemon --ignore dist/ --ignore node_modules/ --exec 'babel src -d build'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "liamcain",
+  "license": "MIT"
+}
