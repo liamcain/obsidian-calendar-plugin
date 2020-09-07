@@ -1,31 +1,26 @@
-const clsx = require("clsx");
+import moment from "moment";
 
-import * as moment from "moment";
-import {
-  modal,
-  template,
-  BasePlugin,
-  BaseViewType,
-  View,
-} from "obsidian-shared-utils";
+import type BasePlugin from "./BasePlugin";
+import BaseViewType from "./BaseViewType";
+import Calendar from "./Calendar.svelte";
+import type { View } from "./obsidian";
+import { createFileFromTemplate } from "./template";
+import { modal } from "./ui";
 
 import { VIEW_TYPE_CALENDAR } from "./constants";
-import { htmlToElements } from "./utils";
 
 export default class CalendarViewType extends BaseViewType {
   directory: string;
   format: string;
   volcanoPath: string;
 
-  constructor(view: View, volcanoPath: string) {
+  constructor(view: View) {
     super(view);
 
-    this.volcanoPath = volcanoPath;
     this.directory = "";
     this.format = "YYYY-MM-DD";
 
     this._openFileByName = this._openFileByName.bind(this);
-    this._getMonthCalendar = this._getMonthCalendar.bind(this);
     this.update = this.update.bind(this);
 
     const dailyNotesPlugin = this.view.app.plugins
@@ -64,75 +59,6 @@ export default class CalendarViewType extends BaseViewType {
   onOpen() {}
   toggle() {}
 
-  _getMonthCalendar() {
-    const { activeLeaf } = this.view.app.workspace;
-    const startDate = moment({ day: 1 });
-    const vault = this.view.app.vault;
-    const { fs, path } = this.view.app.vault.adapter;
-
-    let calendar = `
-              <table class="calendarview__table">
-              <thead>
-                  <tr>
-                  <th align="center">S</th>
-                  <th align="center">M</th>
-                  <th align="center">T</th>
-                  <th align="center">W</th>
-                  <th align="center">H</th>
-                  <th align="center">F</th>
-                  <th align="center">S</th>
-                  </tr>
-              </thead>
-              <tbody>
-          `;
-    const today = moment().date();
-    const activeFile = activeLeaf?.view.file?.path;
-
-    let offset = startDate.isoWeekday() + 1;
-    let day = 1;
-    for (let weekNum = 0; weekNum <= 5; weekNum++) {
-      calendar += "<tr>";
-      for (let weekday = 1; weekday <= 7; weekday++) {
-        const formattedDate = `${moment({ day }).format(this.format)}.md`;
-        const i = weekNum * 6 + weekday;
-        const classes = clsx({
-          "calendarview__day--today": day === today,
-          "calendarview__day--active": formattedDate === activeFile,
-        });
-
-        const fileForDay = vault.getAbstractFileByPath(
-          path.join(this.directory, formattedDate)
-        );
-
-        if (i < offset || day > startDate.daysInMonth()) {
-          calendar += '<td align="center"></td>';
-        } else {
-          const fileSize = fileForDay?.stat?.size || 0;
-          const numDots = fileSize ? Math.floor(Math.log(fileSize / 20)) : 0;
-          const dots = numDots
-            ? `<div class='dot-container'>${Array(numDots).join(
-                "<div class='calendar-dot'></div>"
-              )}</div>`
-            : "";
-          calendar += `<td align="center" class="${classes}">${day}${dots}</td>`;
-          day++;
-        }
-      }
-
-      calendar += "</tr>";
-      if (day >= startDate.daysInMonth()) {
-        break;
-      }
-    }
-
-    calendar += `
-          </tbody>
-      </table>
-    `;
-
-    return htmlToElements(calendar);
-  }
-
   _openFileByName(filename: string) {
     let filenameWithExt = filename;
     if (!filenameWithExt.endsWith(".md")) {
@@ -155,8 +81,6 @@ export default class CalendarViewType extends BaseViewType {
   async _createDailyNote(filename: string) {
     const { vault, workspace } = this.view.app;
 
-    console.log("filename", filename);
-
     const today = moment(filename);
     let temperature = "";
     let shortForecast = "";
@@ -174,10 +98,11 @@ export default class CalendarViewType extends BaseViewType {
       temperature = "???";
     }
 
-    const templateContents = vault.adapter.fs
-      .readFileSync(`${this.volcanoPath}/templates/daily_note.hbs`)
+    const { basePath, fs } = vault.adapter;
+    const templateContents = fs
+      .readFileSync(`${basePath}/.obsidian/templates/daily_note.hbs`)
       .toString("utf-8");
-    const dailyNote = await template.createFileFromTemplate({
+    const dailyNote = await createFileFromTemplate({
       filename,
       templateContents,
       ctx: {
@@ -190,7 +115,7 @@ export default class CalendarViewType extends BaseViewType {
     workspace.activeLeaf.openFile(dailyNote);
   }
 
-  promptUserToCreateFile(filename) {
+  promptUserToCreateFile(filename: string) {
     document.body.appendChild(
       modal.createConfirmationDialog({
         cta: "Create",
@@ -203,23 +128,32 @@ export default class CalendarViewType extends BaseViewType {
 
   update() {
     this.leaf.empty();
-    const container = this.leaf.createEl("div", {
-      cls: "calendarview__container",
-    });
-    const monthName = moment().format("MMM YYYY");
-    const heading = htmlToElements(`<h2>${monthName}</h2>`);
+    // const container = this.leaf.createEl("div", {
+    //   cls: "calendarview__container",
+    // });
+    // const monthName = moment().format("MMM YYYY");
+    // const heading = htmlToElements(`<h2>${monthName}</h2>`);
 
-    const table = this._getMonthCalendar();
-    table.addEventListener("click", (event) => {
+    const { activeLeaf } = this.view.app.workspace;
+    const vault = this.view.app.vault;
+
+    const onClick = (event: Event) => {
       const td = (<HTMLElement>event.target).closest("td");
       const day = parseInt(td.innerHTML, 10);
       const selectedDate = moment({ day }).format(this.format);
 
       this._openFileByName(selectedDate);
-    });
+    };
 
-    container.appendChild(heading);
-    container.appendChild(table);
-    this.leaf.append(container);
+    const table = new Calendar({
+      target: this.leaf,
+      props: {
+        activeLeaf,
+        onClick,
+        vault,
+        directory: this.directory,
+        format: this.format,
+      },
+    });
   }
 }

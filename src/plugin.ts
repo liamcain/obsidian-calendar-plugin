@@ -1,9 +1,9 @@
-import { App, XBasePlugin, Leaf, View } from "obsidian-shared-utils";
-
+import BasePlugin from "./BasePlugin";
 import { VIEW_TYPE_CALENDAR } from "./constants";
-import CalendarViewType from "./viewtype";
+import type { App, Leaf, View } from "./obsidian";
+import CalendarViewType from "./viewType";
 
-export default class CalendarPlugin extends XBasePlugin {
+export default class CalendarPlugin extends BasePlugin {
   constructor() {
     super();
 
@@ -19,7 +19,7 @@ export default class CalendarPlugin extends XBasePlugin {
 
     this.instance.registerViewType(
       VIEW_TYPE_CALENDAR,
-      (view: View) => new CalendarViewType(view, this.volcanoPath)
+      (view: View) => new CalendarViewType(view)
     );
 
     this.instance.registerEvent(
