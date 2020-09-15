@@ -124,7 +124,7 @@
   td:empty {
     background-color: var(--dark2);
   }
-  td:hover {
+  td:not(:empty):hover {
     background-color: var(--dark0);
   }
 
@@ -172,7 +172,7 @@
     </div>
     {monthName}
     <div class="arrow ml-2" on:click={incrementMonth} aria-label="Next Month">
-      > <svg
+      <svg
         role="img"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 320 512"><path
@@ -200,7 +200,7 @@
               <td />
             {:else}
               <td
-                class:today={date === today}
+                class:today={date.isSame(today)}
                 class:active={activeFile === formattedDate}
                 on:click={onClick}>
                 {dayOfMonth}
