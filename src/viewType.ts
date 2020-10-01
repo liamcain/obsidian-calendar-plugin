@@ -60,22 +60,20 @@ export default class CalendarViewType extends BaseViewType {
   toggle() {}
 
   _openFileByName(filename: string) {
-    let filenameWithExt = filename;
-    if (!filenameWithExt.endsWith(".md")) {
-      filenameWithExt += ".md";
-    }
-
     const { vault, workspace } = this.view.app;
     const { path } = vault.adapter;
+
+    const baseFilename = path.parse(filename).name;
+
     const fileObj = vault.getAbstractFileByPath(
-      path.join(this.directory, filenameWithExt)
+      path.join(this.directory, `${baseFilename}.md`)
     );
 
     if (!fileObj) {
-      this.promptUserToCreateFile(filename);
+      this.promptUserToCreateFile(baseFilename);
       return;
     }
-    workspace.activeLeaf.openFile(fileObj);
+    workspace.activeLeaf.openFile(`${baseFilename}.md`);
   }
 
   async _createDailyNote(filename: string) {
@@ -128,28 +126,15 @@ export default class CalendarViewType extends BaseViewType {
 
   update() {
     this.leaf.empty();
-    // const container = this.leaf.createEl("div", {
-    //   cls: "calendarview__container",
-    // });
-    // const monthName = moment().format("MMM YYYY");
-    // const heading = htmlToElements(`<h2>${monthName}</h2>`);
 
     const { activeLeaf } = this.view.app.workspace;
     const vault = this.view.app.vault;
-
-    const onClick = (event: Event) => {
-      const td = (<HTMLElement>event.target).closest("td");
-      const day = parseInt(td.innerHTML, 10);
-      const selectedDate = moment({ day }).format(this.format);
-
-      this._openFileByName(selectedDate);
-    };
 
     const table = new Calendar({
       target: this.leaf,
       props: {
         activeLeaf,
-        onClick,
+        openOrCreateFile: this._openFileByName,
         vault,
         directory: this.directory,
         format: this.format,

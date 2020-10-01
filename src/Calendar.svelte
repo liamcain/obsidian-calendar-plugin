@@ -4,7 +4,7 @@
 
   export let activeLeaf: Leaf = null;
   export let vault: Vault;
-  export let onClick: (event: Event) => void;
+  export let openOrCreateFile: (filename: string) => void;
 
   export let directory: string;
   export let format: string;
@@ -202,7 +202,7 @@
               <td
                 class:today={date.isSame(today)}
                 class:active={activeFile === formattedDate}
-                on:click={onClick}>
+                on:click={() => openOrCreateFile(formattedDate)}>
                 {dayOfMonth}
 
                 <div class="dot-container">
