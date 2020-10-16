@@ -21,7 +21,6 @@ export default class CalendarViewType extends BaseViewType {
     this.format = "YYYY-MM-DD";
 
     this._openFileByName = this._openFileByName.bind(this);
-    this.update = this.update.bind(this);
 
     const dailyNotesPlugin = this.view.app.plugins
       .getEnabledPlugins()
@@ -42,7 +41,21 @@ export default class CalendarViewType extends BaseViewType {
   }
 
   load() {
-    this.update();
+    super.load();
+
+    const { activeLeaf } = this.view.app.workspace;
+    const vault = this.view.app.vault;
+
+    new Calendar({
+      target: this.leaf,
+      props: {
+        activeLeaf,
+        openOrCreateFile: this._openFileByName,
+        vault,
+        directory: this.directory,
+        format: this.format,
+      },
+    });
   }
 
   getDisplayText() {
@@ -73,7 +86,7 @@ export default class CalendarViewType extends BaseViewType {
       this.promptUserToCreateFile(baseFilename);
       return;
     }
-    workspace.activeLeaf.openFile(`${baseFilename}.md`);
+    workspace.activeLeaf.openFile(fileObj);
   }
 
   async _createDailyNote(filename: string) {
@@ -122,23 +135,5 @@ export default class CalendarViewType extends BaseViewType {
         title: "New Daily Note",
       })
     );
-  }
-
-  update() {
-    this.leaf.empty();
-
-    const { activeLeaf } = this.view.app.workspace;
-    const vault = this.view.app.vault;
-
-    const table = new Calendar({
-      target: this.leaf,
-      props: {
-        activeLeaf,
-        openOrCreateFile: this._openFileByName,
-        vault,
-        directory: this.directory,
-        format: this.format,
-      },
-    });
   }
 }

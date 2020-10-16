@@ -3,10 +3,14 @@ import type { Leaf, View } from "./obsidian";
 export default class BaseViewType {
   leaf: Leaf;
   view: View;
+  hasLoaded: boolean = false;
 
   constructor(view: View) {
     this.view = view;
+    this.load = this.load.bind(this);
     this.update = this.update.bind(this);
+
+    this.hasLoaded = false;
   }
 
   getViewType(): string {
@@ -14,7 +18,7 @@ export default class BaseViewType {
   }
 
   load() {
-    this.update();
+    this.hasLoaded = true;
   }
 
   getDisplayText(): string {
@@ -37,5 +41,9 @@ export default class BaseViewType {
     this.update();
   }
 
-  update() {}
+  update() {
+    if (!this.hasLoaded) {
+      this.load();
+    }
+  }
 }

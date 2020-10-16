@@ -9,9 +9,10 @@
   export let directory: string;
   export let format: string;
 
+  let activeFile = activeLeaf?.view.file?.path;
+
   const today = moment();
-  const activeFile = activeLeaf?.view.file?.path;
-  export let displayedMonth: Moment = today;
+  export let displayedMonth: Moment = today.clone();
 
   let days = [];
   let monthName: string;
@@ -66,6 +67,10 @@
 
   function decrementMonth() {
     displayedMonth = displayedMonth.subtract(1, "months");
+  }
+
+  function setActiveFile(filename: string) {
+    activeFile = filename;
   }
 </script>
 
@@ -202,7 +207,10 @@
               <td
                 class:today={date.isSame(today)}
                 class:active={activeFile === formattedDate}
-                on:click={() => openOrCreateFile(formattedDate)}>
+                on:click={() => {
+                  openOrCreateFile(formattedDate);
+                  setActiveFile(formattedDate);
+                }}>
                 {dayOfMonth}
 
                 <div class="dot-container">
