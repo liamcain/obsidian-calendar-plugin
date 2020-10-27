@@ -1,4 +1,4 @@
-import type { App, AbstractFile } from "./obsidian";
+import type { App, TFile } from "obsidian";
 
 type TemplateContext = object;
 
@@ -6,20 +6,17 @@ interface IParams {
   dir?: string;
   filename: string;
   templateContents: string;
-  ctx: TemplateContext;
+  ctx?: TemplateContext;
 }
 
 export async function createFileFromTemplate({
   dir = "",
   filename,
   templateContents,
-  ctx,
-}: IParams): Promise<AbstractFile> {
+  ctx = {},
+}: IParams): Promise<TFile> {
   const app = (<any>window).app as App;
-  const createdFile = await app.fileManager.createNewMarkdownFile(
-    dir,
-    filename
-  );
+  const createdFile = await app.vault.create(dir, filename);
 
   let template = templateContents;
   Object.entries(ctx).forEach(([ctxKey, ctxValue]) => {

@@ -1,8 +1,34 @@
-interface ConfirmationDialogParams {
+import { App, Modal } from "obsidian";
+
+interface IConfirmationDialogParams {
   cta: string;
-  onAccept: (...args: any[]) => void;
+  onAccept: (...args: any[]) => Promise<void>;
   text: string;
   title: string;
+}
+
+export class ConfirmationModal extends Modal {
+  constructor(
+    app: App,
+    cta: string,
+    onAccept: (event: Event) => Promise<void>
+  ) {
+    super(app);
+
+    this.contentEl
+      .createEl("button", { text: "Never mind" })
+      .addEventListener("click", () => this.containerEl.remove());
+
+    this.contentEl
+      .createEl("button", {
+        cls: "mod-cta",
+        text: cta,
+      })
+      .addEventListener("click", async (e) => {
+        await onAccept(e);
+        this.containerEl.remove();
+      });
+  }
 }
 
 export function createConfirmationDialog({
@@ -10,30 +36,6 @@ export function createConfirmationDialog({
   onAccept,
   text,
   title,
-}: ConfirmationDialogParams): HTMLElement {
-  const container = (<any>window).createEl("div", {
-    cls: "modal-container",
-  });
-
-  container.createEl("div", { cls: "modal-bg" });
-  const modal = container.createEl("div", { cls: "modal" });
-  modal
-    .createEl("div", { cls: "modal-close-button" })
-    .addEventListener("click", () => container.remove());
-  modal.createEl("div", { cls: "modal-title", text: title });
-  modal.createEl("div", { cls: "modal-content" }).createEl("p", { text });
-  modal
-    .createEl("button", { text: "Never mind" })
-    .addEventListener("click", () => container.remove());
-  modal
-    .createEl("button", {
-      cls: "mod-cta",
-      text: cta,
-    })
-    .addEventListener("click", async (e) => {
-      await onAccept(e);
-      container.remove();
-    });
-
-  return container;
+}: IConfirmationDialogParams): void {
+  new ConfirmationModal(app, cta, onAccept).open();
 }

@@ -1,15 +1,16 @@
 <script lang="ts">
   import moment, { Moment } from "moment";
-  import type { Leaf, Vault } from "./obsidian";
+  import * as path from "path";
+  import type { FileView, TFile, WorkspaceLeaf, Vault } from "obsidian";
 
-  export let activeLeaf: Leaf = null;
+  export let activeLeaf: WorkspaceLeaf = null;
   export let vault: Vault;
   export let openOrCreateFile: (filename: string) => void;
 
   export let directory: string;
   export let format: string;
 
-  let activeFile = activeLeaf?.view.file?.path;
+  let activeFile = (activeLeaf?.view as FileView).file?.path;
 
   const today = moment();
   export let displayedMonth: Moment = today.clone();
@@ -34,14 +35,14 @@
           continue;
         }
 
-        const { path } = vault.adapter;
-
         const date = displayedMonth.clone().date(day);
         const formattedDate = `${date.format(format)}.md`;
         const fileForDay = vault.getAbstractFileByPath(
           path.join(directory, formattedDate)
         );
-        const fileSize = fileForDay?.stat?.size || 0;
+
+        const fileStats = (fileForDay as TFile)?.stat as any;
+        const fileSize = fileStats?.size || 0;
 
         daysInWeek.push({
           dayOfMonth: day,

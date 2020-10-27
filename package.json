@@ -11,10 +11,10 @@
   "dependencies": {
     "@rollup/plugin-commonjs": "^15.0.0",
     "@rollup/plugin-node-resolve": "^9.0.0",
-    "@types/node": "^14.11.2",
+    "@types/node": "^14.14.3",
     "clsx": "^1.1.1",
     "core-js": "^3.6.5",
-    "moment": "^2.27.0",
+    "obsidian": "obsidianmd/obsidian-api#master",
     "rollup": "^2.26.7",
     "rollup-plugin-svelte": "^6.0.0",
     "svelte": "^3.24.1",

@@ -5,11 +5,14 @@ import typescript from "@rollup/plugin-typescript";
 import autoPreprocess from "svelte-preprocess";
 
 export default {
-  input: "src/index.ts",
+  input: "src/main.ts",
   output: {
-    format: "iife",
+    sourcemap: 'inline',
+    format: "cjs",
     file: "dist/calendar.js",
+    exports: 'default'
   },
+  external: ['obsidian', 'fs', 'path'],
   plugins: [
     svelte({
       preprocess: autoPreprocess(),
@@ -19,6 +22,8 @@ export default {
       browser: true,
       dedupe: ["svelte"],
     }),
-    commonjs(),
+    commonjs({
+      include: 'node_modules/**'
+    }),
   ],
 };
