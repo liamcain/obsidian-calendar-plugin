@@ -1,14 +1,16 @@
-import { FileSystemAdapter, View, TFile, WorkspaceLeaf } from "obsidian";
+import type { TFile, WorkspaceLeaf } from "obsidian";
 import * as fs from "fs";
 import * as path from "path";
 
 import Calendar from "./Calendar.svelte";
 import { VIEW_TYPE_CALENDAR } from "./constants";
-import { createFileFromTemplate } from "./template";
+import { createDailyNote, createFileFromTemplate } from "./template";
+import { View } from "./types";
 import { modal } from "./ui";
 
 export default class CalendarView extends View {
-  //
+  calendar: Calendar;
+
   dailyNoteDirectory: string;
   dailyNoteTemplate: string;
   dateFormat: string;
@@ -20,40 +22,54 @@ export default class CalendarView extends View {
     this.dateFormat = "YYYY-MM-DD";
     this.dailyNoteTemplate = "";
 
-    this.loadDailyNoteSettings();
-
     this._openFileByName = this._openFileByName.bind(this);
     this._createDailyNote = this._createDailyNote.bind(this);
-  }
 
-  async loadDailyNoteSettings() {
-    const adapter = new FileSystemAdapter();
-    try {
-      const dailyNoteSettingsFile = await fs.promises.readFile(
-        path.join(adapter.getBasePath(), "daily-notes.json"),
-        "utf-8"
-      );
-      const { directory, format, template } = JSON.parse(dailyNoteSettingsFile);
-
-      this.dailyNoteDirectory = directory || "";
-      this.dateFormat = format || "YYYY-MM-DD";
-      this.dailyNoteTemplate = template || "";
-    } catch (err) {
-      console.info("No custom daily note settings found!");
-    }
+    this.loadDailyNoteSettings().then(this.open);
   }
 
   getViewType() {
     return VIEW_TYPE_CALENDAR;
   }
 
-  load() {
-    super.load();
+  getDisplayText() {
+    return "Calendar";
+  }
 
-    const { activeLeaf } = this.app.workspace;
-    const vault = this.app.vault;
+  getIcon() {
+    return "calendar-with-checkmark";
+  }
 
-    new Calendar({
+  async loadDailyNoteSettings() {
+    const adapter = this.app.vault.adapter as any;
+    const basePath = adapter.basePath;
+
+    try {
+      const dailyNoteSettingsFile = await fs.promises.readFile(
+        path.join(basePath, ".obsidian/daily-notes.json"),
+        "utf-8"
+      );
+      const { directory, format, template } = JSON.parse(dailyNoteSettingsFile);
+
+      this.dailyNoteDirectory = directory || "";
+      this.dateFormat = format || "YYYY-MM-DD";
+      this.dailyNoteTemplate = template
+        ? path.join(basePath, `${template}.md`)
+        : "";
+    } catch (err) {
+      console.info("No custom daily note settings found!", err);
+    }
+  }
+
+  open() {
+    super.open();
+
+    const {
+      vault,
+      workspace: { activeLeaf },
+    } = this.app;
+
+    this.calendar = new Calendar({
       target: this.containerEl,
       props: {
         activeLeaf,
@@ -65,46 +81,40 @@ export default class CalendarView extends View {
     });
   }
 
-  getDisplayText() {
-    return "Calendar";
-  }
-
-  getIcon() {
-    return "calendar-with-checkmark";
-  }
-
   _openFileByName(filename: string) {
     const { vault, workspace } = this.app;
 
     const baseFilename = path.parse(filename).name;
-
-    const fileObj = vault.getAbstractFileByPath(
-      path.join(this.dailyNoteDirectory, `${baseFilename}.md`)
-    ) as TFile;
+    const fullPath = path.join(this.dailyNoteDirectory, `${baseFilename}.md`);
+    const fileObj = vault.getAbstractFileByPath(fullPath) as TFile;
 
     if (!fileObj) {
-      this.promptUserToCreateFile(baseFilename);
+      this.promptUserToCreateFile(baseFilename, this.dailyNoteDirectory);
       return;
     }
     workspace.activeLeaf.openFile(fileObj);
   }
 
-  async _createDailyNote(filename: string) {
+  async _createDailyNote(directory: string, filename: string) {
     const { workspace } = this.app;
 
-    const templateContents = fs.readFileSync(this.dailyNoteTemplate, "utf-8");
-    const dailyNote = await createFileFromTemplate({
+    const templateContents = this.dailyNoteTemplate
+      ? fs.readFileSync(this.dailyNoteTemplate, "utf-8")
+      : "";
+
+    const dailyNote = await createDailyNote(
+      directory,
       filename,
-      templateContents,
-    });
+      templateContents
+    );
 
     workspace.activeLeaf.openFile(dailyNote);
   }
 
-  promptUserToCreateFile(filename: string) {
-    modal.createConfirmationDialog({
+  promptUserToCreateFile(filename: string, directory: string) {
+    modal.createConfirmationDialog(this.app, {
       cta: "Create",
-      onAccept: () => this._createDailyNote(filename),
+      onAccept: () => this._createDailyNote(directory, filename),
       text: `File ${filename} does not exist. Would you like to create it?`,
       title: "New Daily Note",
     });

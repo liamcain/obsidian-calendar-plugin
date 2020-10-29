@@ -1,22 +1,13 @@
+import moment from "moment";
+import * as path from "path";
 import type { App, TFile } from "obsidian";
 
-type TemplateContext = object;
-
-interface IParams {
-  dir?: string;
-  filename: string;
-  templateContents: string;
-  ctx?: TemplateContext;
-}
-
-export async function createFileFromTemplate({
-  dir = "",
-  filename,
-  templateContents,
-  ctx = {},
-}: IParams): Promise<TFile> {
+export async function createFileFromTemplate(
+  normalizedPath: string,
+  templateContents: string = "",
+  ctx: any = {}
+): Promise<TFile> {
   const app = (<any>window).app as App;
-  const createdFile = await app.vault.create(dir, filename);
 
   let template = templateContents;
   Object.entries(ctx).forEach(([ctxKey, ctxValue]) => {
@@ -24,7 +15,20 @@ export async function createFileFromTemplate({
     template = template.replace(new RegExp(regexKey, "i"), ctxValue);
   });
 
-  await app.vault.modify(createdFile, template);
+  return app.vault.create(normalizedPath, template);
+}
 
-  return createdFile;
+export async function createDailyNote(
+  directory: string,
+  filename: string,
+  templateContents: string = ""
+): Promise<TFile> {
+  const normalizedPath = path.join(directory, `${filename}.md`);
+
+  return createFileFromTemplate(
+    normalizedPath,
+    templateContents.replace(/{{(date|time):(.*?)}}/gi, (match, groups, n) => {
+      return moment(filename).format(n);
+    })
+  );
 }

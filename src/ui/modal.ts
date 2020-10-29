@@ -8,13 +8,13 @@ interface IConfirmationDialogParams {
 }
 
 export class ConfirmationModal extends Modal {
-  constructor(
-    app: App,
-    cta: string,
-    onAccept: (event: Event) => Promise<void>
-  ) {
+  constructor(app: App, config: IConfirmationDialogParams) {
     super(app);
 
+    const { cta, onAccept, text, title } = config;
+
+    this.contentEl.createEl("h2", { text: title });
+    this.contentEl.createEl("p", { text });
     this.contentEl
       .createEl("button", { text: "Never mind" })
       .addEventListener("click", () => this.containerEl.remove());
@@ -26,16 +26,14 @@ export class ConfirmationModal extends Modal {
       })
       .addEventListener("click", async (e) => {
         await onAccept(e);
-        this.containerEl.remove();
+        this.close();
       });
   }
 }
 
-export function createConfirmationDialog({
-  cta,
-  onAccept,
-  text,
-  title,
-}: IConfirmationDialogParams): void {
-  new ConfirmationModal(app, cta, onAccept).open();
+export function createConfirmationDialog(
+  app: App,
+  { cta, onAccept, text, title }: IConfirmationDialogParams
+): void {
+  new ConfirmationModal(app, { cta, onAccept, text, title }).open();
 }

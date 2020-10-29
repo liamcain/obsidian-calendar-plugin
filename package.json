@@ -9,11 +9,15 @@
     "build": "svelte-check && rollup -c"
   },
   "dependencies": {
+    "@babel/core": "^7.12.3",
+    "@babel/preset-env": "^7.12.1",
     "@rollup/plugin-commonjs": "^15.0.0",
     "@rollup/plugin-node-resolve": "^9.0.0",
     "@types/node": "^14.14.3",
+    "babel-plugin-transform-async-to-generator": "^6.24.1",
     "clsx": "^1.1.1",
     "core-js": "^3.6.5",
+    "moment": "^2.29.1",
     "obsidian": "obsidianmd/obsidian-api#master",
     "rollup": "^2.26.7",
     "rollup-plugin-svelte": "^6.0.0",

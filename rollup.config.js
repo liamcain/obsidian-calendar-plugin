@@ -7,12 +7,12 @@ import autoPreprocess from "svelte-preprocess";
 export default {
   input: "src/main.ts",
   output: {
-    sourcemap: 'inline',
+    sourcemap: "inline",
     format: "cjs",
     file: "dist/calendar.js",
-    exports: 'default'
+    exports: "default",
   },
-  external: ['obsidian', 'fs', 'path'],
+  external: ["obsidian", "fs", "path"],
   plugins: [
     svelte({
       preprocess: autoPreprocess(),
@@ -23,7 +23,7 @@ export default {
       dedupe: ["svelte"],
     }),
     commonjs({
-      include: 'node_modules/**'
+      include: "node_modules/**",
     }),
   ],
 };

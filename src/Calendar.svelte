@@ -1,7 +1,9 @@
 <script lang="ts">
   import moment, { Moment } from "moment";
-  import * as path from "path";
   import type { FileView, TFile, WorkspaceLeaf, Vault } from "obsidian";
+  import * as path from "path";
+
+  import { getNumberOfDots } from "./ui/utils";
 
   export let activeLeaf: WorkspaceLeaf = null;
   export let vault: Vault;
@@ -10,51 +12,49 @@
   export let directory: string;
   export let format: string;
 
-  let activeFile = (activeLeaf?.view as FileView).file?.path;
+  let activeFile = activeLeaf ? (activeLeaf.view as FileView).file?.path : null;
 
   const today = moment();
   export let displayedMonth: Moment = today.clone();
 
-  let days = [];
+  let month = [];
   let monthName: string;
 
   $: {
-    days = [];
+    month = [];
     const startDate = displayedMonth.clone().date(1);
-    let offset = startDate.isoWeekday() + (1 % 7);
-    let day = 1;
+    const startOffset = startDate.isoWeekday() + (1 % 7);
+    const endDayOfMonth = startDate.daysInMonth();
 
+    let dayOfMonth = 1;
     for (let weekNum = 0; weekNum <= 5; weekNum++) {
-      const daysInWeek = [];
-      days.push(daysInWeek);
+      const week = [];
+      month.push(week);
 
       for (let weekday = 1; weekday <= 7; weekday++) {
         // Insert empty objects for spacers
-        if (weekNum * 6 + weekday < offset || day > startDate.daysInMonth()) {
-          daysInWeek.push({});
+        if (weekNum * 6 + weekday < startOffset || dayOfMonth > endDayOfMonth) {
+          week.push({});
           continue;
         }
 
-        const date = displayedMonth.clone().date(day);
+        const date = displayedMonth.clone().date(dayOfMonth);
         const formattedDate = `${date.format(format)}.md`;
         const fileForDay = vault.getAbstractFileByPath(
           path.join(directory, formattedDate)
-        );
+        ) as TFile;
 
-        const fileStats = (fileForDay as TFile)?.stat as any;
-        const fileSize = fileStats?.size || 0;
-
-        daysInWeek.push({
-          dayOfMonth: day,
+        week.push({
+          dayOfMonth,
           date,
           formattedDate,
-          numDots: fileSize ? Math.floor(Math.log(fileSize / 20)) : 0,
+          numDots: getNumberOfDots(fileForDay),
         });
 
-        day++;
+        dayOfMonth++;
       }
 
-      if (day >= startDate.daysInMonth()) {
+      if (dayOfMonth >= startDate.daysInMonth()) {
         break;
       }
     }
@@ -76,6 +76,15 @@
 </script>
 
 <style>
+  .container {
+    --color-border: #2e3440;
+    --color-hover: #3b4252;
+    --color-empty: #434c5e;
+    --color-dot: #81a1c1;
+    --color-active: #bf616a;
+    --color-today: rgb(72, 54, 153);
+  }
+
   th,
   td {
     text-align: center;
@@ -87,7 +96,7 @@
   }
 
   .today {
-    background: var(--purple);
+    background: var(--color-today);
   }
 
   .arrow {
@@ -100,7 +109,7 @@
   }
 
   .active {
-    background: var(--red) !important;
+    background: var(--color-active) !important;
     position: relative;
     z-index: 1;
   }
@@ -111,27 +120,28 @@
   }
 
   .table {
-    border: solid 1px var(--dark0);
+    border: solid 1px var(--color-border);
     border-collapse: collapse;
     width: 100%;
   }
 
   th {
-    background-color: var(--dark0);
+    background-color: var(--color-border);
     padding: 8px;
   }
 
   td {
+    transition: background-color 0.1s ease-in;
     cursor: pointer;
-    border: solid 1px var(--dark0);
+    border: solid 1px var(--color-border);
     font-size: 0.8em;
     padding: 8px;
   }
   td:empty {
-    background-color: var(--dark2);
+    background-color: var(--color-empty);
   }
   td:not(:empty):hover {
-    background-color: var(--dark0);
+    background-color: var(--color-hover);
   }
 
   .dot-container {
@@ -141,7 +151,7 @@
 
   .dot {
     border-radius: 100%;
-    background: var(--frost2);
+    background: var(--color-dot);
     width: 6px;
     height: 6px;
     display: inline-block;
@@ -199,9 +209,9 @@
       </tr>
     </thead>
     <tbody>
-      {#each days as daysInWeek}
+      {#each month as week}
         <tr>
-          {#each daysInWeek as { dayOfMonth, date, formattedDate, numDots }}
+          {#each week as { dayOfMonth, date, formattedDate, numDots }}
             {#if !dayOfMonth}
               <td />
             {:else}
