@@ -7,8 +7,7 @@ This plugin for [Obsidian](https://obsidian.md/) creates a simple Calendar view 
 ## Features
 
 - Go to any **daily note**
-- Create new daily notes for days that don't have one.
-  > Helpful for when you need to backfill old notes or if you're planning ahead for future notes! This will use your current **daily note** template!
+- Create new daily notes for days that don't have one. (This is helpful for when you need to backfill old notes or if you're planning ahead for future notes! This will use your current **daily note** template!)
 - Visualize your writing. Each day includes a meter to approximate how much you've written that day.
 
 ## Customization
@@ -25,3 +24,7 @@ The following CSS Variables can be overridden in your `obsidian.css` file.
   --color-today: rgb(72, 54, 153);
 }
 ```
+
+## Installation
+
+Currently, installation is a manual process. You'll need to download the `zip` of the latest Release. Then unzip the contents into your `<vault>/.obsidian/plugins/obsidian-calendar-plugin` directory. [More info](https://forum.obsidian.md/t/plugins-mini-faq/7737).
