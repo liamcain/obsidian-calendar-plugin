@@ -19,6 +19,8 @@ export class View {
     this.containerEl.empty();
   }
 
+  close() {}
+
   onOpen() {}
   getState() {}
   setState() {}

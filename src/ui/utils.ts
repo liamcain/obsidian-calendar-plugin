@@ -8,5 +8,5 @@ export function getNumberOfDots(dailyNoteFile?: TFile) {
   const fileStats = dailyNoteFile.stat as any;
   const fileSize = fileStats.size || 0;
 
-  return Math.floor(Math.log(fileSize / 20));
+  return fileSize ? Math.floor(Math.log(fileSize / 20)) : 0;
 }

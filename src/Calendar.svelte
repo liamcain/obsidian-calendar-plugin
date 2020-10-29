@@ -1,18 +1,16 @@
 <script lang="ts">
   import moment, { Moment } from "moment";
-  import type { FileView, TFile, WorkspaceLeaf, Vault } from "obsidian";
+  import type { TFile, Vault } from "obsidian";
   import * as path from "path";
 
   import { getNumberOfDots } from "./ui/utils";
 
-  export let activeLeaf: WorkspaceLeaf = null;
+  export let activeFile: string = null;
   export let vault: Vault;
   export let openOrCreateFile: (filename: string) => void;
 
   export let directory: string;
   export let format: string;
-
-  let activeFile = activeLeaf ? (activeLeaf.view as FileView).file?.path : null;
 
   const today = moment();
   export let displayedMonth: Moment = today.clone();
@@ -39,14 +37,15 @@
         }
 
         const date = displayedMonth.clone().date(dayOfMonth);
-        const formattedDate = `${date.format(format)}.md`;
+        const formattedDate = date.format(format);
+        const baseFilename = `${formattedDate}.md`;
         const fileForDay = vault.getAbstractFileByPath(
-          path.join(directory, formattedDate)
+          path.join(directory, baseFilename)
         ) as TFile;
 
         week.push({
-          dayOfMonth,
           date,
+          dayOfMonth,
           formattedDate,
           numDots: getNumberOfDots(fileForDay),
         });
@@ -68,10 +67,6 @@
 
   function decrementMonth() {
     displayedMonth = displayedMonth.subtract(1, "months");
-  }
-
-  function setActiveFile(filename: string) {
-    activeFile = filename;
   }
 </script>
 
@@ -220,7 +215,6 @@
                 class:active={activeFile === formattedDate}
                 on:click={() => {
                   openOrCreateFile(formattedDate);
-                  setActiveFile(formattedDate);
                 }}>
                 {dayOfMonth}
 
