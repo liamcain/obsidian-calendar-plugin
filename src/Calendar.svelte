@@ -71,7 +71,7 @@
 </script>
 
 <style>
-  .container {
+  #calendar-container {
     --color-border: #2e3440;
     --color-hover: #3b4252;
     --color-empty: #434c5e;
@@ -166,7 +166,7 @@
   }
 </style>
 
-<div class="container">
+<div id="calendar-container" class="container">
   <h2 class="title">
     <div
       class="arrow mr-2"
