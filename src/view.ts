@@ -41,6 +41,7 @@ export default class CalendarView extends View {
 
   onClose() {
     this.calendar.$destroy();
+    return Promise.resolve();
   }
 
   /**
