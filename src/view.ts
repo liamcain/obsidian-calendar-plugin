@@ -1,4 +1,4 @@
-import type { FileView, TFile, WorkspaceLeaf } from "obsidian";
+import { FileView, TFile, View, WorkspaceLeaf } from "obsidian";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -6,7 +6,6 @@ import Calendar from "./Calendar.svelte";
 import { VIEW_TYPE_CALENDAR } from "./constants";
 import { createDailyNote } from "./template";
 import { modal } from "./ui";
-import { View } from "./types";
 
 export default class CalendarView extends View {
   calendar: Calendar;

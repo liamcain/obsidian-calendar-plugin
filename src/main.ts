@@ -13,10 +13,11 @@ export default class CalendarPlugin extends Plugin {
 
     if (this.app.workspace.layoutReady) {
       this.initLeaf();
+    } else {
+      this.registerEvent(
+        this.app.workspace.on("layout-ready", this.initLeaf.bind(this))
+      );
     }
-    this.registerEvent(
-      this.app.workspace.on("layout-ready", this.initLeaf.bind(this))
-    );
   }
 
   initLeaf() {
