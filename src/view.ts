@@ -23,8 +23,6 @@ export default class CalendarView extends View {
 
     this._openFileByName = this._openFileByName.bind(this);
     this._createDailyNote = this._createDailyNote.bind(this);
-
-    this.loadDailyNoteSettings().then(() => this.open(leaf.view.containerEl));
   }
 
   getViewType() {
@@ -57,9 +55,9 @@ export default class CalendarView extends View {
         path.join(basePath, ".obsidian/daily-notes.json"),
         "utf-8"
       );
-      const { directory, format, template } = JSON.parse(dailyNoteSettingsFile);
+      const { folder, format, template } = JSON.parse(dailyNoteSettingsFile);
 
-      this.dailyNoteDirectory = directory || "";
+      this.dailyNoteDirectory = folder || "";
       this.dateFormat = format || "YYYY-MM-DD";
       this.dailyNoteTemplate = template
         ? path.join(basePath, `${template}.md`)
@@ -69,8 +67,7 @@ export default class CalendarView extends View {
     }
   }
 
-  // @ts-ignore
-  onOpen() {
+  async onOpen() {
     const {
       vault,
       workspace: { activeLeaf },
@@ -79,6 +76,8 @@ export default class CalendarView extends View {
     const activeFile = activeLeaf
       ? (activeLeaf.view as FileView).file?.path
       : null;
+
+    await this.loadDailyNoteSettings();
 
     this.calendar = new Calendar({
       target: this.containerEl,
