@@ -19,14 +19,6 @@ export default class CalendarPlugin extends Plugin {
     );
   }
 
-  onUserEnable() {
-    this.initLeaf();
-  }
-
-  onEnable() {
-    this.initLeaf();
-  }
-
   initLeaf() {
     if (this.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR).length) {
       return;
