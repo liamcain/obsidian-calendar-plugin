@@ -53,7 +53,7 @@
         dayOfMonth++;
       }
 
-      if (dayOfMonth >= startDate.daysInMonth()) {
+      if (dayOfMonth > startDate.daysInMonth()) {
         break;
       }
     }
