@@ -15,6 +15,9 @@ This plugin for [Obsidian](https://obsidian.md/) creates a simple Calendar view 
 The following CSS Variables can be overridden in your `obsidian.css` file.
 
 ```css
+/* obsidian-calendar-plugin */
+/* https://github.com/liamcain/obsidian-calendar-plugin */
+
 #calendar-container {
   --color-border: #2e3440 !important;
   --color-hover: #3b4252 !important;
