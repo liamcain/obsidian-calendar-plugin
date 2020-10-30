@@ -10,9 +10,7 @@ export default class CalendarPlugin extends Plugin {
       // @ts-ignore
       (leaf: WorkspaceLeaf) => new CalendarView(leaf)
     );
-  }
 
-  onInit() {
     if (this.app.workspace.layoutReady) {
       this.initLeaf();
     }

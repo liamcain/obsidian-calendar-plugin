@@ -40,6 +40,10 @@ export default class CalendarView extends View {
     return "calendar-with-checkmark";
   }
 
+  onClose() {
+    this.calendar.$destroy();
+  }
+
   /**
    * Read the user settings for the `daily-notes` plugin
    * to keep behavior of creating a new note in-sync.
