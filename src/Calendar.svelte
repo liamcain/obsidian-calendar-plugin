@@ -21,7 +21,7 @@
   $: {
     month = [];
     const startDate = displayedMonth.clone().date(1);
-    const startOffset = startDate.isoWeekday() + (1 % 7);
+    const startOffset = (startDate.isoWeekday() + 1) % 7;
     const endDayOfMonth = startDate.daysInMonth();
 
     let dayOfMonth = 1;
