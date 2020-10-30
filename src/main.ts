@@ -4,11 +4,20 @@ import { VIEW_TYPE_CALENDAR } from "./constants";
 import CalendarView from "./view";
 
 export default class CalendarPlugin extends Plugin {
+  view: CalendarView;
+
   onload() {
     this.registerView(
       VIEW_TYPE_CALENDAR,
-      // @ts-ignore
-      (leaf: WorkspaceLeaf) => new CalendarView(leaf)
+      (leaf: WorkspaceLeaf) => (this.view = new CalendarView(leaf))
+    );
+
+    this.registerEvent(
+      this.app.vault.on("delete", () => {
+        if (this.view) {
+          this.view.redraw();
+        }
+      })
     );
 
     if (this.app.workspace.layoutReady) {

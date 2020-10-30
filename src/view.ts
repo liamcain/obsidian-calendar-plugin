@@ -23,6 +23,7 @@ export default class CalendarView extends View {
 
     this._openFileByName = this._openFileByName.bind(this);
     this._createDailyNote = this._createDailyNote.bind(this);
+    this.redraw = this.redraw.bind(this);
   }
 
   getViewType() {
@@ -38,8 +39,42 @@ export default class CalendarView extends View {
   }
 
   onClose() {
-    this.calendar.$destroy();
+    if (this.calendar) {
+      this.calendar.$destroy();
+    }
     return Promise.resolve();
+  }
+
+  async onOpen() {
+    const {
+      vault,
+      workspace: { activeLeaf },
+    } = this.app;
+
+    const activeFile = activeLeaf
+      ? (activeLeaf.view as FileView).file?.path
+      : null;
+
+    await this.loadDailyNoteSettings();
+
+    this.calendar = new Calendar({
+      target: this.containerEl,
+      props: {
+        activeFile,
+        openOrCreateFile: this._openFileByName,
+        vault,
+        directory: this.dailyNoteDirectory,
+        format: this.dateFormat,
+      },
+    });
+  }
+
+  public async redraw() {
+    if (this.calendar) {
+      this.calendar.$set({
+        vault: this.app.vault,
+      });
+    }
   }
 
   /**
@@ -67,30 +102,6 @@ export default class CalendarView extends View {
     }
   }
 
-  async onOpen() {
-    const {
-      vault,
-      workspace: { activeLeaf },
-    } = this.app;
-
-    const activeFile = activeLeaf
-      ? (activeLeaf.view as FileView).file?.path
-      : null;
-
-    await this.loadDailyNoteSettings();
-
-    this.calendar = new Calendar({
-      target: this.containerEl,
-      props: {
-        activeFile,
-        openOrCreateFile: this._openFileByName,
-        vault,
-        directory: this.dailyNoteDirectory,
-        format: this.dateFormat,
-      },
-    });
-  }
-
   async _openFileByName(filename: string) {
     const { vault, workspace } = this.app;
 
@@ -103,6 +114,7 @@ export default class CalendarView extends View {
         // If the user presses 'Confirm', update the calendar view
         this.calendar.$set({
           activeFile: baseFilename,
+          vault,
         });
       });
       return;
