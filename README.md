@@ -16,12 +16,12 @@ The following CSS Variables can be overridden in your `obsidian.css` file.
 
 ```css
 #calendar-container {
-  --color-border: #2e3440;
-  --color-hover: #3b4252;
-  --color-empty: #434c5e;
-  --color-dot: #81a1c1;
-  --color-active: #bf616a;
-  --color-today: rgb(72, 54, 153);
+  --color-border: #2e3440 !important;
+  --color-hover: #3b4252 !important;
+  --color-empty: #434c5e !important;
+  --color-dot: #81a1c1 !important;
+  --color-active: #bf616a !important;
+  --color-today: rgb(72, 54, 153) !important;
 }
 ```
 
