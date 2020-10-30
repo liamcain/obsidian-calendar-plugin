@@ -27,4 +27,8 @@ The following CSS Variables can be overridden in your `obsidian.css` file.
 
 ## Installation
 
-Currently, installation is a manual process. You'll need to download the `zip` of the latest Release. Then unzip the contents into your `<vault>/.obsidian/plugins/obsidian-calendar-plugin` directory. [More info](https://forum.obsidian.md/t/plugins-mini-faq/7737).
+You can install the plugin via the Community Plugins tab within Obsidian. Just search for "Calendar."
+
+### Manual Installation
+
+You can install the plugin manually by downloading the `zip` of the latest Github Release. Unzip the contents into your `<vault>/.obsidian/plugins/obsidian-calendar-plugin` directory. [More info](https://forum.obsidian.md/t/plugins-mini-faq/7737).
