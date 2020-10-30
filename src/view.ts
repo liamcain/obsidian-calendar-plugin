@@ -5,8 +5,8 @@ import * as path from "path";
 import Calendar from "./Calendar.svelte";
 import { VIEW_TYPE_CALENDAR } from "./constants";
 import { createDailyNote } from "./template";
-import { View } from "./types";
 import { modal } from "./ui";
+import { View } from "./types";
 
 export default class CalendarView extends View {
   calendar: Calendar;
@@ -24,9 +24,8 @@ export default class CalendarView extends View {
 
     this._openFileByName = this._openFileByName.bind(this);
     this._createDailyNote = this._createDailyNote.bind(this);
-    this.open = this.open.bind(this);
 
-    this.loadDailyNoteSettings().then(this.open);
+    this.loadDailyNoteSettings().then(() => this.open(leaf.view.containerEl));
   }
 
   getViewType() {
@@ -66,9 +65,8 @@ export default class CalendarView extends View {
     }
   }
 
-  open() {
-    super.open();
-
+  // @ts-ignore
+  onOpen() {
     const {
       vault,
       workspace: { activeLeaf },

@@ -1,6 +1,6 @@
 import type { App, WorkspaceLeaf } from "obsidian";
 
-// XXX: temporary until Obsidian v0.9.8 is released.
+// XXX: temporary until Obsidian v0.9.9 is released.
 // Currently `obsidian.View` is not exported
 export class View {
   app: App;
@@ -8,6 +8,7 @@ export class View {
   leaf: WorkspaceLeaf;
 
   constructor(leaf: WorkspaceLeaf) {
+    console.log("baseclass constructor called");
     this.app = (leaf as any).app;
     this.leaf = leaf;
     this.containerEl = leaf.view.containerEl;
@@ -15,8 +16,10 @@ export class View {
     this.leaf.view = this;
   }
 
-  open() {
-    this.containerEl.empty();
+  open(containerEl: HTMLElement) {
+    containerEl.empty();
+    console.log("called open");
+    this.onOpen();
   }
 
   close() {}

@@ -2,6 +2,5 @@
   "id": "calendar",
   "name": "Calendar",
   "description": "Calendar view of your daily notes",
-  "isDesktopOnly": false,
-  "js": "dist/calendar.js"
+  "isDesktopOnly": false
 }

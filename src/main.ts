@@ -1,4 +1,4 @@
-import { App, Plugin, PluginManifest, WorkspaceLeaf } from "obsidian";
+import { Plugin, WorkspaceLeaf } from "obsidian";
 
 import { VIEW_TYPE_CALENDAR } from "./constants";
 import CalendarView from "./view";
@@ -13,9 +13,20 @@ export default class CalendarPlugin extends Plugin {
   }
 
   onInit() {
-    (this as any).registerEvent(
+    if (this.app.workspace.layoutReady) {
+      this.initLeaf();
+    }
+    this.registerEvent(
       this.app.workspace.on("layout-ready", this.initLeaf.bind(this))
     );
+  }
+
+  onUserEnable() {
+    this.initLeaf();
+  }
+
+  onEnable() {
+    this.initLeaf();
   }
 
   initLeaf() {

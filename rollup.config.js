@@ -9,7 +9,7 @@ export default {
   output: {
     sourcemap: "inline",
     format: "cjs",
-    file: "dist/calendar.js",
+    file: "main.js",
     exports: "default",
   },
   external: ["obsidian", "fs", "path"],

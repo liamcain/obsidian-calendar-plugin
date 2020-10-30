@@ -91,7 +91,7 @@
   }
 
   .today {
-    background: var(--color-today);
+    background-color: var(--color-today);
   }
 
   .arrow {
@@ -104,7 +104,7 @@
   }
 
   .active {
-    background: var(--color-active) !important;
+    background-color: var(--color-active) !important;
     position: relative;
     z-index: 1;
   }
@@ -146,7 +146,7 @@
 
   .dot {
     border-radius: 100%;
-    background: var(--color-dot);
+    background-color: var(--color-dot);
     width: 6px;
     height: 6px;
     display: inline-block;
