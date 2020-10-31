@@ -1,7 +1,7 @@
 import { App, Notice, TFile } from "obsidian";
 import { join, parse as parsePath } from "path";
 
-function normalize(path) {
+function normalize(path: string) {
       // Always use forward slash
       path = path.replace(/\\/g, '/');
 
