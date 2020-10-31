@@ -4,7 +4,7 @@ import * as path from "path";
 
 import Calendar from "./Calendar.svelte";
 import { VIEW_TYPE_CALENDAR } from "./constants";
-import { createDailyNote } from "./template";
+import { createDailyNote, normalizedJoin } from "./template";
 import { modal } from "./ui";
 
 export default class CalendarView extends View {
@@ -87,15 +87,15 @@ export default class CalendarView extends View {
 
     try {
       const dailyNoteSettingsFile = await fs.promises.readFile(
-        path.join(basePath, ".obsidian/daily-notes.json"),
+        normalizedJoin(basePath, ".obsidian/daily-notes.json"),
         "utf-8"
       );
       const { folder, format, template } = JSON.parse(dailyNoteSettingsFile);
 
-      this.dailyNoteDirectory = folder ? folder.strip() : "";
-      this.dateFormat = format ? format.strip() : "YYYY-MM-DD";
+      this.dailyNoteDirectory = folder || "";
+      this.dateFormat = format || "YYYY-MM-DD";
       this.dailyNoteTemplate = template
-        ? path.join(basePath, `${template}.md`)
+        ? normalizedJoin(basePath, `${template}.md`)
         : "";
     } catch (err) {
       console.info("No custom daily note settings found!", err);
@@ -106,7 +106,10 @@ export default class CalendarView extends View {
     const { vault, workspace } = this.app;
 
     const baseFilename = path.parse(filename).name;
-    const fullPath = path.join(this.dailyNoteDirectory, `${baseFilename}.md`);
+    const fullPath = normalizedJoin(
+      this.dailyNoteDirectory,
+      `${baseFilename}.md`
+    );
     const fileObj = vault.getAbstractFileByPath(fullPath) as TFile;
 
     if (!fileObj) {

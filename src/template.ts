@@ -2,6 +2,10 @@ import moment from "moment";
 import { App, Notice, TFile } from "obsidian";
 import * as path from "path";
 
+export function normalizedJoin(directory: string, filename: string) {
+  return path.normalize(path.join(directory, filename));
+}
+
 /**
  * This function mimics the behavior of the daily-notes plugin
  * so it will replace {{date}} and {{time}} with the formatted
@@ -15,7 +19,7 @@ export async function createDailyNote(
   templateContents: string = ""
 ): Promise<TFile> {
   const app = (<any>window).app as App;
-  const normalizedPath = path.join(directory, `${filename}.md`);
+  const normalizedPath = normalizedJoin(directory, `${filename}.md`);
 
   try {
     return app.vault.create(

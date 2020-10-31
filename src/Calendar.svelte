@@ -1,8 +1,8 @@
 <script lang="ts">
   import moment, { Moment } from "moment";
   import type { TFile, Vault } from "obsidian";
-  import * as path from "path";
 
+  import { normalizedJoin } from "./template";
   import { getNumberOfDots } from "./ui/utils";
 
   export let activeFile: string = null;
@@ -40,7 +40,7 @@
         const formattedDate = date.format(format);
         const baseFilename = `${formattedDate}.md`;
         const fileForDay = vault.getAbstractFileByPath(
-          path.join(directory, baseFilename)
+          normalizedJoin(directory, baseFilename)
         ) as TFile;
 
         week.push({
@@ -68,20 +68,26 @@
   function decrementMonth() {
     displayedMonth = displayedMonth.subtract(1, "months");
   }
+
+  function focusCurrentMonth() {
+    displayedMonth = today.clone();
+  }
 </script>
 
 <style>
   .container {
-    --color-background: var(--background-secondary);
-    --color-day-background-active: var(--interactive-accent);
-    --color-day-background-empty: var(--background-secondary-alt);
-    --color-day-background-hover: var(--interactive-hover);
-    --color-day-background: transparent;
-    --color-day-text: var(--text-normal);
-    --color-day: transparent;
+    --color-background-heading: transparent;
+
+    --color-background-day: transparent;
+    --color-background-day-empty: var(--background-secondary-alt);
+    --color-background-day-active: var(--interactive-accent);
+    --color-background-day-hover: var(--interactive-hover);
+
     --color-dot: var(--text-muted);
-    --color-heading-text: var(--text-normal);
-    --color-today: var(--text-accent);
+
+    --color-text-heading: var(--text-normal);
+    --color-text-day: var(--text-normal);
+    --color-text-today: var(--text-accent);
   }
 
   .container {
@@ -100,38 +106,39 @@
   }
 
   .today {
-    color: var(--color-today);
+    color: var(--color-text-today);
   }
 
   .active {
-    background-color: var(--color-day-background-active);
+    background-color: var(--color-background-day-active);
   }
 
   .table {
-    border: solid 1px var(--color-background);
     border-collapse: collapse;
     width: 100%;
   }
 
   th {
-    background-color: var(--color-background);
-    color: var(--color-heading-text);
-    padding: 8px;
+    background-color: var(--color-background-heading);
+    color: var(--color-text-heading);
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+    padding: 4px 8px;
   }
 
   td {
     transition: background-color 0.1s ease-in;
     cursor: pointer;
-    background-color: var(--color-day-background);
-    color: var(--color-day-text);
+    background-color: var(--color-background-day);
+    color: var(--color-text-day);
     font-size: 0.8em;
     padding: 8px;
   }
   td:empty {
-    background-color: var(--color-day-background-empty);
+    background-color: var(--color-background-day-empty);
   }
   td:not(:empty):hover {
-    background-color: var(--color-day-background-hover);
+    background-color: var(--color-background-day-hover);
   }
 
   .dot-container {
@@ -184,7 +191,7 @@
           fill="currentColor"
           d="M34.52 239.03L228.87 44.69c9.37-9.37 24.57-9.37 33.94 0l22.67 22.67c9.36 9.36 9.37 24.52.04 33.9L131.49 256l154.02 154.75c9.34 9.38 9.32 24.54-.04 33.9l-22.67 22.67c-9.37 9.37-24.57 9.37-33.94 0L34.52 272.97c-9.37-9.37-9.37-24.57 0-33.94z" /></svg>
     </div>
-    {monthName}
+    <span on:click={focusCurrentMonth}>{monthName}</span>
     <div class="arrow ml-2" on:click={incrementMonth} aria-label="Next Month">
       <svg
         role="img"
@@ -197,13 +204,13 @@
   <table class="table">
     <thead>
       <tr>
-        <th>S</th>
-        <th>M</th>
-        <th>T</th>
-        <th>W</th>
-        <th>H</th>
-        <th>F</th>
-        <th>S</th>
+        <th>SUN</th>
+        <th>MON</th>
+        <th>TUE</th>
+        <th>WED</th>
+        <th>THU</th>
+        <th>FRI</th>
+        <th>SAT</th>
       </tr>
     </thead>
     <tbody>
