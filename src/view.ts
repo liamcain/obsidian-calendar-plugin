@@ -4,7 +4,7 @@ import * as path from "path";
 
 import Calendar from "./Calendar.svelte";
 import { VIEW_TYPE_CALENDAR } from "./constants";
-import { createDailyNote, normalizedJoin } from "./template";
+import { createDailyNote, normalizedJoin, resolveMdPath } from "./template";
 import { modal } from "./ui";
 
 export default class CalendarView extends View {
@@ -95,7 +95,7 @@ export default class CalendarView extends View {
       this.dailyNoteDirectory = folder || "";
       this.dateFormat = format || "YYYY-MM-DD";
       this.dailyNoteTemplate = template
-        ? normalizedJoin(basePath, `${template}.md`)
+        ? resolveMdPath(basePath, template)
         : "";
     } catch (err) {
       console.info("No custom daily note settings found!", err);
@@ -106,10 +106,7 @@ export default class CalendarView extends View {
     const { vault, workspace } = this.app;
 
     const baseFilename = path.parse(filename).name;
-    const fullPath = normalizedJoin(
-      this.dailyNoteDirectory,
-      `${baseFilename}.md`
-    );
+    const fullPath = resolveMdPath(this.dailyNoteDirectory, baseFilename);
     const fileObj = vault.getAbstractFileByPath(fullPath) as TFile;
 
     if (!fileObj) {
