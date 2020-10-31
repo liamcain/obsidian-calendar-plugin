@@ -98,7 +98,6 @@ export default class CalendarView extends View {
 
       this.dailyNoteDirectory = folder || "";
       this.dateFormat = format || "YYYY-MM-DD";
-      const parsed = path.parse(template);
       this.dailyNoteTemplate = template
         ? resolveTemplatePath(basePath, template)
         : "";

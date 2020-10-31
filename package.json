@@ -1,6 +1,6 @@
 {
   "name": "calendar",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Calendar view of your daily notes",
   "author": "liamcain",
   "main": "main.js",
@@ -10,7 +10,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "clsx": "1.1.2",
+    "clsx": "1.1.1",
     "core-js": "3.6.5",
     "obsidian": "obsidianmd/obsidian-api#master",
     "svelte": "3.24.1",

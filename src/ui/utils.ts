@@ -23,5 +23,5 @@ export function getNumberOfDots(dailyNoteFile?: TFile): number {
   }
 
   const numDots = Math.floor(Math.log(fileSize / 20));
-  return isNumber(numDots) ? clamp(numDots, 0, NUM_MAX_DOTS) : 0;
+  return isNumber(numDots) ? clamp(numDots, 1, NUM_MAX_DOTS) : 0;
 }
