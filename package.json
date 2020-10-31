@@ -6,16 +6,19 @@
   "main": "main.js",
   "license": "MIT",
   "scripts": {
-    "build": "svelte-check && rollup -c"
+    "build": "svelte-check && rollup -c",
+    "lint": "eslint ."
   },
   "dependencies": {
-    "@types/node": "^14.14.3",
-    "clsx": "^1.1.1",
-    "core-js": "^3.6.5",
-    "moment": "^2.29.1",
+    "@types/lodash": "^4.14.164",
+    "@types/node": "14.14.3",
+    "clsx": "1.1.1",
+    "core-js": "3.6.5",
+    "lodash": "4.17.20",
+    "moment": "2.29.1",
     "obsidian": "obsidianmd/obsidian-api#master",
-    "svelte": "^3.24.1",
-    "tslib": "^2.0.1"
+    "svelte": "3.24.1",
+    "tslib": "2.0.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^15.0.0",

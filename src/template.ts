@@ -1,5 +1,5 @@
 import moment from "moment";
-import type { App, TFile } from "obsidian";
+import { App, Notice, TFile } from "obsidian";
 import * as path from "path";
 
 /**
@@ -17,10 +17,18 @@ export async function createDailyNote(
   const app = (<any>window).app as App;
   const normalizedPath = path.join(directory, `${filename}.md`);
 
-  return app.vault.create(
-    normalizedPath,
-    templateContents.replace(/{{(date|time):(.*?)}}/gi, (match, groups, n) => {
-      return moment(filename).format(n);
-    })
-  );
+  try {
+    return app.vault.create(
+      normalizedPath,
+      templateContents.replace(
+        /{{(date|time):(.*?)}}/gi,
+        (match, groups, n) => {
+          return moment(filename).format(n);
+        }
+      )
+    );
+  } catch (err) {
+    console.error(`Failed to create file: '${normalizedPath}'`, err);
+    new Notice("Unable to create new file.");
+  }
 }

@@ -71,13 +71,22 @@
 </script>
 
 <style>
-  #calendar-container {
-    --color-border: #2e3440;
-    --color-hover: #3b4252;
-    --color-empty: #434c5e;
-    --color-dot: #81a1c1;
-    --color-active: #bf616a;
-    --color-today: rgb(72, 54, 153);
+  .container {
+    --color-background: var(--background-secondary);
+    --color-day-background-active: var(--interactive-accent);
+    --color-day-background-empty: var(--background-secondary-alt);
+    --color-day-background-hover: var(--interactive-hover);
+    --color-day-background: transparent;
+    --color-day-text: var(--text-normal);
+    --color-day: transparent;
+    --color-dot: var(--text-muted);
+    --color-heading-text: var(--text-normal);
+    --color-today: var(--text-accent);
+  }
+
+  .container {
+    overflow-y: scroll;
+    padding: 0 16px;
   }
 
   th,
@@ -91,66 +100,51 @@
   }
 
   .today {
-    background-color: var(--color-today);
-  }
-
-  .arrow {
-    cursor: pointer;
-    display: inline-block;
-  }
-  .arrow svg {
-    height: 16px;
-    width: 16px;
+    color: var(--color-today);
   }
 
   .active {
-    background-color: var(--color-active) !important;
-    position: relative;
-    z-index: 1;
-  }
-
-  .container {
-    overflow-y: scroll;
-    padding: 0 16px;
+    background-color: var(--color-day-background-active);
   }
 
   .table {
-    border: solid 1px var(--color-border);
+    border: solid 1px var(--color-background);
     border-collapse: collapse;
     width: 100%;
   }
 
   th {
-    background-color: var(--color-border);
+    background-color: var(--color-background);
+    color: var(--color-heading-text);
     padding: 8px;
   }
 
   td {
     transition: background-color 0.1s ease-in;
     cursor: pointer;
-    border: solid 1px var(--color-border);
+    background-color: var(--color-day-background);
+    color: var(--color-day-text);
     font-size: 0.8em;
     padding: 8px;
   }
   td:empty {
-    background-color: var(--color-empty);
+    background-color: var(--color-day-background-empty);
   }
   td:not(:empty):hover {
-    background-color: var(--color-hover);
+    background-color: var(--color-day-background-hover);
   }
 
   .dot-container {
-    line-height: 4px;
-    zoom: 0.6;
+    height: 6px;
+    line-height: 6px;
   }
 
   .dot {
-    border-radius: 100%;
-    background-color: var(--color-dot);
-    width: 6px;
-    height: 6px;
     display: inline-block;
-    margin-right: 4px;
+    fill: var(--color-dot);
+    height: 6px;
+    width: 6px;
+    margin-right: 2px;
   }
 
   .dot:last-of-type {
@@ -163,6 +157,15 @@
 
   .mr-2 {
     margin-right: 8px;
+  }
+
+  .arrow {
+    cursor: pointer;
+    display: inline-block;
+  }
+  .arrow svg {
+    height: 16px;
+    width: 16px;
   }
 </style>
 
@@ -220,7 +223,12 @@
 
                 <div class="dot-container">
                   {#each Array(numDots) as _}
-                    <div class="dot" />
+                    <svg
+                      class="dot"
+                      viewBox="0 0 6 6"
+                      xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="3" cy="3" r="2" />
+                    </svg>
                   {/each}
                 </div>
               </td>

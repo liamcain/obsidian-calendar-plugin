@@ -92,8 +92,8 @@ export default class CalendarView extends View {
       );
       const { folder, format, template } = JSON.parse(dailyNoteSettingsFile);
 
-      this.dailyNoteDirectory = folder || "";
-      this.dateFormat = format || "YYYY-MM-DD";
+      this.dailyNoteDirectory = folder ? folder.strip() : "";
+      this.dateFormat = format ? format.strip() : "YYYY-MM-DD";
       this.dailyNoteTemplate = template
         ? path.join(basePath, `${template}.md`)
         : "";
@@ -110,7 +110,7 @@ export default class CalendarView extends View {
     const fileObj = vault.getAbstractFileByPath(fullPath) as TFile;
 
     if (!fileObj) {
-      this.promptUserToCreateFile(baseFilename, this.dailyNoteDirectory, () => {
+      this.promptUserToCreateFile(baseFilename, () => {
         // If the user presses 'Confirm', update the calendar view
         this.calendar.$set({
           activeFile: baseFilename,
@@ -126,7 +126,7 @@ export default class CalendarView extends View {
     });
   }
 
-  async _createDailyNote(directory: string, filename: string) {
+  async _createDailyNote(filename: string) {
     const { workspace } = this.app;
 
     const templateContents = this.dailyNoteTemplate
@@ -134,7 +134,7 @@ export default class CalendarView extends View {
       : "";
 
     const dailyNote = await createDailyNote(
-      directory,
+      this.dailyNoteDirectory,
       filename,
       templateContents
     );
@@ -142,11 +142,11 @@ export default class CalendarView extends View {
     workspace.activeLeaf.openFile(dailyNote);
   }
 
-  promptUserToCreateFile(filename: string, directory: string, cb: () => void) {
+  promptUserToCreateFile(filename: string, cb: () => void) {
     modal.createConfirmationDialog(this.app, {
       cta: "Create",
       onAccept: () =>
-        this._createDailyNote(directory, filename).then(() => {
+        this._createDailyNote(filename).then(() => {
           if (cb) {
             cb();
           }

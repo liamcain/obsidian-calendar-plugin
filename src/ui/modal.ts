@@ -17,7 +17,7 @@ export class ConfirmationModal extends Modal {
     this.contentEl.createEl("p", { text });
     this.contentEl
       .createEl("button", { text: "Never mind" })
-      .addEventListener("click", () => this.containerEl.remove());
+      .addEventListener("click", () => this.close());
 
     this.contentEl
       .createEl("button", {
