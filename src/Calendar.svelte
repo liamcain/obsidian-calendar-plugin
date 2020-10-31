@@ -6,7 +6,7 @@
 
   export let activeFile: string = null;
   export let vault: Vault;
-  export let openOrCreateFile: (filename: string) => void;
+  export let openOrCreateDailyNote: (filename: string) => void;
 
   export let directory: string;
   export let format: string;
@@ -223,7 +223,7 @@
                 class:today={date.isSame(today)}
                 class:active={activeFile === formattedDate}
                 on:click={() => {
-                  openOrCreateFile(formattedDate);
+                  openOrCreateDailyNote(formattedDate);
                 }}>
                 {dayOfMonth}
 

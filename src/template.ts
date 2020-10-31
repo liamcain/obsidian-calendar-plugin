@@ -5,9 +5,11 @@ export function normalizedJoin(directory: string, filename: string) {
   return path.normalize(path.join(directory, filename));
 }
 
-export function resolveMdPath(directory: string, filename: string) {
-  const baseFilename = path.parse(filename).name;
-  return normalizedJoin(directory, `${baseFilename}.md`);
+export function resolveTemplatePath(directory: string, filename: string) {
+  const pathComponents = path.parse(filename);
+  return path.normalize(
+    path.join(directory, pathComponents.dir, `${pathComponents.name}.md`)
+  );
 }
 
 /**

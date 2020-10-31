@@ -4,7 +4,11 @@ import * as path from "path";
 
 import Calendar from "./Calendar.svelte";
 import { VIEW_TYPE_CALENDAR } from "./constants";
-import { createDailyNote, normalizedJoin, resolveMdPath } from "./template";
+import {
+  createDailyNote,
+  normalizedJoin,
+  resolveTemplatePath,
+} from "./template";
 import { modal } from "./ui";
 
 export default class CalendarView extends View {
@@ -21,7 +25,7 @@ export default class CalendarView extends View {
     this.dateFormat = "YYYY-MM-DD";
     this.dailyNoteTemplate = "";
 
-    this._openFileByName = this._openFileByName.bind(this);
+    this._openOrCreateDailyNote = this._openOrCreateDailyNote.bind(this);
     this._createDailyNote = this._createDailyNote.bind(this);
     this.redraw = this.redraw.bind(this);
   }
@@ -61,10 +65,10 @@ export default class CalendarView extends View {
       target: this.containerEl,
       props: {
         activeFile,
-        openOrCreateFile: this._openFileByName,
-        vault,
         directory: this.dailyNoteDirectory,
         format: this.dateFormat,
+        openOrCreateDailyNote: this._openOrCreateDailyNote,
+        vault,
       },
     });
   }
@@ -94,20 +98,37 @@ export default class CalendarView extends View {
 
       this.dailyNoteDirectory = folder || "";
       this.dateFormat = format || "YYYY-MM-DD";
+      const parsed = path.parse(template);
+      console.log("baseFilename", parsed);
       this.dailyNoteTemplate = template
-        ? resolveMdPath(basePath, template)
+        ? resolveTemplatePath(basePath, template)
         : "";
     } catch (err) {
       console.info("No custom daily note settings found!", err);
     }
   }
 
-  async _openFileByName(filename: string) {
+  async _openOrCreateDailyNote(filename: string) {
     const { vault, workspace } = this.app;
 
     const baseFilename = path.parse(filename).name;
-    const fullPath = resolveMdPath(this.dailyNoteDirectory, baseFilename);
+    const fullPath = normalizedJoin(
+      this.dailyNoteDirectory,
+      `${baseFilename}.md`
+    );
     const fileObj = vault.getAbstractFileByPath(fullPath) as TFile;
+
+    console.log(
+      "baseFilename",
+      baseFilename,
+      fullPath,
+      fileObj,
+      filename,
+      vault.getAbstractFileByPath("2020-10-20"),
+      vault.getAbstractFileByPath("2020-10-20.md"),
+      vault.getAbstractFileByPath("daily notes/2020-10-20"),
+      vault.getAbstractFileByPath("daily notes/2020-10-20.md")
+    );
 
     if (!fileObj) {
       this.promptUserToCreateFile(baseFilename, () => {
