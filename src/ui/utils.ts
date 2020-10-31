@@ -1,17 +1,25 @@
-import clamp from "lodash/clamp";
-import isNumber from "lodash/isNumber";
-import toInteger from "lodash/toInteger";
 import type { TFile } from "obsidian";
 
 const NUM_MAX_DOTS = 6;
+
+function clamp(num: number, lowerBound: number, upperBound: number) {
+  return Math.min(Math.max(lowerBound, num), upperBound);
+}
+
+function isNumber(possibleNumber: any) {
+  return !isNaN(possibleNumber) && isFinite(possibleNumber);
+}
 
 export function getNumberOfDots(dailyNoteFile?: TFile): number {
   if (!dailyNoteFile) {
     return 0;
   }
-  const fileSize = toInteger(dailyNoteFile.stat.size);
+  const fileSize = dailyNoteFile.stat.size;
   if (!fileSize) {
     return 0;
+  }
+  if (typeof fileSize === "bigint") {
+    return NUM_MAX_DOTS;
   }
 
   const numDots = Math.floor(Math.log(fileSize / 20));

@@ -1,4 +1,3 @@
-import moment from "moment";
 import { App, Notice, TFile } from "obsidian";
 import * as path from "path";
 
@@ -32,7 +31,7 @@ export async function createDailyNote(
       templateContents.replace(
         /{{(date|time):(.*?)}}/gi,
         (match, groups, n) => {
-          return moment(filename).format(n);
+          return (window as any).moment(filename).format(n);
         }
       )
     );

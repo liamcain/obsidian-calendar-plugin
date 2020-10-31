@@ -1,5 +1,4 @@
 <script lang="ts">
-  import moment, { Moment } from "moment";
   import type { TFile, Vault } from "obsidian";
 
   import { normalizedJoin } from "./template";
@@ -12,8 +11,8 @@
   export let directory: string;
   export let format: string;
 
-  const today = moment();
-  export let displayedMonth: Moment = today.clone();
+  const today = (window as any).moment();
+  export let displayedMonth = today.clone();
 
   let month = [];
   let monthName: string;
