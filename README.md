@@ -19,12 +19,18 @@ The following CSS Variables can be overridden in your `obsidian.css` file.
 /* https://github.com/liamcain/obsidian-calendar-plugin */
 
 #calendar-container {
-  --color-border: #2e3440;
-  --color-hover: #3b4252;
-  --color-empty: #434c5e;
-  --color-dot: #81a1c1;
-  --color-active: #bf616a;
-  --color-today: rgb(72, 54, 153);
+  --color-background-heading: transparent;
+
+  --color-background-day: transparent;
+  --color-background-day-empty: var(--background-secondary-alt);
+  --color-background-day-active: var(--interactive-accent);
+  --color-background-day-hover: var(--interactive-hover);
+
+  --color-dot: var(--text-muted);
+
+  --color-text-heading: var(--text-normal);
+  --color-text-day: var(--text-normal);
+  --color-text-today: var(--text-accent);
 }
 ```
 
