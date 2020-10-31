@@ -99,7 +99,6 @@ export default class CalendarView extends View {
       this.dailyNoteDirectory = folder || "";
       this.dateFormat = format || "YYYY-MM-DD";
       const parsed = path.parse(template);
-      console.log("baseFilename", parsed);
       this.dailyNoteTemplate = template
         ? resolveTemplatePath(basePath, template)
         : "";
@@ -117,18 +116,6 @@ export default class CalendarView extends View {
       `${baseFilename}.md`
     );
     const fileObj = vault.getAbstractFileByPath(fullPath) as TFile;
-
-    console.log(
-      "baseFilename",
-      baseFilename,
-      fullPath,
-      fileObj,
-      filename,
-      vault.getAbstractFileByPath("2020-10-20"),
-      vault.getAbstractFileByPath("2020-10-20.md"),
-      vault.getAbstractFileByPath("daily notes/2020-10-20"),
-      vault.getAbstractFileByPath("daily notes/2020-10-20.md")
-    );
 
     if (!fileObj) {
       this.promptUserToCreateFile(baseFilename, () => {

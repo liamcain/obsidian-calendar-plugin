@@ -10,7 +10,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "clsx": "1.1.1",
+    "clsx": "1.1.2",
     "core-js": "3.6.5",
     "obsidian": "obsidianmd/obsidian-api#master",
     "svelte": "3.24.1",
