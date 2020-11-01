@@ -28,7 +28,7 @@ export async function createDailyNote(
   const moment = (<any>window).moment;
   const { vault } = app;
 
-  const { template, folder } = dailyNoteSettings;
+  const { template = "", folder = "" } = dailyNoteSettings;
   const format = dailyNoteSettings.format || DEFAULT_DATE_FORMAT;
 
   let templateContents = "";
