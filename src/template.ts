@@ -52,12 +52,15 @@ export async function createDailyNote(
     return vault.create(
       normalizedPath,
       templateContents
-        .replace(/{{(date|time):(.*?)}}/gi, (_, timeOrDate, momentFormat) => {
-          return date.format(momentFormat);
-        })
-        .replace(/{{date}}/gi, filename)
-        .replace(/{{time}}/gi, moment().format("HH:mm"))
-        .replace(/{{title}}/gi, filename)
+        .replace(
+          /{{\s*(date|time)\s*:(.*?)}}/gi,
+          (_, timeOrDate, momentFormat) => {
+            return date.format(momentFormat.trim());
+          }
+        )
+        .replace(/{{\s*date\s*}}/gi, filename)
+        .replace(/{{\s*time\s*}}/gi, moment().format("HH:mm"))
+        .replace(/{{\s*title\s*}}/gi, filename)
     );
   } catch (err) {
     console.error(`Failed to create file: '${normalizedPath}'`, err);
