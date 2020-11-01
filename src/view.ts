@@ -1,29 +1,25 @@
-import { FileView, TFile, View, WorkspaceLeaf } from "obsidian";
-import * as fs from "fs";
+import { FileView, Notice, TFile, View, WorkspaceLeaf } from "obsidian";
 import * as path from "path";
 
 import Calendar from "./Calendar.svelte";
 import { VIEW_TYPE_CALENDAR } from "./constants";
-import {
-  createDailyNote,
-  normalizedJoin,
-  resolveTemplatePath,
-} from "./template";
+import { createDailyNote, normalize, normalizedJoin } from "./template";
 import { modal } from "./ui";
+
+interface IDailyNoteSettings {
+  folder?: string;
+  format?: string;
+  template?: string;
+}
+
+const DEFAULT_DATE_FORMAT = "YYYY-MM-DD";
 
 export default class CalendarView extends View {
   calendar: Calendar;
-
-  dailyNoteDirectory: string;
-  dailyNoteTemplate: string;
-  dateFormat: string;
+  dailyNoteSettings: IDailyNoteSettings;
 
   constructor(leaf: WorkspaceLeaf) {
     super(leaf);
-
-    this.dailyNoteDirectory = "";
-    this.dateFormat = "YYYY-MM-DD";
-    this.dailyNoteTemplate = "";
 
     this._openOrCreateDailyNote = this._openOrCreateDailyNote.bind(this);
     this._createDailyNote = this._createDailyNote.bind(this);
@@ -55,18 +51,18 @@ export default class CalendarView extends View {
       workspace: { activeLeaf },
     } = this.app;
 
+    this.dailyNoteSettings = this.getDailyNoteSettings();
+
     const activeFile = activeLeaf
       ? (activeLeaf.view as FileView).file?.path
       : null;
-
-    await this.loadDailyNoteSettings();
 
     this.calendar = new Calendar({
       target: this.containerEl,
       props: {
         activeFile,
-        directory: this.dailyNoteDirectory,
-        format: this.dateFormat,
+        directory: this.dailyNoteSettings.folder,
+        format: this.dailyNoteSettings.format || DEFAULT_DATE_FORMAT,
         openOrCreateDailyNote: this._openOrCreateDailyNote,
         vault,
       },
@@ -85,33 +81,22 @@ export default class CalendarView extends View {
    * Read the user settings for the `daily-notes` plugin
    * to keep behavior of creating a new note in-sync.
    */
-  async loadDailyNoteSettings() {
-    const adapter = this.app.vault.adapter as any;
-    const basePath = adapter.basePath;
-
+  getDailyNoteSettings(): IDailyNoteSettings {
     try {
-      const dailyNoteSettingsFile = await fs.promises.readFile(
-        normalizedJoin(basePath, ".obsidian/daily-notes.json"),
-        "utf-8"
-      );
-      const { folder, format, template } = JSON.parse(dailyNoteSettingsFile);
-
-      this.dailyNoteDirectory = folder || "";
-      this.dateFormat = format || "YYYY-MM-DD";
-      this.dailyNoteTemplate = template
-        ? resolveTemplatePath(basePath, template)
-        : "";
+      // XXX: Access private API for internal plugins
+      return (this.app as any).internalPlugins.plugins["daily-notes"].instance
+        .options;
     } catch (err) {
       console.info("No custom daily note settings found!", err);
     }
   }
 
-  async _openOrCreateDailyNote(filename: string) {
+  async _openOrCreateDailyNote(filename: string): Promise<void> {
     const { vault, workspace } = this.app;
 
     const baseFilename = path.parse(filename).name;
     const fullPath = normalizedJoin(
-      this.dailyNoteDirectory,
+      this.dailyNoteSettings.folder,
       `${baseFilename}.md`
     );
     const fileObj = vault.getAbstractFileByPath(fullPath) as TFile;
@@ -133,15 +118,26 @@ export default class CalendarView extends View {
     });
   }
 
-  async _createDailyNote(filename: string) {
-    const { workspace } = this.app;
+  async _createDailyNote(filename: string): Promise<void> {
+    const { vault, workspace } = this.app;
+    const { template } = this.dailyNoteSettings;
 
-    const templateContents = this.dailyNoteTemplate
-      ? fs.readFileSync(this.dailyNoteTemplate, "utf-8")
-      : "";
+    let templateContents = "";
+    if (template) {
+      try {
+        const templateFile = vault.getAbstractFileByPath(
+          normalize(template)
+        ) as TFile;
+        templateContents = await vault.cachedRead(templateFile);
+      } catch (err) {
+        console.error("Failed to read daily note template", err);
+        new Notice("Failed to read the daily note template");
+        return;
+      }
+    }
 
     const dailyNote = await createDailyNote(
-      this.dailyNoteDirectory,
+      this.dailyNoteSettings.folder,
       filename,
       templateContents
     );

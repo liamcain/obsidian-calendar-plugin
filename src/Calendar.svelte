@@ -83,7 +83,9 @@
     --color-background-day-hover: var(--interactive-hover);
 
     --color-dot: var(--text-muted);
+    --color-arrow: currentColor;
 
+    --color-text-title: var(--text-normal);
     --color-text-heading: var(--text-normal);
     --color-text-day: var(--text-normal);
     --color-text-today: var(--text-accent);
@@ -100,6 +102,7 @@
   }
 
   .title {
+    color: var(--color-text-title);
     margin-right: 4px;
     text-align: center;
   }
@@ -170,6 +173,7 @@
     display: inline-block;
   }
   .arrow svg {
+    fill: var(--color-arrow);
     height: 16px;
     width: 16px;
   }
