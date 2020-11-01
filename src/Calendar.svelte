@@ -1,8 +1,9 @@
 <script lang="ts">
   import type { TFile, Vault } from "obsidian";
 
-  import type { IDailyNoteSettings } from "./view";
-  import { normalizedJoin } from "./template";
+  import { DEFAULT_DATE_FORMAT } from "./constants";
+  import { normalizedJoin } from "./path";
+  import type { IDailyNoteSettings, IMoment } from "./template";
   import { getNumberOfDots } from "./ui/utils";
 
   export let activeFile: string = null;
@@ -10,8 +11,7 @@
   export let dailyNoteSettings: IDailyNoteSettings;
   export let openOrCreateDailyNote: (filename: string) => void;
 
-  const DEFAULT_DATE_FORMAT = "YYYY-MM-DD";
-  const today = (window as any).moment();
+  let today = (window as any).moment();
   export let displayedMonth = today.clone();
 
   let month = [];
@@ -35,7 +35,7 @@
           continue;
         }
 
-        const date = displayedMonth.clone().date(dayOfMonth);
+        const date: IMoment = displayedMonth.clone().date(dayOfMonth);
         const formattedDate = date.format(
           dailyNoteSettings.format || DEFAULT_DATE_FORMAT
         );
@@ -73,6 +73,11 @@
   function focusCurrentMonth() {
     displayedMonth = today.clone();
   }
+
+  // 1 minute heartbeat to keep `today` reflecting the current day
+  setInterval(() => {
+    today = (window as any).moment();
+  }, 1000 * 60);
 </script>
 
 <style>
@@ -229,7 +234,7 @@
                 class:today={date.isSame(today)}
                 class:active={activeFile === formattedDate}
                 on:click={() => {
-                  openOrCreateDailyNote(formattedDate);
+                  openOrCreateDailyNote(date);
                 }}>
                 {dayOfMonth}
 

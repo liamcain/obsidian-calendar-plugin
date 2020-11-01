@@ -1,16 +1,10 @@
-import { FileView, Notice, TFile, View, WorkspaceLeaf } from "obsidian";
-import * as path from "path";
+import { FileView, TFile, View, WorkspaceLeaf } from "obsidian";
 
 import Calendar from "./Calendar.svelte";
-import { VIEW_TYPE_CALENDAR } from "./constants";
-import { createDailyNote, normalize, normalizedJoin } from "./template";
+import { DEFAULT_DATE_FORMAT, VIEW_TYPE_CALENDAR } from "./constants";
+import { normalizedJoin } from "./path";
+import { IDailyNoteSettings, IMoment, createDailyNote } from "./template";
 import { modal } from "./ui";
-
-export interface IDailyNoteSettings {
-  folder?: string;
-  format?: string;
-  template?: string;
-}
 
 export default class CalendarView extends View {
   calendar: Calendar;
@@ -88,10 +82,15 @@ export default class CalendarView extends View {
     }
   }
 
-  async _openOrCreateDailyNote(filename: string): Promise<void> {
+  _getFormattedDate(date: IMoment): string {
+    const format = this.dailyNoteSettings.format || DEFAULT_DATE_FORMAT;
+    return date.format(format);
+  }
+
+  async _openOrCreateDailyNote(date: IMoment): Promise<void> {
     const { vault, workspace } = this.app;
 
-    const baseFilename = path.parse(filename).name;
+    const baseFilename = this._getFormattedDate(date);
     const fullPath = normalizedJoin(
       this.dailyNoteSettings.folder,
       `${baseFilename}.md`
@@ -99,7 +98,7 @@ export default class CalendarView extends View {
     const fileObj = vault.getAbstractFileByPath(fullPath) as TFile;
 
     if (!fileObj) {
-      this.promptUserToCreateFile(baseFilename, () => {
+      this.promptUserToCreateFile(date, () => {
         // If the user presses 'Confirm', update the calendar view
         this.calendar.$set({
           activeFile: baseFilename,
@@ -115,38 +114,19 @@ export default class CalendarView extends View {
     });
   }
 
-  async _createDailyNote(filename: string): Promise<void> {
-    const { vault, workspace } = this.app;
-    const { template } = this.dailyNoteSettings;
+  async _createDailyNote(date: IMoment): Promise<void> {
+    const dailyNote = await createDailyNote(date, this.dailyNoteSettings);
 
-    let templateContents = "";
-    if (template) {
-      try {
-        const templateFile = vault.getAbstractFileByPath(
-          normalize(template)
-        ) as TFile;
-        templateContents = await vault.cachedRead(templateFile);
-      } catch (err) {
-        console.error("Failed to read daily note template", err);
-        new Notice("Failed to read the daily note template");
-        return;
-      }
-    }
-
-    const dailyNote = await createDailyNote(
-      this.dailyNoteSettings.folder,
-      filename,
-      templateContents
-    );
-
-    workspace.activeLeaf.openFile(dailyNote);
+    this.app.workspace.activeLeaf.openFile(dailyNote);
   }
 
-  promptUserToCreateFile(filename: string, cb: () => void) {
+  promptUserToCreateFile(date: IMoment, cb: () => void) {
+    const filename = this._getFormattedDate(date);
+
     modal.createConfirmationDialog(this.app, {
       cta: "Create",
       onAccept: () =>
-        this._createDailyNote(filename).then(() => {
+        this._createDailyNote(date).then(() => {
           if (cb) {
             cb();
           }
