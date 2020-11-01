@@ -27,7 +27,9 @@ The following CSS Variables can be overridden in your `obsidian.css` file.
   --color-background-day-hover: var(--interactive-hover);
 
   --color-dot: var(--text-muted);
+  --color-arrow: currentColor;
 
+  --color-text-title: var(--text-normal);
   --color-text-heading: var(--text-normal);
   --color-text-day: var(--text-normal);
   --color-text-today: var(--text-accent);
