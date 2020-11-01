@@ -13,10 +13,37 @@ export interface IMoment {
   format: (format: string) => string;
 }
 
+function getDailyNoteTemplateContents(
+  dailyNoteSettings: IDailyNoteSettings
+): Promise<string> {
+  const app = (<any>window).app as App;
+  const { vault } = app;
+
+  let templatePath = dailyNoteSettings.template || "";
+  if (!templatePath) {
+    return Promise.resolve("");
+  }
+
+  if (!templatePath.endsWith(".md")) {
+    templatePath += ".md";
+  }
+
+  try {
+    const templateFile = vault.getAbstractFileByPath(
+      normalize(templatePath)
+    ) as TFile;
+    return vault.cachedRead(templateFile);
+  } catch (err) {
+    console.error(`Failed to read daily note template '${templatePath}'`, err);
+    new Notice("Failed to read the daily note template");
+    return Promise.resolve("");
+  }
+}
+
 /**
  * This function mimics the behavior of the daily-notes plugin
- * so it will replace {{date}} and {{time}} with the formatted
- * timestamp.
+ * so it will replace {{date}}, {{title}}, and {{time}} with the
+ * formatted timestamp.
  *
  * Note: it has an added bonus that it's not 'today' specific.
  */
@@ -28,22 +55,12 @@ export async function createDailyNote(
   const moment = (<any>window).moment;
   const { vault } = app;
 
-  const { template = "", folder = "" } = dailyNoteSettings;
+  const { folder = "" } = dailyNoteSettings;
   const format = dailyNoteSettings.format || DEFAULT_DATE_FORMAT;
 
-  let templateContents = "";
-  if (template) {
-    try {
-      const templateFile = vault.getAbstractFileByPath(
-        normalize(template)
-      ) as TFile;
-      templateContents = await vault.cachedRead(templateFile);
-    } catch (err) {
-      console.error("Failed to read daily note template", err);
-      new Notice("Failed to read the daily note template");
-      return;
-    }
-  }
+  const templateContents = await getDailyNoteTemplateContents(
+    dailyNoteSettings
+  );
 
   const filename = date.format(format);
   const normalizedPath = normalizedJoin(folder, `${filename}.md`);
