@@ -1,16 +1,16 @@
 <script lang="ts">
   import type { TFile, Vault } from "obsidian";
 
+  import type { IDailyNoteSettings } from "./view";
   import { normalizedJoin } from "./template";
   import { getNumberOfDots } from "./ui/utils";
 
   export let activeFile: string = null;
   export let vault: Vault;
+  export let dailyNoteSettings: IDailyNoteSettings;
   export let openOrCreateDailyNote: (filename: string) => void;
 
-  export let directory: string;
-  export let format: string;
-
+  const DEFAULT_DATE_FORMAT = "YYYY-MM-DD";
   const today = (window as any).moment();
   export let displayedMonth = today.clone();
 
@@ -36,10 +36,12 @@
         }
 
         const date = displayedMonth.clone().date(dayOfMonth);
-        const formattedDate = date.format(format);
+        const formattedDate = date.format(
+          dailyNoteSettings.format || DEFAULT_DATE_FORMAT
+        );
         const baseFilename = `${formattedDate}.md`;
         const fileForDay = vault.getAbstractFileByPath(
-          normalizedJoin(directory, baseFilename)
+          normalizedJoin(dailyNoteSettings.folder, baseFilename)
         ) as TFile;
 
         week.push({

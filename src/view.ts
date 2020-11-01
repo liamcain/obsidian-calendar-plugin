@@ -6,13 +6,11 @@ import { VIEW_TYPE_CALENDAR } from "./constants";
 import { createDailyNote, normalize, normalizedJoin } from "./template";
 import { modal } from "./ui";
 
-interface IDailyNoteSettings {
+export interface IDailyNoteSettings {
   folder?: string;
   format?: string;
   template?: string;
 }
-
-const DEFAULT_DATE_FORMAT = "YYYY-MM-DD";
 
 export default class CalendarView extends View {
   calendar: Calendar;
@@ -61,8 +59,7 @@ export default class CalendarView extends View {
       target: this.containerEl,
       props: {
         activeFile,
-        directory: this.dailyNoteSettings.folder,
-        format: this.dailyNoteSettings.format || DEFAULT_DATE_FORMAT,
+        dailyNoteSettings: this.dailyNoteSettings,
         openOrCreateDailyNote: this._openOrCreateDailyNote,
         vault,
       },
