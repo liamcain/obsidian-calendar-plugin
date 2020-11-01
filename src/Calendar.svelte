@@ -76,7 +76,14 @@
 
   // 1 minute heartbeat to keep `today` reflecting the current day
   setInterval(() => {
+    const isViewingCurrentMonth = today.isSame(displayedMonth);
     today = (window as any).moment();
+
+    if (isViewingCurrentMonth) {
+      // if it's midnight on the last day of the month, this will
+      // update the display to show the new month.
+      displayedMonth = today.clone();
+    }
   }, 1000 * 60);
 </script>
 
