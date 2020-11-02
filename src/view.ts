@@ -1,12 +1,13 @@
-import { FileView, TFile, View, WorkspaceLeaf } from "obsidian";
+import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
 
 import Calendar from "./Calendar.svelte";
 import { DEFAULT_DATE_FORMAT, VIEW_TYPE_CALENDAR } from "./constants";
 import { normalizedJoin } from "./path";
-import { IDailyNoteSettings, IMoment, createDailyNote } from "./template";
+import type { IDailyNoteSettings } from "./settings";
+import { IMoment, createDailyNote } from "./template";
 import { modal } from "./ui";
 
-export default class CalendarView extends View {
+export default class CalendarView extends ItemView {
   calendar: Calendar;
   dailyNoteSettings: IDailyNoteSettings;
 
@@ -50,7 +51,7 @@ export default class CalendarView extends View {
       : null;
 
     this.calendar = new Calendar({
-      target: this.containerEl,
+      target: (this as any).contentEl,
       props: {
         activeFile,
         dailyNoteSettings: this.dailyNoteSettings,
