@@ -3,7 +3,8 @@
 
   import { DEFAULT_DATE_FORMAT } from "./constants";
   import { normalizedJoin } from "./path";
-  import type { IDailyNoteSettings, IMoment } from "./template";
+  import type { IDailyNoteSettings } from "./settings";
+  import type { IMoment } from "./template";
   import { getNumberOfDots } from "./ui/utils";
 
   export let activeFile: string = null;
@@ -41,7 +42,7 @@
         );
         const baseFilename = `${formattedDate}.md`;
         const fileForDay = vault.getAbstractFileByPath(
-          normalizedJoin(dailyNoteSettings.folder, baseFilename)
+          normalizedJoin(dailyNoteSettings.folder || "", baseFilename)
         ) as TFile;
 
         week.push({

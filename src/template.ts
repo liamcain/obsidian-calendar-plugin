@@ -2,12 +2,7 @@ import { App, Notice, TFile } from "obsidian";
 
 import { DEFAULT_DATE_FORMAT } from "./constants";
 import { normalize, normalizedJoin } from "./path";
-
-export interface IDailyNoteSettings {
-  folder?: string;
-  format?: string;
-  template?: string;
-}
+import type { IDailyNoteSettings } from "./settings";
 
 export interface IMoment {
   format: (format: string) => string;

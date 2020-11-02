@@ -4,6 +4,12 @@ This plugin for [Obsidian](https://obsidian.md/) creates a simple Calendar view 
 
 ![screenshot-full](https://raw.githubusercontent.com/liamcain/obsidian-calendar-plugin/master/images/screenshot-full.png)
 
+## Usage
+
+After enabling the plugin in the settings menu, you should see the calendar view appear in the right sidebar.
+
+The plugin reads your Daily Note settings to know your date format, your daily note template location, and the location for new daily notes it creates.
+
 ## Features
 
 - Go to any **daily note**
@@ -38,7 +44,7 @@ The following CSS Variables can be overridden in your `obsidian.css` file.
 
 ## Compatibility
 
-`obsidian-calendar-plugin` currently requires Obsidian v0.9.9 to work properly.
+`obsidian-calendar-plugin` currently requires Obsidian v0.9.9 or above to work properly.
 
 ## Installation
 
