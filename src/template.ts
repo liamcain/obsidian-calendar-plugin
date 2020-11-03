@@ -2,19 +2,29 @@ import { App, Notice, TFile } from "obsidian";
 
 import { DEFAULT_DATE_FORMAT } from "./constants";
 import { normalize, normalizedJoin } from "./path";
-import type { IDailyNoteSettings } from "./settings";
+import {
+  getDailyNoteTemplatePath,
+  getDateFormat,
+  getNoteFolder,
+  IDailyNoteSettings,
+  ISettings,
+} from "./settings";
 
 export interface IMoment {
+  add: (value: number, prop: string) => IMoment;
+  clone: () => IMoment;
+  date: (date: number) => IMoment;
+  daysInMonth: () => number;
   format: (format: string) => string;
+  isoWeekday: () => number;
+  subtract: (value: number, prop: string) => IMoment;
 }
 
-function getDailyNoteTemplateContents(
-  dailyNoteSettings: IDailyNoteSettings
-): Promise<string> {
+function getDailyNoteTemplateContents(settings: ISettings): Promise<string> {
   const app = (<any>window).app as App;
   const { vault } = app;
 
-  let templatePath = dailyNoteSettings.template || "";
+  let templatePath = getDailyNoteTemplatePath(settings);
   if (!templatePath) {
     return Promise.resolve("");
   }
@@ -44,18 +54,15 @@ function getDailyNoteTemplateContents(
  */
 export async function createDailyNote(
   date: IMoment,
-  dailyNoteSettings: IDailyNoteSettings
+  settings: ISettings
 ): Promise<TFile> {
   const app = (<any>window).app as App;
   const moment = (<any>window).moment;
   const { vault } = app;
 
-  const { folder = "" } = dailyNoteSettings;
-  const format = dailyNoteSettings.format || DEFAULT_DATE_FORMAT;
-
-  const templateContents = await getDailyNoteTemplateContents(
-    dailyNoteSettings
-  );
+  const folder = getNoteFolder(settings);
+  const format = getDateFormat(settings);
+  const templateContents = await getDailyNoteTemplateContents(settings);
 
   const filename = date.format(format);
   const normalizedPath = normalizedJoin(folder, `${filename}.md`);

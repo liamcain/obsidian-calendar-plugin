@@ -1,5 +1,7 @@
-import { App, Notice, PluginSettingTab, Setting } from "obsidian";
+import { App, PluginSettingTab, Setting } from "obsidian";
 import { writable } from "svelte/store";
+
+import { DEFAULT_DATE_FORMAT } from "./constants";
 
 import type CalendarPlugin from "./main";
 
@@ -10,20 +12,41 @@ export interface IDailyNoteSettings {
 }
 
 export interface ISettings {
-  useDailyNoteSettings: boolean;
+  shouldStartWeekOnMonday: boolean;
+}
 
-  folder?: string;
-  format?: string;
-  template?: string;
+export function getNoteFolder(settings: ISettings): string {
+  const folder = getDailyNoteSettings().folder;
+  return folder || "";
+}
+
+export function getDateFormat(settings: ISettings): string {
+  const format = getDailyNoteSettings().format;
+  return format || DEFAULT_DATE_FORMAT;
+}
+
+export function getDailyNoteTemplatePath(settings: ISettings): string {
+  const template = getDailyNoteSettings().template;
+  return template || "";
 }
 
 export const SettingsInstance = writable<ISettings>({
-  useDailyNoteSettings: true,
-
-  folder: null,
-  format: null,
-  template: null,
+  shouldStartWeekOnMonday: false,
 });
+
+/**
+ * Read the user settings for the `daily-notes` plugin
+ * to keep behavior of creating a new note in-sync.
+ */
+export function getDailyNoteSettings(): IDailyNoteSettings {
+  try {
+    // XXX: Access private API for internal plugins
+    const app = (window as any).app;
+    return app.internalPlugins.plugins["daily-notes"].instance.options;
+  } catch (err) {
+    console.info("No custom daily note settings found!", err);
+  }
+}
 
 function appHasDailyNotesPluginLoaded(app: App) {
   const dailyNotesPlugin = (app as any).internalPlugins.plugins["daily-notes"];
@@ -39,71 +62,32 @@ export class CalendarSettingsTab extends PluginSettingTab {
   }
 
   display() {
-    const { app, containerEl, plugin } = this;
+    this.containerEl.empty();
 
-    containerEl.empty();
+    this.addStartWeekOnMondaySetting();
 
-    if (!appHasDailyNotesPluginLoaded(app)) {
-      containerEl.createEl("h2", {
+    if (!appHasDailyNotesPluginLoaded(this.app)) {
+      this.containerEl.createEl("h3", {
         text: "⚠️ Daily Notes plugin not enabled",
       });
-      containerEl.createEl("p", {
+      this.containerEl.createEl("p", {
         text:
           "The calendar is best used in conjunction with the Daily Notes plugin. Enable it in your plugin settings for a more optimal experience.",
       });
-    } else {
-      this.useDailyNoteSettings();
-    }
-
-    if (!plugin.options.useDailyNoteSettings) {
-      this.customNoteSettings();
     }
   }
 
-  useDailyNoteSettings() {
+  addStartWeekOnMondaySetting() {
     new Setting(this.containerEl)
-      .setName("Use Daily Note settings")
-      .setDesc(
-        "Disable if you want to use custom settings that vary from your Daily Note configuration."
-      )
+      .setName("Start week on Monday")
+      .setDesc("Enable this to show Monday as the first day on the calendar")
       .addToggle((toggle) => {
-        toggle.setValue(this.plugin.options.useDailyNoteSettings);
+        toggle.setValue(this.plugin.options.shouldStartWeekOnMonday);
         toggle.onChange(async (value) => {
-          this.plugin.writeOptions((old) => (old.useDailyNoteSettings = value));
-          this.display();
+          this.plugin.writeOptions(
+            (old) => (old.shouldStartWeekOnMonday = value)
+          );
         });
       });
-  }
-
-  customNoteSettings() {
-    new Setting(this.containerEl)
-      .setName("Template path")
-      .setDesc("Choose the file to use as a template.")
-      .addText((toggle) => {
-        toggle.setValue(this.plugin.options.template);
-        toggle.setPlaceholder("Example: folder/note");
-        toggle.onChange((value) => {
-          this.plugin.writeOptions((old) => (old.template = value));
-        });
-      });
-
-    new Setting(this.containerEl)
-      .setName("Folder")
-      .setDesc("New daily notes will be placed here.")
-      .addText((toggle) => {
-        toggle.setValue(this.plugin.options.folder);
-        toggle.setPlaceholder("Example: folder 1/folder");
-        toggle.onChange((value) => {
-          this.plugin.writeOptions((old) => (old.folder = value));
-        });
-      });
-
-    new Setting(this.containerEl).setName("Date Format").addText((toggle) => {
-      toggle.setValue(this.plugin.options.format);
-      toggle.setPlaceholder("YYYY-MM-DD");
-      toggle.onChange((value) => {
-        this.plugin.writeOptions((old) => (old.format = value));
-      });
-    });
   }
 }
