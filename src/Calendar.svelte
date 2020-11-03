@@ -41,7 +41,7 @@
         );
         const baseFilename = `${formattedDate}.md`;
         const fileForDay = vault.getAbstractFileByPath(
-          normalizedJoin(dailyNoteSettings.folder, baseFilename)
+          normalizedJoin(dailyNoteSettings.folder || "", baseFilename)
         ) as TFile;
 
         week.push({
