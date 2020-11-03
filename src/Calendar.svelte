@@ -100,9 +100,7 @@
 
   onDestroy(() => {
     settingsUnsubscribe();
-    if (heartbeat) {
-      clearInterval(heartbeat);
-    }
+    clearInterval(heartbeat);
   });
 </script>
 
@@ -125,7 +123,8 @@
   }
 
   .container {
-    overflow-y: scroll;
+    margin-bottom: 24px;
+    overflow-y: auto;
     padding: 0 16px;
   }
 
