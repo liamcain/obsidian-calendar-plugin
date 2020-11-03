@@ -1,5 +1,6 @@
-import { App, Notice, PluginSettingTab, Setting } from "obsidian";
+import { App, PluginSettingTab, Setting } from "obsidian";
 import { writable } from "svelte/store";
+import { DEFAULT_DATE_FORMAT } from "./constants";
 
 import type CalendarPlugin from "./main";
 
@@ -11,6 +12,7 @@ export interface IDailyNoteSettings {
 
 export interface ISettings {
   useDailyNoteSettings: boolean;
+  shouldStartWeekOnMonday: boolean;
 
   folder?: string;
   format?: string;
@@ -19,11 +21,26 @@ export interface ISettings {
 
 export const SettingsInstance = writable<ISettings>({
   useDailyNoteSettings: true,
+  shouldStartWeekOnMonday: false,
 
   folder: null,
   format: null,
   template: null,
 });
+
+/**
+ * Read the user settings for the `daily-notes` plugin
+ * to keep behavior of creating a new note in-sync.
+ */
+export function getDailyNoteSettings(): IDailyNoteSettings {
+  try {
+    // XXX: Access private API for internal plugins
+    const app = (window as any).app;
+    return app.internalPlugins.plugins["daily-notes"].instance.options;
+  } catch (err) {
+    console.info("No custom daily note settings found!", err);
+  }
+}
 
 function appHasDailyNotesPluginLoaded(app: App) {
   const dailyNotesPlugin = (app as any).internalPlugins.plugins["daily-notes"];
@@ -43,6 +60,8 @@ export class CalendarSettingsTab extends PluginSettingTab {
 
     containerEl.empty();
 
+    this.startWeekOnMonday();
+
     if (!appHasDailyNotesPluginLoaded(app)) {
       containerEl.createEl("h2", {
         text: "⚠️ Daily Notes plugin not enabled",
@@ -55,9 +74,26 @@ export class CalendarSettingsTab extends PluginSettingTab {
       this.useDailyNoteSettings();
     }
 
-    if (!plugin.options.useDailyNoteSettings) {
+    if (
+      !appHasDailyNotesPluginLoaded(app) ||
+      !plugin.options.useDailyNoteSettings
+    ) {
       this.customNoteSettings();
     }
+  }
+
+  startWeekOnMonday() {
+    new Setting(this.containerEl)
+      .setName("Start week on Monday")
+      .setDesc("Enable this to show Monday as the first day on the calendar")
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.options.shouldStartWeekOnMonday);
+        toggle.onChange(async (value) => {
+          this.plugin.writeOptions(
+            (old) => (old.shouldStartWeekOnMonday = value)
+          );
+        });
+      });
   }
 
   useDailyNoteSettings() {
@@ -106,4 +142,25 @@ export class CalendarSettingsTab extends PluginSettingTab {
       });
     });
   }
+}
+
+export function getNoteFolder(settings: ISettings): string {
+  const folder = settings.useDailyNoteSettings
+    ? getDailyNoteSettings().folder
+    : settings.folder;
+  return folder || "";
+}
+
+export function getDateFormat(settings: ISettings): string {
+  const format = settings.useDailyNoteSettings
+    ? getDailyNoteSettings().format
+    : settings.format;
+  return format || DEFAULT_DATE_FORMAT;
+}
+
+export function getDailyNoteTemplatePath(settings: ISettings): string {
+  const template = settings.useDailyNoteSettings
+    ? getDailyNoteSettings().template
+    : settings.template;
+  return template || "";
 }

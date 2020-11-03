@@ -6,7 +6,7 @@ import CalendarView from "./view";
 
 export default class CalendarPlugin extends Plugin {
   public options: ISettings;
-  view: CalendarView;
+  private view: CalendarView;
 
   async onload() {
     SettingsInstance.subscribe((value) => {
@@ -15,7 +15,8 @@ export default class CalendarPlugin extends Plugin {
 
     this.registerView(
       VIEW_TYPE_CALENDAR,
-      (leaf: WorkspaceLeaf) => (this.view = new CalendarView(leaf))
+      (leaf: WorkspaceLeaf) =>
+        (this.view = new CalendarView(leaf, this.options))
     );
 
     this.registerEvent(
