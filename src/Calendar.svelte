@@ -123,7 +123,6 @@
   }
 
   .container {
-    margin-bottom: 24px;
     overflow-y: auto;
     padding: 0 16px;
   }

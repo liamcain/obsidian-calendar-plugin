@@ -13,6 +13,7 @@ export interface IDailyNoteSettings {
 export interface ISettings {
   useDailyNoteSettings: boolean;
   shouldStartWeekOnMonday: boolean;
+  dotMeaning: "links" | "backlinks" | "wordcount" | "todos";
 
   folder?: string;
   format?: string;
@@ -22,6 +23,7 @@ export interface ISettings {
 export const SettingsInstance = writable<ISettings>({
   useDailyNoteSettings: true,
   shouldStartWeekOnMonday: false,
+  dotMeaning: "wordcount",
 
   folder: null,
   format: null,
@@ -98,7 +100,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
     new Setting(this.containerEl)
       .setName("Use Daily Note settings")
       .setDesc(
-        "Disable if you want to use custom settings that vary from your Daily Note configuration."
+        "Disable if you want to use custom settings that differ from your Daily Note configuration."
       )
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.options.useDailyNoteSettings);
@@ -113,10 +115,10 @@ export class CalendarSettingsTab extends PluginSettingTab {
     new Setting(this.containerEl)
       .setName("Template path")
       .setDesc("Choose the file to use as a template.")
-      .addText((toggle) => {
-        toggle.setValue(this.plugin.options.template);
-        toggle.setPlaceholder("Example: folder/note");
-        toggle.onChange((value) => {
+      .addText((text) => {
+        text.setValue(this.plugin.options.template);
+        text.setPlaceholder("Example: folder/note");
+        text.onChange((value) => {
           this.plugin.writeOptions((old) => (old.template = value));
         });
       });
@@ -124,21 +126,23 @@ export class CalendarSettingsTab extends PluginSettingTab {
     new Setting(this.containerEl)
       .setName("Folder")
       .setDesc("New daily notes will be placed here.")
-      .addText((toggle) => {
-        toggle.setValue(this.plugin.options.folder);
-        toggle.setPlaceholder("Example: folder 1/folder");
-        toggle.onChange((value) => {
+      .addText((text) => {
+        text.setValue(this.plugin.options.folder);
+        text.setPlaceholder("Example: folder 1/folder");
+        text.onChange((value) => {
           this.plugin.writeOptions((old) => (old.folder = value));
         });
       });
 
-    new Setting(this.containerEl).setName("Date Format").addText((toggle) => {
-      toggle.setValue(this.plugin.options.format);
-      toggle.setPlaceholder("YYYY-MM-DD");
-      toggle.onChange((value) => {
-        this.plugin.writeOptions((old) => (old.format = value));
+    new Setting(this.containerEl)
+      .setName("Date Format")
+      .addMomentFormat((momentText) => {
+        momentText.setValue(this.plugin.options.format);
+        momentText.setDefaultFormat("YYYY-MM-DD");
+        momentText.onChange((value) => {
+          this.plugin.writeOptions((old) => (old.format = value));
+        });
       });
-    });
   }
 }
 
