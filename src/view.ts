@@ -104,7 +104,7 @@ export default class CalendarView extends ItemView {
       return;
     }
 
-    await workspace.activeLeaf.openFile(fileObj);
+    await workspace.getUnpinnedLeaf().openFile(fileObj);
     this.calendar.$set({
       activeFile: fileObj.basename,
     });

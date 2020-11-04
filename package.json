@@ -6,7 +6,8 @@
   "main": "main.js",
   "license": "MIT",
   "scripts": {
-    "build": "svelte-check && rollup -c"
+    "build": "svelte-check && rollup -c",
+    "test": "jest"
   },
   "dependencies": {
     "clsx": "1.1.1",
@@ -16,15 +17,41 @@
     "tslib": "2.0.3"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.12.1",
     "@rollup/plugin-commonjs": "16.0.0",
     "@rollup/plugin-node-resolve": "10.0.0",
     "@rollup/plugin-typescript": "5.0.2",
+    "@testing-library/jest-dom": "^5.11.5",
+    "@testing-library/svelte": "^3.0.0",
     "@tsconfig/svelte": "1.0.10",
+    "@types/jest": "^26.0.15",
+    "@types/node": "14.14.6",
+    "babel-jest": "^26.6.2",
+    "jest": "^26.6.2",
     "rollup": "2.32.1",
     "rollup-plugin-svelte": "6.1.0",
+    "spectron": "12.0.0",
     "svelte-check": "1.1.6",
+    "svelte-jester": "^1.1.5",
     "svelte-preprocess": "4.5.2",
-    "typescript": "4.0.5",
-    "@types/node": "14.14.6"
+    "ts-jest": "^26.4.3",
+    "typescript": "4.0.5"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.svelte$": [
+        "svelte-jester",
+        {
+          "preprocess": true
+        }
+      ],
+      "^.+\\.ts$": "ts-jest",
+      "^.+\\.js$": "babel-jest"
+    },
+    "moduleFileExtensions": [
+      "js",
+      "ts",
+      "svelte"
+    ]
   }
 }
