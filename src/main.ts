@@ -7,9 +7,17 @@ import CalendarView from "./view";
 export default class CalendarPlugin extends Plugin {
   public options: ISettings;
   private view: CalendarView;
+  private settingsUnsubscribe: () => void;
+
+  onunload() {
+    this.settingsUnsubscribe();
+    this.app.workspace
+      .getLeavesOfType(VIEW_TYPE_CALENDAR)
+      .forEach((leaf) => leaf.detach());
+  }
 
   async onload() {
-    SettingsInstance.subscribe((value) => {
+    this.settingsUnsubscribe = SettingsInstance.subscribe((value) => {
       this.options = value;
     });
 
@@ -40,6 +48,7 @@ export default class CalendarPlugin extends Plugin {
     });
 
     await this.loadOptions();
+
     this.addSettingTab(new CalendarSettingsTab(this.app, this));
 
     if (this.app.workspace.layoutReady) {

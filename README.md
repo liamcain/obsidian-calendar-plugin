@@ -16,6 +16,10 @@ The plugin reads your Daily Note settings to know your date format, your daily n
 - Create new daily notes for days that don't have one. (This is helpful for when you need to backfill old notes or if you're planning ahead for future notes! This will use your current **daily note** template!)
 - Visualize your writing. Each day includes a meter to approximate how much you've written that day.
 
+## Settings
+
+- **Start week on Monday**: Update the Calendar view to show Monday as the first day of the week.
+
 ## Customization
 
 The following CSS Variables can be overridden in your `obsidian.css` file.
