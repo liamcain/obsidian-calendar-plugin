@@ -113,7 +113,7 @@ export default class CalendarView extends ItemView {
   async _createDailyNote(date: IMoment): Promise<void> {
     const dailyNote = await createDailyNote(date, this.settings);
 
-    this.app.workspace.activeLeaf.openFile(dailyNote);
+    this.app.workspace.getUnpinnedLeaf().openFile(dailyNote);
   }
 
   promptUserToCreateFile(date: IMoment, cb: () => void) {
