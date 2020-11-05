@@ -1,17 +1,27 @@
-import { FileView, TFile, View, WorkspaceLeaf } from "obsidian";
+import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
 
 import Calendar from "./Calendar.svelte";
-import { DEFAULT_DATE_FORMAT, VIEW_TYPE_CALENDAR } from "./constants";
+import { VIEW_TYPE_CALENDAR } from "./constants";
 import { normalizedJoin } from "./path";
-import { IDailyNoteSettings, IMoment, createDailyNote } from "./template";
+import {
+  getDailyNoteSettings,
+  getDateFormat,
+  getNoteFolder,
+  IDailyNoteSettings,
+  ISettings,
+} from "./settings";
+import { IMoment, createDailyNote } from "./template";
 import { modal } from "./ui";
 
-export default class CalendarView extends View {
-  calendar: Calendar;
-  dailyNoteSettings: IDailyNoteSettings;
+export default class CalendarView extends ItemView {
+  private calendar: Calendar;
+  private dailyNoteSettings: IDailyNoteSettings;
+  private settings: ISettings;
 
-  constructor(leaf: WorkspaceLeaf) {
+  constructor(leaf: WorkspaceLeaf, settings: ISettings) {
     super(leaf);
+
+    this.settings = settings;
 
     this._openOrCreateDailyNote = this._openOrCreateDailyNote.bind(this);
     this._createDailyNote = this._createDailyNote.bind(this);
@@ -43,14 +53,14 @@ export default class CalendarView extends View {
       workspace: { activeLeaf },
     } = this.app;
 
-    this.dailyNoteSettings = this.getDailyNoteSettings();
+    this.dailyNoteSettings = getDailyNoteSettings();
 
     const activeFile = activeLeaf
       ? (activeLeaf.view as FileView).file?.path
       : null;
 
     this.calendar = new Calendar({
-      target: this.containerEl,
+      target: (this as any).contentEl,
       props: {
         activeFile,
         dailyNoteSettings: this.dailyNoteSettings,
@@ -68,22 +78,8 @@ export default class CalendarView extends View {
     }
   }
 
-  /**
-   * Read the user settings for the `daily-notes` plugin
-   * to keep behavior of creating a new note in-sync.
-   */
-  getDailyNoteSettings(): IDailyNoteSettings {
-    try {
-      // XXX: Access private API for internal plugins
-      return (this.app as any).internalPlugins.plugins["daily-notes"].instance
-        .options;
-    } catch (err) {
-      console.info("No custom daily note settings found!", err);
-    }
-  }
-
   _getFormattedDate(date: IMoment): string {
-    const format = this.dailyNoteSettings.format || DEFAULT_DATE_FORMAT;
+    const format = getDateFormat(this.settings);
     return date.format(format);
   }
 
@@ -92,7 +88,7 @@ export default class CalendarView extends View {
 
     const baseFilename = this._getFormattedDate(date);
     const fullPath = normalizedJoin(
-      this.dailyNoteSettings.folder,
+      getNoteFolder(this.settings),
       `${baseFilename}.md`
     );
     const fileObj = vault.getAbstractFileByPath(fullPath) as TFile;
@@ -108,16 +104,16 @@ export default class CalendarView extends View {
       return;
     }
 
-    await workspace.activeLeaf.openFile(fileObj);
+    await workspace.getUnpinnedLeaf().openFile(fileObj);
     this.calendar.$set({
       activeFile: fileObj.basename,
     });
   }
 
   async _createDailyNote(date: IMoment): Promise<void> {
-    const dailyNote = await createDailyNote(date, this.dailyNoteSettings);
+    const dailyNote = await createDailyNote(date, this.settings);
 
-    this.app.workspace.activeLeaf.openFile(dailyNote);
+    this.app.workspace.getUnpinnedLeaf().openFile(dailyNote);
   }
 
   promptUserToCreateFile(date: IMoment, cb: () => void) {

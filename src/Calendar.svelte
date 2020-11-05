@@ -1,27 +1,42 @@
 <script lang="ts">
   import type { TFile, Vault } from "obsidian";
+  import { onDestroy } from "svelte";
 
-  import { DEFAULT_DATE_FORMAT } from "./constants";
   import { normalizedJoin } from "./path";
-  import type { IDailyNoteSettings, IMoment } from "./template";
+  import { getDateFormat, getNoteFolder, SettingsInstance } from "./settings";
+  import type { IMoment } from "./template";
   import { getNumberOfDots } from "./ui/utils";
 
   export let activeFile: string = null;
   export let vault: Vault;
-  export let dailyNoteSettings: IDailyNoteSettings;
+  export let displayedMonth: IMoment;
   export let openOrCreateDailyNote: (filename: string) => void;
 
-  let today = (window as any).moment();
-  export let displayedMonth = today.clone();
+  const moment = (window as any).moment;
 
   let month = [];
   let monthName: string;
+  let daysOfWeek = moment.weekdaysShort();
+  let today = moment();
+  displayedMonth = today.clone();
+
+  let settings = null;
+  let settingsUnsubscribe = SettingsInstance.subscribe((value) => {
+    settings = value;
+  });
 
   $: {
     month = [];
     const startDate = displayedMonth.clone().date(1);
-    const startOffset = (startDate.isoWeekday() + 1) % 7;
     const endDayOfMonth = startDate.daysInMonth();
+    const startOffset = settings.shouldStartWeekOnMonday
+      ? startDate.isoWeekday()
+      : (startDate.isoWeekday() + 1) % 7;
+
+    const [sunday, ...restOfWeek] = moment.weekdaysShort();
+    daysOfWeek = settings.shouldStartWeekOnMonday
+      ? [...restOfWeek, sunday]
+      : [sunday, ...restOfWeek];
 
     let dayOfMonth = 1;
     for (let weekNum = 0; weekNum <= 5; weekNum++) {
@@ -36,12 +51,9 @@
         }
 
         const date: IMoment = displayedMonth.clone().date(dayOfMonth);
-        const formattedDate = date.format(
-          dailyNoteSettings.format || DEFAULT_DATE_FORMAT
-        );
-        const baseFilename = `${formattedDate}.md`;
+        const formattedDate = date.format(getDateFormat(settings));
         const fileForDay = vault.getAbstractFileByPath(
-          normalizedJoin(dailyNoteSettings.folder || "", baseFilename)
+          normalizedJoin(getNoteFolder(settings), `${formattedDate}.md`)
         ) as TFile;
 
         week.push({
@@ -75,7 +87,7 @@
   }
 
   // 1 minute heartbeat to keep `today` reflecting the current day
-  setInterval(() => {
+  let heartbeat = setInterval(() => {
     const isViewingCurrentMonth = today.isSame(displayedMonth);
     today = (window as any).moment();
 
@@ -85,6 +97,11 @@
       displayedMonth = today.clone();
     }
   }, 1000 * 60);
+
+  onDestroy(() => {
+    settingsUnsubscribe();
+    clearInterval(heartbeat);
+  });
 </script>
 
 <style>
@@ -106,13 +123,15 @@
   }
 
   .container {
-    overflow-y: scroll;
+    overflow-y: auto;
     padding: 0 16px;
   }
 
   th,
   td {
+    height: 100%;
     text-align: center;
+    vertical-align: baseline;
   }
 
   .title {
@@ -140,13 +159,14 @@
     font-size: 0.6rem;
     letter-spacing: 1px;
     padding: 4px 8px;
+    text-transform: uppercase;
   }
 
   td {
     transition: background-color 0.1s ease-in;
-    cursor: pointer;
     background-color: var(--color-background-day);
     color: var(--color-text-day);
+    cursor: pointer;
     font-size: 0.8em;
     padding: 8px;
   }
@@ -158,7 +178,6 @@
   }
 
   .dot-container {
-    height: 6px;
     line-height: 6px;
   }
 
@@ -167,11 +186,7 @@
     fill: var(--color-dot);
     height: 6px;
     width: 6px;
-    margin-right: 2px;
-  }
-
-  .dot:last-of-type {
-    margin-right: 0;
+    margin: 0 1px;
   }
 
   .ml-2 {
@@ -221,13 +236,9 @@
   <table class="table">
     <thead>
       <tr>
-        <th>SUN</th>
-        <th>MON</th>
-        <th>TUE</th>
-        <th>WED</th>
-        <th>THU</th>
-        <th>FRI</th>
-        <th>SAT</th>
+        {#each daysOfWeek as dayOfWeek}
+          <th>{dayOfWeek}</th>
+        {/each}
       </tr>
     </thead>
     <tbody>
