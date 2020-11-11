@@ -374,8 +374,8 @@ normalize-path@^3.0.0, normalize-path@~3.0.0:
   integrity sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==
 
 obsidian@obsidianmd/obsidian-api#master:
-  version "0.9.8"
-  resolved "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/3ba031ddba5d7ad7e98a5635c0a5880412b7dcf7"
+  version "0.9.12"
+  resolved "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/d36f67d0f3def992e407697ea1045d901cca81be"
   dependencies:
     "@types/codemirror" "0.0.98"
 

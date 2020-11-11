@@ -101,7 +101,7 @@ export default class CalendarView extends ItemView {
     if (!fileObj) {
       // File doesn't exist
       if (this.settings.shouldConfirmBeforeCreate) {
-        this.promptUserToCreateFile(date, () => {
+        this.promptUserToCreateFile(date, inNewSplit, () => {
           // If the user presses 'Confirm', update the calendar view
           this.calendar.$set({
             activeFile: baseFilename,
@@ -109,7 +109,7 @@ export default class CalendarView extends ItemView {
           });
         });
       } else {
-        await this._createDailyNote(date);
+        await this._createDailyNote(date, inNewSplit);
         this.calendar.$set({
           activeFile: baseFilename,
           vault,
@@ -128,19 +128,22 @@ export default class CalendarView extends ItemView {
     });
   }
 
-  async _createDailyNote(date: IMoment): Promise<void> {
+  async _createDailyNote(date: IMoment, inNewSplit: boolean): Promise<void> {
     const dailyNote = await createDailyNote(date, this.settings);
+    const leaf = inNewSplit
+      ? this.app.workspace.splitActiveLeaf()
+      : this.app.workspace.getUnpinnedLeaf();
 
-    this.app.workspace.getUnpinnedLeaf().openFile(dailyNote);
+    await leaf.openFile(dailyNote);
   }
 
-  promptUserToCreateFile(date: IMoment, cb: () => void) {
+  promptUserToCreateFile(date: IMoment, inNewSplit: boolean, cb: () => void) {
     const filename = this._getFormattedDate(date);
 
     modal.createConfirmationDialog(this.app, {
       cta: "Create",
       onAccept: async () => {
-        await this._createDailyNote(date);
+        await this._createDailyNote(date, inNewSplit);
         if (cb) {
           cb();
         }
