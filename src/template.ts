@@ -1,12 +1,10 @@
 import { App, Notice, TFile } from "obsidian";
 
-import { DEFAULT_DATE_FORMAT } from "./constants";
 import { normalize, normalizedJoin } from "./path";
 import {
   getDailyNoteTemplatePath,
   getDateFormat,
   getNoteFolder,
-  IDailyNoteSettings,
   ISettings,
 } from "./settings";
 
@@ -24,8 +22,8 @@ function getDailyNoteTemplateContents(settings: ISettings): Promise<string> {
   const app = (<any>window).app as App;
   const { vault } = app;
 
-  let templatePath = getDailyNoteTemplatePath(settings);
-  if (!templatePath) {
+  let templatePath = normalize(getDailyNoteTemplatePath(settings));
+  if (templatePath === "/") {
     return Promise.resolve("");
   }
 
@@ -34,9 +32,7 @@ function getDailyNoteTemplateContents(settings: ISettings): Promise<string> {
   }
 
   try {
-    const templateFile = vault.getAbstractFileByPath(
-      normalize(templatePath)
-    ) as TFile;
+    const templateFile = vault.getAbstractFileByPath(templatePath) as TFile;
     return vault.cachedRead(templateFile);
   } catch (err) {
     console.error(`Failed to read daily note template '${templatePath}'`, err);

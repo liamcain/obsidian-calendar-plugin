@@ -27,7 +27,7 @@ export function getDateFormat(settings: ISettings): string {
 }
 
 export function getDailyNoteTemplatePath(settings: ISettings): string {
-  const template = getDailyNoteSettings().template;
+  const template = getDailyNoteSettings().template.trim();
   return template || "";
 }
 
