@@ -5,12 +5,15 @@
   import { normalizedJoin } from "./path";
   import { getDateFormat, getNoteFolder, SettingsInstance } from "./settings";
   import type { IMoment } from "./template";
-  import { getNumberOfDots } from "./ui/utils";
+  import { getNumberOfDots, isMetaPressed } from "./ui/utils";
 
   export let activeFile: string = null;
   export let vault: Vault;
   export let displayedMonth: IMoment;
-  export let openOrCreateDailyNote: (filename: string) => void;
+  export let openOrCreateDailyNote: (
+    filename: string,
+    inNewSplit: boolean
+  ) => void;
 
   const moment = (window as any).moment;
 
@@ -251,8 +254,8 @@
               <td
                 class:today={date.isSame(today)}
                 class:active={activeFile === formattedDate}
-                on:click={() => {
-                  openOrCreateDailyNote(date);
+                on:click={(e) => {
+                  openOrCreateDailyNote(date, isMetaPressed(e));
                 }}>
                 {dayOfMonth}
 

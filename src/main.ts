@@ -7,19 +7,19 @@ import CalendarView from "./view";
 export default class CalendarPlugin extends Plugin {
   public options: ISettings;
   private view: CalendarView;
-  private settingsUnsubscribe: () => void;
 
   onunload() {
-    this.settingsUnsubscribe();
     this.app.workspace
       .getLeavesOfType(VIEW_TYPE_CALENDAR)
       .forEach((leaf) => leaf.detach());
   }
 
   async onload() {
-    this.settingsUnsubscribe = SettingsInstance.subscribe((value) => {
-      this.options = value;
-    });
+    this.register(
+      SettingsInstance.subscribe((value) => {
+        this.options = value;
+      })
+    );
 
     this.registerView(
       VIEW_TYPE_CALENDAR,
@@ -27,18 +27,17 @@ export default class CalendarPlugin extends Plugin {
         (this.view = new CalendarView(leaf, this.options))
     );
 
-    this.registerEvent(
-      this.app.vault.on("delete", () => {
-        if (this.view) {
-          this.view.redraw();
-        }
-      })
-    );
-
     this.addCommand({
       id: "show-calendar-view",
       name: "Open view",
-      callback: this.initLeaf.bind(this),
+      checkCallback: (checking: boolean) => {
+        if (checking) {
+          return (
+            this.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR).length === 0
+          );
+        }
+        this.initLeaf();
+      },
     });
 
     this.addCommand({

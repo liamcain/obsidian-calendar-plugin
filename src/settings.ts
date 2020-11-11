@@ -13,6 +13,7 @@ export interface IDailyNoteSettings {
 
 export interface ISettings {
   shouldStartWeekOnMonday: boolean;
+  shouldConfirmBeforeCreate: boolean;
 }
 
 export function getNoteFolder(settings: ISettings): string {
@@ -32,6 +33,7 @@ export function getDailyNoteTemplatePath(settings: ISettings): string {
 
 export const SettingsInstance = writable<ISettings>({
   shouldStartWeekOnMonday: false,
+  shouldConfirmBeforeCreate: true,
 });
 
 /**
@@ -65,6 +67,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
     this.containerEl.empty();
 
     this.addStartWeekOnMondaySetting();
+    this.addConfirmCreateSetting();
 
     if (!appHasDailyNotesPluginLoaded(this.app)) {
       this.containerEl.createEl("h3", {
@@ -86,6 +89,20 @@ export class CalendarSettingsTab extends PluginSettingTab {
         toggle.onChange(async (value) => {
           this.plugin.writeOptions(
             (old) => (old.shouldStartWeekOnMonday = value)
+          );
+        });
+      });
+  }
+
+  addConfirmCreateSetting() {
+    new Setting(this.containerEl)
+      .setName("Confirm before creating new note")
+      .setDesc("Show a confirmation modal before creating a new note")
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.options.shouldConfirmBeforeCreate);
+        toggle.onChange(async (value) => {
+          this.plugin.writeOptions(
+            (old) => (old.shouldConfirmBeforeCreate = value)
           );
         });
       });

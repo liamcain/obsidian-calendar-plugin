@@ -12,7 +12,7 @@ export default {
     file: "main.js",
     exports: "default",
   },
-  external: ["obsidian", "fs", "path"],
+  external: ["obsidian", "fs", "os", "path"],
   plugins: [
     svelte({
       preprocess: autoPreprocess(),

@@ -1,3 +1,4 @@
+import * as os from "os";
 import type { TFile } from "obsidian";
 
 const NUM_MAX_DOTS = 6;
@@ -24,4 +25,12 @@ export function getNumberOfDots(dailyNoteFile?: TFile): number {
 
   const numDots = Math.floor(Math.log(fileSize / 30));
   return isNumber(numDots) ? clamp(numDots, 1, NUM_MAX_DOTS) : 0;
+}
+
+function isMacOS() {
+  return os.platform() === "darwin";
+}
+
+export function isMetaPressed(e: MouseEvent) {
+  return isMacOS() ? e.metaKey : e.ctrlKey;
 }

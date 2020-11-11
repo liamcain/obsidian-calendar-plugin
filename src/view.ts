@@ -26,6 +26,8 @@ export default class CalendarView extends ItemView {
     this._openOrCreateDailyNote = this._openOrCreateDailyNote.bind(this);
     this._createDailyNote = this._createDailyNote.bind(this);
     this.redraw = this.redraw.bind(this);
+
+    this.registerEvent(this.app.vault.on("delete", this.redraw));
   }
 
   getViewType() {
@@ -83,7 +85,10 @@ export default class CalendarView extends ItemView {
     return date.format(format);
   }
 
-  async _openOrCreateDailyNote(date: IMoment): Promise<void> {
+  async _openOrCreateDailyNote(
+    date: IMoment,
+    inNewSplit: boolean
+  ): Promise<void> {
     const { vault, workspace } = this.app;
 
     const baseFilename = this._getFormattedDate(date);
@@ -94,17 +99,30 @@ export default class CalendarView extends ItemView {
     const fileObj = vault.getAbstractFileByPath(fullPath) as TFile;
 
     if (!fileObj) {
-      this.promptUserToCreateFile(date, () => {
-        // If the user presses 'Confirm', update the calendar view
+      // File doesn't exist
+      if (this.settings.shouldConfirmBeforeCreate) {
+        this.promptUserToCreateFile(date, () => {
+          // If the user presses 'Confirm', update the calendar view
+          this.calendar.$set({
+            activeFile: baseFilename,
+            vault,
+          });
+        });
+      } else {
+        await this._createDailyNote(date);
         this.calendar.$set({
           activeFile: baseFilename,
           vault,
         });
-      });
+      }
       return;
     }
 
-    await workspace.getUnpinnedLeaf().openFile(fileObj);
+    const leaf = inNewSplit
+      ? workspace.splitActiveLeaf()
+      : workspace.getUnpinnedLeaf();
+    await leaf.openFile(fileObj);
+
     this.calendar.$set({
       activeFile: fileObj.basename,
     });
@@ -121,12 +139,12 @@ export default class CalendarView extends ItemView {
 
     modal.createConfirmationDialog(this.app, {
       cta: "Create",
-      onAccept: () =>
-        this._createDailyNote(date).then(() => {
-          if (cb) {
-            cb();
-          }
-        }),
+      onAccept: async () => {
+        await this._createDailyNote(date);
+        if (cb) {
+          cb();
+        }
+      },
       text: `File ${filename} does not exist. Would you like to create it?`,
       title: "New Daily Note",
     });
