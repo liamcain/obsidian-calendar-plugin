@@ -18,7 +18,9 @@ export interface IMoment {
   subtract: (value: number, prop: string) => IMoment;
 }
 
-function getDailyNoteTemplateContents(settings: ISettings): Promise<string> {
+async function getDailyNoteTemplateContents(
+  settings: ISettings
+): Promise<string> {
   const app = (<any>window).app as App;
   const { vault } = app;
 
@@ -33,11 +35,12 @@ function getDailyNoteTemplateContents(settings: ISettings): Promise<string> {
 
   try {
     const templateFile = vault.getAbstractFileByPath(templatePath) as TFile;
-    return vault.cachedRead(templateFile);
+    const contents = await vault.cachedRead(templateFile);
+    return contents;
   } catch (err) {
     console.error(`Failed to read daily note template '${templatePath}'`, err);
     new Notice("Failed to read the daily note template");
-    return Promise.resolve("");
+    return "";
   }
 }
 
