@@ -18,7 +18,7 @@ export interface ISettings {
 
 export function getNoteFolder(settings: ISettings): string {
   const folder = getDailyNoteSettings().folder;
-  return folder || "";
+  return folder ? folder.trim() : "";
 }
 
 export function getDateFormat(settings: ISettings): string {
@@ -27,8 +27,8 @@ export function getDateFormat(settings: ISettings): string {
 }
 
 export function getDailyNoteTemplatePath(settings: ISettings): string {
-  const template = getDailyNoteSettings().template.trim();
-  return template || "";
+  const template = getDailyNoteSettings().template;
+  return template ? template.trim() : "";
 }
 
 export const SettingsInstance = writable<ISettings>({
