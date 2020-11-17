@@ -375,7 +375,7 @@ normalize-path@^3.0.0, normalize-path@~3.0.0:
 
 obsidian@obsidianmd/obsidian-api#master:
   version "0.9.12"
-  resolved "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/d36f67d0f3def992e407697ea1045d901cca81be"
+  resolved "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/1d21a27686b8c2eb50f2776cbb459705733f077e"
   dependencies:
     "@types/codemirror" "0.0.98"
 

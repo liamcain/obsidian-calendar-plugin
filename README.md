@@ -43,6 +43,7 @@ The following CSS Variables can be overridden in your `obsidian.css` file.
   --color-text-heading: var(--text-normal);
   --color-text-day: var(--text-normal);
   --color-text-today: var(--text-accent);
+  --color-text-today-active: var(--text-normal);
 }
 ```
 

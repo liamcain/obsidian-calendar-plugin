@@ -1,5 +1,6 @@
 import * as os from "os";
 import type { TFile } from "obsidian";
+import type { IMoment } from "../moment";
 
 const NUM_MAX_DOTS = 6;
 
@@ -33,4 +34,19 @@ function isMacOS() {
 
 export function isMetaPressed(e: MouseEvent) {
   return isMacOS() ? e.metaKey : e.ctrlKey;
+}
+
+export interface IDay {
+  date: IMoment;
+  dayOfMonth: number;
+  formattedDate: string;
+  numDots: number;
+  notePath: string;
+}
+
+export type IWeek = IDay[];
+
+export function getWeekNumber(week: IWeek): string {
+  const day = week.find((day) => !!day.date);
+  return day ? String(day.date.week()) : "";
 }

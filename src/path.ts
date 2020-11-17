@@ -1,31 +1,9 @@
+import { normalizePath } from "obsidian";
 import { join } from "path";
 
-export function normalize(path: string) {
-  // Always use forward slash
-  path = path.replace(/\\/g, "/");
-
-  // Strip start/end slash
-  while (path.startsWith("/") && path !== "/") {
-    path = path.substr(1);
+export function getNotePath(directory: string, filename: string) {
+  if (!filename.endsWith(".md")) {
+    filename += ".md";
   }
-  while (path.endsWith("/") && path !== "/") {
-    path = path.substr(0, path.length - 1);
-  }
-
-  // Use / for root
-  if (path === "") {
-    path = "/";
-  }
-
-  path = path
-    // Replace non-breaking spaces with regular spaces
-    .replace("\u00A0", " ")
-    // Normalize unicode to NFC form
-    .normalize("NFC");
-
-  return path;
-}
-
-export function normalizedJoin(directory: string, filename: string) {
-  return normalize(join(directory, filename));
+  return normalizePath(join(directory, filename));
 }

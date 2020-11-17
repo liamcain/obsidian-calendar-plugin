@@ -2,18 +2,26 @@
   import type { TFile, Vault } from "obsidian";
   import { onDestroy } from "svelte";
 
-  import { normalizedJoin } from "./path";
-  import { getDateFormat, getNoteFolder, SettingsInstance } from "./settings";
-  import type { IMoment } from "./template";
-  import { getNumberOfDots, isMetaPressed } from "./ui/utils";
+  import { getDailyNoteSettings } from "./dailyNotes";
+  import type { IMoment } from "./moment";
+  import { getNotePath } from "./path";
+  import { SettingsInstance } from "./settings";
+  import {
+    getNumberOfDots,
+    isMetaPressed,
+    IWeek,
+    getWeekNumber,
+  } from "./ui/utils";
 
   export let activeFile: string = null;
+  export let onHover: (targetEl: EventTarget, filepath: string) => void;
   export let vault: Vault;
   export let displayedMonth: IMoment;
   export let openOrCreateDailyNote: (
     filename: string,
     inNewSplit: boolean
   ) => void;
+  export let openOrCreateWeeklyNote: (week: IWeek, inNewSplit: boolean) => void;
 
   const moment = (window as any).moment;
 
@@ -24,6 +32,7 @@
   displayedMonth = today.clone();
 
   let settings = null;
+  let dailyNoteSettings = getDailyNoteSettings();
   let settingsUnsubscribe = SettingsInstance.subscribe((value) => {
     settings = value;
   });
@@ -33,8 +42,8 @@
     const startDate = displayedMonth.clone().date(1);
     const endDayOfMonth = startDate.daysInMonth();
     const startOffset = settings.shouldStartWeekOnMonday
-      ? startDate.isoWeekday()
-      : (startDate.isoWeekday() + 1) % 7;
+      ? startDate.weekday()
+      : startDate.weekday() + 1;
 
     const [sunday, ...restOfWeek] = moment.weekdaysShort();
     daysOfWeek = settings.shouldStartWeekOnMonday
@@ -54,16 +63,19 @@
         }
 
         const date: IMoment = displayedMonth.clone().date(dayOfMonth);
-        const formattedDate = date.format(getDateFormat(settings));
-        const fileForDay = vault.getAbstractFileByPath(
-          normalizedJoin(getNoteFolder(settings), `${formattedDate}.md`)
-        ) as TFile;
+        const formattedDate = date.format(dailyNoteSettings.format);
+        const dailyNotePath = getNotePath(
+          dailyNoteSettings.folder,
+          formattedDate
+        );
+        const fileForDay = vault.getAbstractFileByPath(dailyNotePath) as TFile;
 
         week.push({
           date,
           dayOfMonth,
           formattedDate,
           numDots: getNumberOfDots(fileForDay),
+          notePath: dailyNotePath,
         });
 
         dayOfMonth++;
@@ -77,15 +89,15 @@
     monthName = displayedMonth.format("MMM YYYY");
   }
 
-  function incrementMonth() {
+  function incrementMonth(): void {
     displayedMonth = displayedMonth.add(1, "months");
   }
 
-  function decrementMonth() {
+  function decrementMonth(): void {
     displayedMonth = displayedMonth.subtract(1, "months");
   }
 
-  function focusCurrentMonth() {
+  function focusCurrentMonth(): void {
     displayedMonth = today.clone();
   }
 
@@ -112,17 +124,20 @@
     --color-background-heading: transparent;
 
     --color-background-day: transparent;
-    --color-background-day-empty: var(--background-secondary-alt);
+    --color-background-day-empty: transparent;
     --color-background-day-active: var(--interactive-accent);
     --color-background-day-hover: var(--interactive-hover);
+    --color-background-weeknum: transparent;
 
     --color-dot: var(--text-muted);
-    --color-arrow: currentColor;
+    --color-arrow: var(--text-muted);
 
     --color-text-title: var(--text-normal);
-    --color-text-heading: var(--text-normal);
+    --color-text-heading: var(--text-muted);
     --color-text-day: var(--text-normal);
     --color-text-today: var(--text-accent);
+    --color-text-today-active: var(--text-normal);
+    --color-text-weeknum: var(--text-muted);
   }
 
   .container {
@@ -132,6 +147,7 @@
 
   th,
   td {
+    border-radius: 4px;
     height: 100%;
     text-align: center;
     vertical-align: baseline;
@@ -149,6 +165,18 @@
 
   .active {
     background-color: var(--color-background-day-active);
+  }
+
+  .active.today {
+    color: var(--color-text-today-active);
+  }
+
+  .week-num {
+    background-color: var(--color-background-weeknum);
+    border-right: 2px solid var(--background-modifier-border);
+    color: var(--color-text-weeknum);
+    font-size: 0.65em;
+    padding: 0;
   }
 
   .table {
@@ -205,7 +233,7 @@
     display: inline-block;
   }
   .arrow svg {
-    fill: var(--color-arrow);
+    color: var(--color-arrow);
     height: 16px;
     width: 16px;
   }
@@ -239,6 +267,9 @@
   <table class="table">
     <thead>
       <tr>
+        {#if settings.showWeeklyNote}
+          <th>W</th>
+        {/if}
         {#each daysOfWeek as dayOfWeek}
           <th>{dayOfWeek}</th>
         {/each}
@@ -247,7 +278,16 @@
     <tbody>
       {#each month as week}
         <tr>
-          {#each week as { dayOfMonth, date, formattedDate, numDots }}
+          {#if settings.showWeeklyNote}
+            <td
+              class="week-num"
+              on:click={(e) => {
+                openOrCreateWeeklyNote(week, isMetaPressed(e));
+              }}>
+              {getWeekNumber(week)}
+            </td>
+          {/if}
+          {#each week as { dayOfMonth, date, formattedDate, numDots, notePath }}
             {#if !dayOfMonth}
               <td />
             {:else}
@@ -256,6 +296,11 @@
                 class:active={activeFile === formattedDate}
                 on:click={(e) => {
                   openOrCreateDailyNote(date, isMetaPressed(e));
+                }}
+                on:pointerover={(e) => {
+                  if (isMetaPressed(e)) {
+                    onHover(e.target, notePath);
+                  }
                 }}>
                 {dayOfMonth}
 

@@ -1,59 +1,40 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import { writable } from "svelte/store";
 
-import { DEFAULT_DATE_FORMAT } from "./constants";
+import { DEFAULT_WEEK_FORMAT } from "./constants";
+import { appHasDailyNotesPluginLoaded, IDailyNoteSettings } from "./dailyNotes";
 
 import type CalendarPlugin from "./main";
-
-export interface IDailyNoteSettings {
-  folder?: string;
-  format?: string;
-  template?: string;
-}
 
 export interface ISettings {
   shouldStartWeekOnMonday: boolean;
   shouldConfirmBeforeCreate: boolean;
+
+  // Weekly Note settings
+  showWeeklyNote: boolean;
+  weeklyNoteFormat: string;
+  weeklyNoteTemplate: string;
+  weeklyNoteFolder: string;
 }
 
-export function getNoteFolder(settings: ISettings): string {
-  const folder = getDailyNoteSettings().folder;
-  return folder ? folder.trim() : "";
-}
-
-export function getDateFormat(settings: ISettings): string {
-  const format = getDailyNoteSettings().format;
-  return format || DEFAULT_DATE_FORMAT;
-}
-
-export function getDailyNoteTemplatePath(settings: ISettings): string {
-  const template = getDailyNoteSettings().template;
-  return template ? template.trim() : "";
+export function getWeeklyNoteSettings(settings: ISettings): IDailyNoteSettings {
+  return {
+    format: settings.weeklyNoteFormat || DEFAULT_WEEK_FORMAT,
+    folder: settings.weeklyNoteFolder ? settings.weeklyNoteFolder.trim() : "",
+    template: settings.weeklyNoteTemplate
+      ? settings.weeklyNoteTemplate.trim()
+      : "",
+  };
 }
 
 export const SettingsInstance = writable<ISettings>({
   shouldStartWeekOnMonday: false,
   shouldConfirmBeforeCreate: true,
+  showWeeklyNote: false,
+  weeklyNoteFormat: "",
+  weeklyNoteTemplate: "",
+  weeklyNoteFolder: "",
 });
-
-/**
- * Read the user settings for the `daily-notes` plugin
- * to keep behavior of creating a new note in-sync.
- */
-export function getDailyNoteSettings(): IDailyNoteSettings {
-  try {
-    // XXX: Access private API for internal plugins
-    const app = (window as any).app;
-    return app.internalPlugins.plugins["daily-notes"].instance.options;
-  } catch (err) {
-    console.info("No custom daily note settings found!", err);
-  }
-}
-
-function appHasDailyNotesPluginLoaded(app: App) {
-  const dailyNotesPlugin = (app as any).internalPlugins.plugins["daily-notes"];
-  return dailyNotesPlugin && dailyNotesPlugin.enabled;
-}
 
 export class CalendarSettingsTab extends PluginSettingTab {
   private plugin: CalendarPlugin;
@@ -66,8 +47,21 @@ export class CalendarSettingsTab extends PluginSettingTab {
   display() {
     this.containerEl.empty();
 
+    this.containerEl.createEl("h3", {
+      text: "General Settings",
+    });
     this.addStartWeekOnMondaySetting();
     this.addConfirmCreateSetting();
+    this.addShowWeeklyNoteSetting();
+
+    if (this.plugin.options.showWeeklyNote) {
+      this.containerEl.createEl("h3", {
+        text: "Weekly Note Settings",
+      });
+      this.addWeeklyNoteFormatSetting();
+      this.addWeeklyNoteFolderSetting();
+      this.addWeeklyNoteTemplateSetting();
+    }
 
     if (!appHasDailyNotesPluginLoaded(this.app)) {
       this.containerEl.createEl("h3", {
@@ -104,6 +98,58 @@ export class CalendarSettingsTab extends PluginSettingTab {
           this.plugin.writeOptions(
             (old) => (old.shouldConfirmBeforeCreate = value)
           );
+        });
+      });
+  }
+
+  addShowWeeklyNoteSetting() {
+    new Setting(this.containerEl)
+      .setName("Show week number")
+      .setDesc("Enable this to add a column with the week number")
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.options.showWeeklyNote);
+        toggle.onChange(async (value) => {
+          this.plugin.writeOptions((old) => (old.showWeeklyNote = value));
+          this.display(); // show/hide weekly settings
+        });
+      });
+  }
+
+  addWeeklyNoteFormatSetting() {
+    new Setting(this.containerEl)
+      .setName("Weekly note format")
+      .setDesc("For more syntax help, refer to format reference")
+      .addText((textfield) => {
+        textfield.setValue(this.plugin.options.weeklyNoteFormat);
+        textfield.setPlaceholder(DEFAULT_WEEK_FORMAT);
+        textfield.onChange(async (value) => {
+          this.plugin.writeOptions((old) => (old.weeklyNoteFormat = value));
+        });
+      });
+  }
+
+  addWeeklyNoteTemplateSetting() {
+    new Setting(this.containerEl)
+      .setName("Weekly note template")
+      .setDesc(
+        "Choose the file you want to use as the template for your weekly notes"
+      )
+      .addText((textfield) => {
+        textfield.setValue(this.plugin.options.weeklyNoteTemplate);
+        textfield.onChange(async (value) => {
+          this.plugin.writeOptions((old) => (old.weeklyNoteTemplate = value));
+        });
+      });
+  }
+
+  addWeeklyNoteFolderSetting() {
+    new Setting(this.containerEl)
+      .setName("Weekly note folder")
+      .setDesc("New weekly notes will be placed here")
+      .addText((textfield) => {
+        textfield.setValue(this.plugin.options.weeklyNoteFolder);
+        textfield.onChange(async (value) => {
+          this.plugin.writeOptions((old) => (old.weeklyNoteFolder = value));
         });
       });
   }
