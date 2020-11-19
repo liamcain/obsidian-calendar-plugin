@@ -95,15 +95,19 @@ export default class CalendarView extends ItemView {
   ): Promise<void> {
     const { workspace, vault } = this.app;
 
+    const startOfWeek = this.settings.shouldStartWeekOnMonday
+      ? date.clone().day("monday")
+      : date.clone().day("sunday");
+
     const { format, folder } = getWeeklyNoteSettings(this.settings);
-    const baseFilename = date.format(format);
+    const baseFilename = startOfWeek.format(format);
 
     const fullPath = getNotePath(folder, baseFilename);
     const fileObj = vault.getAbstractFileByPath(fullPath) as TFile;
 
     if (!fileObj) {
       // File doesn't exist
-      tryToCreateWeeklyNote(date, inNewSplit, this.settings, () => {
+      tryToCreateWeeklyNote(startOfWeek, inNewSplit, this.settings, () => {
         this.calendar.$set({ activeFile: baseFilename, vault });
       });
       return;
