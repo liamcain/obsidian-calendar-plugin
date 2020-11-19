@@ -10,7 +10,6 @@ import {
 import { tryToCreateWeeklyNote } from "src/io/weeklyNotes";
 import { getNotePath } from "src/io/path";
 import { getWeeklyNoteSettings, ISettings } from "src/settings";
-import type { IWeek } from "src/ui/utils";
 
 import Calendar from "./ui/Calendar.svelte";
 
@@ -24,7 +23,7 @@ export default class CalendarView extends ItemView {
     this.settings = settings;
 
     this._openOrCreateDailyNote = this._openOrCreateDailyNote.bind(this);
-    this._openOrCreateWeeklyNote = this._openOrCreateWeeklyNote.bind(this);
+    this.openOrCreateWeeklyNote = this.openOrCreateWeeklyNote.bind(this);
     this.redraw = this.redraw.bind(this);
     this.onHover = this.onHover.bind(this);
 
@@ -75,7 +74,7 @@ export default class CalendarView extends ItemView {
       props: {
         activeFile,
         openOrCreateDailyNote: this._openOrCreateDailyNote,
-        openOrCreateWeeklyNote: this._openOrCreateWeeklyNote,
+        openOrCreateWeeklyNote: this.openOrCreateWeeklyNote,
         onHover: this.onHover,
         vault,
       },
@@ -90,14 +89,13 @@ export default class CalendarView extends ItemView {
     }
   }
 
-  async _openOrCreateWeeklyNote(
-    week: IWeek,
+  async openOrCreateWeeklyNote(
+    date: Moment,
     inNewSplit: boolean
   ): Promise<void> {
     const { workspace, vault } = this.app;
 
     const { format, folder } = getWeeklyNoteSettings(this.settings);
-    const { date } = week.find((day) => !!day.date);
     const baseFilename = date.format(format);
 
     const fullPath = getNotePath(folder, baseFilename);

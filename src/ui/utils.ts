@@ -6,12 +6,13 @@ import { getNotePath } from "src/io/path";
 import { getDailyNoteSettings } from "src/io/dailyNotes";
 import type { ISettings } from "src/settings";
 
-const NUM_MAX_DOTS = 6;
+const NUM_MAX_DOTS = 5;
 
 export interface IDay {
   date: Moment;
   dayOfMonth: number;
   formattedDate: string;
+  numTasksRemaining: Promise<number>;
   numDots: number;
   notePath: string;
 }
@@ -27,7 +28,7 @@ function isNumber(possibleNumber: number): boolean {
   return !isNaN(possibleNumber) && isFinite(possibleNumber);
 }
 
-export function getNumberOfDots(dailyNoteFile?: TFile): number {
+function getNumberOfDots(dailyNoteFile?: TFile): number {
   if (!dailyNoteFile) {
     return 0;
   }
@@ -39,8 +40,20 @@ export function getNumberOfDots(dailyNoteFile?: TFile): number {
     return NUM_MAX_DOTS;
   }
 
-  const numDots = Math.floor(Math.log(fileSize / 30));
+  const numDots = Math.floor(Math.log(fileSize / 40));
   return isNumber(numDots) ? clamp(numDots, 1, NUM_MAX_DOTS) : 0;
+}
+
+async function getNumberOfRemainingTasks(
+  dailyNoteFile?: TFile
+): Promise<number> {
+  if (!dailyNoteFile) {
+    return 0;
+  }
+
+  const { vault } = window.app;
+  const fileContents = await vault.cachedRead(dailyNoteFile);
+  return (fileContents.match(/- \[ \]/g) || []).length;
 }
 
 function isMacOS() {
@@ -72,14 +85,25 @@ export function getMonthData(
   settings: ISettings,
   vault: Vault
 ): IMonth {
+  console.log("get month data");
   const month = [];
   const dailyNoteSettings = getDailyNoteSettings();
 
   const startDate = displayedMonth.clone().date(1);
   const endDayOfMonth = startDate.daysInMonth();
   const startOffset = settings.shouldStartWeekOnMonday
-    ? startDate.weekday()
-    : startDate.weekday() + 1;
+    ? startDate.weekday() + 1
+    : startDate.weekday();
+
+  // todo start on monday is broken
+
+  console.log(
+    "startOffset",
+    startOffset,
+    startDate.weekday(),
+    settings.shouldStartWeekOnMonday,
+    startDate
+  );
 
   let dayOfMonth = 1;
   for (let weekNum = 0; weekNum <= 5; weekNum++) {
@@ -106,6 +130,7 @@ export function getMonthData(
         dayOfMonth,
         formattedDate,
         numDots: getNumberOfDots(fileForDay),
+        numTasksRemaining: getNumberOfRemainingTasks(fileForDay),
         notePath: dailyNotePath,
       });
 

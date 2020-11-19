@@ -5,5 +5,6 @@
   "version": "1.2.5",
   "author": "Liam Cain",
   "authorUrl": "https://github.com/liamcain/",
-  "isDesktopOnly": false
+  "isDesktopOnly": false,
+  "minAppVersion": "0.9.11"
 }

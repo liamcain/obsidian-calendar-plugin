@@ -3,10 +3,10 @@
   import type { Vault } from "obsidian";
   import { onDestroy } from "svelte";
 
+  import Day from "./Day.svelte";
   import { SettingsInstance } from "../settings";
   import {
     isMetaPressed,
-    IWeek,
     getWeekNumber,
     getMonthData,
     getDaysOfWeek,
@@ -22,7 +22,10 @@
   export let onHover: (targetEl: EventTarget, filepath: string) => void;
   export let displayedMonth: Moment = moment();
   export let openOrCreateDailyNote: (date: Moment, inNewSplit: boolean) => void;
-  export let openOrCreateWeeklyNote: (week: IWeek, inNewSplit: boolean) => void;
+  export let openOrCreateWeeklyNote: (
+    date: Moment,
+    inNewSplit: boolean
+  ) => void;
 
   let month: IMonth;
   let daysOfWeek: string[];
@@ -36,6 +39,7 @@
   $: {
     daysOfWeek = getDaysOfWeek(settings);
     month = getMonthData(displayedMonth, settings, vault);
+    console.log("month", month);
   }
 
   function incrementMonth(): void {
@@ -72,7 +76,6 @@
   .container {
     --color-background-heading: transparent;
     --color-background-day: transparent;
-    --color-background-day-empty: transparent;
     --color-background-day-active: var(--interactive-accent);
     --color-background-day-hover: var(--interactive-hover);
     --color-background-weeknum: transparent;
@@ -104,6 +107,7 @@
   .nav {
     align-items: center;
     display: flex;
+    margin: 0.6em 0 1em;
     padding: 0 8px;
     width: 100%;
   }
@@ -111,6 +115,7 @@
   .title {
     color: var(--color-text-title);
     font-size: 1.5em;
+    margin: 0;
   }
 
   .month {
@@ -127,10 +132,6 @@
     margin-left: auto;
   }
 
-  .today {
-    color: var(--color-text-today);
-  }
-
   .reset-button {
     border-radius: 4px;
     color: var(--text-muted);
@@ -140,14 +141,6 @@
     margin: 0 4px;
     padding: 0px 4px;
     text-transform: uppercase;
-  }
-
-  .active {
-    background-color: var(--color-background-day-active);
-  }
-
-  .active.today {
-    color: var(--color-text-today-active);
   }
 
   .week-num {
@@ -180,23 +173,8 @@
     font-size: 0.8em;
     padding: 8px;
   }
-  td:empty {
-    background-color: var(--color-background-day-empty);
-  }
   td:not(:empty):hover {
     background-color: var(--color-background-day-hover);
-  }
-
-  .dot-container {
-    line-height: 6px;
-  }
-
-  .dot {
-    display: inline-block;
-    fill: var(--color-dot);
-    height: 6px;
-    width: 6px;
-    margin: 0 1px;
   }
 
   .arrow {
@@ -259,39 +237,22 @@
             <td
               class="week-num"
               on:click={(e) => {
-                openOrCreateWeeklyNote(week, isMetaPressed(e));
+                const { date } = week.find((day) => !!day.date);
+                openOrCreateWeeklyNote(date, isMetaPressed(e));
               }}>
               {getWeekNumber(week)}
             </td>
           {/if}
-          {#each week as { dayOfMonth, date, formattedDate, numDots, notePath }}
-            {#if !dayOfMonth}
+          {#each week as day (day)}
+            {#if !day.dayOfMonth}
               <td />
             {:else}
-              <td
-                class:today={date.isSame(today)}
-                class:active={activeFile === formattedDate}
-                on:click={(e) => {
-                  openOrCreateDailyNote(date, isMetaPressed(e));
-                }}
-                on:pointerover={(e) => {
-                  if (isMetaPressed(e)) {
-                    onHover(e.target, notePath);
-                  }
-                }}>
-                {dayOfMonth}
-
-                <div class="dot-container">
-                  {#each Array(numDots) as _}
-                    <svg
-                      class="dot"
-                      viewBox="0 0 6 6"
-                      xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="3" cy="3" r="2" />
-                    </svg>
-                  {/each}
-                </div>
-              </td>
+              <Day
+                {day}
+                {activeFile}
+                {onHover}
+                {openOrCreateDailyNote}
+                {today} />
             {/if}
           {/each}
         </tr>
