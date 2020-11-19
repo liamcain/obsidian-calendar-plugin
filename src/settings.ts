@@ -1,7 +1,7 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import { writable } from "svelte/store";
 
-import { DEFAULT_WEEK_FORMAT } from "src/constants";
+import { DEFAULT_WEEK_FORMAT, DEFAULT_WORDS_PER_DOT } from "src/constants";
 import {
   appHasDailyNotesPluginLoaded,
   IDailyNoteSettings,
@@ -12,6 +12,8 @@ import type CalendarPlugin from "./main";
 export interface ISettings {
   shouldStartWeekOnMonday: boolean;
   shouldConfirmBeforeCreate: boolean;
+
+  wordsPerDot: number;
 
   // Weekly Note settings
   showWeeklyNote: boolean;
@@ -33,6 +35,9 @@ export function getWeeklyNoteSettings(settings: ISettings): IDailyNoteSettings {
 export const SettingsInstance = writable<ISettings>({
   shouldStartWeekOnMonday: false,
   shouldConfirmBeforeCreate: true,
+
+  wordsPerDot: DEFAULT_WORDS_PER_DOT,
+
   showWeeklyNote: false,
   weeklyNoteFormat: "",
   weeklyNoteTemplate: "",
@@ -53,6 +58,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
     this.containerEl.createEl("h3", {
       text: "General Settings",
     });
+    this.addDotThresholdSetting();
     this.addStartWeekOnMondaySetting();
     this.addConfirmCreateSetting();
     this.addShowWeeklyNoteSetting();
@@ -75,6 +81,20 @@ export class CalendarSettingsTab extends PluginSettingTab {
           "The calendar is best used in conjunction with the Daily Notes plugin. Enable it in your plugin settings for a more optimal experience.",
       });
     }
+  }
+
+  addDotThresholdSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Words per dot")
+      .setDesc("How many words should be represented a single dot?")
+      .addText((textfield) => {
+        textfield.setPlaceholder(String(DEFAULT_WORDS_PER_DOT));
+        textfield.inputEl.type = "number";
+        textfield.setValue(String(this.plugin.options.wordsPerDot));
+        textfield.onChange(async (value) => {
+          this.plugin.writeOptions((old) => (old.wordsPerDot = Number(value)));
+        });
+      });
   }
 
   addStartWeekOnMondaySetting(): void {

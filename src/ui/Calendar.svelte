@@ -39,7 +39,6 @@
   $: {
     daysOfWeek = getDaysOfWeek(settings);
     month = getMonthData(displayedMonth, settings, vault);
-    console.log("month", month);
   }
 
   function incrementMonth(): void {
@@ -76,8 +75,6 @@
   .container {
     --color-background-heading: transparent;
     --color-background-day: transparent;
-    --color-background-day-active: var(--interactive-accent);
-    --color-background-day-hover: var(--interactive-hover);
     --color-background-weeknum: transparent;
 
     --color-dot: var(--text-muted);
@@ -88,7 +85,6 @@
     --color-text-heading: var(--text-muted);
     --color-text-day: var(--text-normal);
     --color-text-today: var(--interactive-accent);
-    --color-text-today-active: var(--text-normal);
     --color-text-weeknum: var(--text-muted);
   }
 
@@ -166,15 +162,12 @@
   }
 
   td {
-    transition: background-color 0.1s ease-in;
-    background-color: var(--color-background-day);
-    color: var(--color-text-day);
     cursor: pointer;
-    font-size: 0.8em;
+    background-color: var(--color-background-day);
     padding: 8px;
   }
-  td:not(:empty):hover {
-    background-color: var(--color-background-day-hover);
+  td:hover {
+    background-color: var(--interactive-hover);
   }
 
   .arrow {

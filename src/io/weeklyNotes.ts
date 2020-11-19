@@ -5,23 +5,7 @@ import { getNotePath } from "src/io/path";
 import type { ISettings } from "src/settings";
 import { createConfirmationDialog } from "src/ui/modal";
 
-import { getDailyNoteSettings, getTemplateContents } from "./dailyNotes";
-
-function getWeekEmbed(date: Moment, settings: ISettings): string {
-  const { format } = getDailyNoteSettings();
-  const embeds = [];
-  for (let i = 0; i < 7; i++) {
-    const weekday = date.clone().weekday(i);
-    embeds.push(`![[${weekday.format(format)}]]`);
-  }
-
-  if (settings.shouldStartWeekOnMonday) {
-    const sunday = embeds.pop();
-    embeds.push(sunday);
-  }
-
-  return embeds.join("\n");
-}
+import { getTemplateContents } from "./dailyNotes";
 
 export async function createWeeklyNote(
   date: Moment,
@@ -45,7 +29,12 @@ export async function createWeeklyNote(
           }
         )
         .replace(/{{\s*title\s*}}/gi, filename)
-        .replace(/{{\s*week-embeds\s*}}/gi, getWeekEmbed(date, settings))
+        .replace(
+          /{{\s*(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\s*:(.*?)}}/gi,
+          (_, dayOfWeek, momentFormat) => {
+            return date.day(dayOfWeek).format(momentFormat.trim());
+          }
+        )
     );
   } catch (err) {
     console.error(`Failed to create file: '${normalizedPath}'`, err);

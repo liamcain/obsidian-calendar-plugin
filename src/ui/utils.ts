@@ -13,7 +13,7 @@ export interface IDay {
   dayOfMonth: number;
   formattedDate: string;
   numTasksRemaining: Promise<number>;
-  numDots: number;
+  numDots: Promise<number>;
   notePath: string;
 }
 
@@ -24,24 +24,36 @@ function clamp(num: number, lowerBound: number, upperBound: number) {
   return Math.min(Math.max(lowerBound, num), upperBound);
 }
 
-function isNumber(possibleNumber: number): boolean {
-  return !isNaN(possibleNumber) && isFinite(possibleNumber);
+function getWordCount(text: string): number {
+  const matches = text.match(
+    /[a-zA-Z0-9_\u0392-\u03c9\u00c0-\u00ff\u0600-\u06ff]+|[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\uac00-\ud7af]+/gm
+  );
+
+  if (!matches) {
+    return 0;
+  }
+
+  let wordCount = 0;
+  for (let i = 0; i < matches.length; i++) {
+    if (matches[i].charCodeAt(0) > 19968) {
+      wordCount += matches[i].length;
+    } else {
+      wordCount += 1;
+    }
+  }
+  return wordCount;
 }
 
-function getNumberOfDots(dailyNoteFile?: TFile): number {
+async function getNumberOfDots(
+  dailyNoteFile: TFile | null,
+  settings: ISettings
+): Promise<number> {
   if (!dailyNoteFile) {
     return 0;
   }
-  const fileSize = dailyNoteFile.stat.size;
-  if (!fileSize) {
-    return 0;
-  }
-  if (typeof fileSize === "bigint") {
-    return NUM_MAX_DOTS;
-  }
-
-  const numDots = Math.floor(Math.log(fileSize / 40));
-  return isNumber(numDots) ? clamp(numDots, 1, NUM_MAX_DOTS) : 0;
+  const fileContents = await window.app.vault.cachedRead(dailyNoteFile);
+  const numDots = getWordCount(fileContents) / settings.wordsPerDot;
+  return clamp(Math.floor(numDots), 1, NUM_MAX_DOTS);
 }
 
 async function getNumberOfRemainingTasks(
@@ -85,25 +97,14 @@ export function getMonthData(
   settings: ISettings,
   vault: Vault
 ): IMonth {
-  console.log("get month data");
   const month = [];
   const dailyNoteSettings = getDailyNoteSettings();
 
   const startDate = displayedMonth.clone().date(1);
   const endDayOfMonth = startDate.daysInMonth();
   const startOffset = settings.shouldStartWeekOnMonday
-    ? startDate.weekday() + 1
-    : startDate.weekday();
-
-  // todo start on monday is broken
-
-  console.log(
-    "startOffset",
-    startOffset,
-    startDate.weekday(),
-    settings.shouldStartWeekOnMonday,
-    startDate
-  );
+    ? startDate.isoWeekday()
+    : startDate.weekday() + 1;
 
   let dayOfMonth = 1;
   for (let weekNum = 0; weekNum <= 5; weekNum++) {
@@ -129,7 +130,7 @@ export function getMonthData(
         date,
         dayOfMonth,
         formattedDate,
-        numDots: getNumberOfDots(fileForDay),
+        numDots: getNumberOfDots(fileForDay, settings),
         numTasksRemaining: getNumberOfRemainingTasks(fileForDay),
         notePath: dailyNotePath,
       });

@@ -31,16 +31,14 @@
     color: var(--color-text-today);
   }
 
-  .active {
-    background-color: var(--color-background-day-active);
-  }
-
+  .active,
   .active.today {
-    color: var(--color-text-today-active);
+    color: var(--text-on-accent);
+    background-color: var(--interactive-accent);
   }
 
   td {
-    transition: background-color 0.1s ease-in;
+    transition: background-color 0.1s ease-in, color 0.1s ease-in;
     background-color: var(--color-background-day);
     color: var(--color-text-day);
     cursor: pointer;
@@ -48,7 +46,11 @@
     padding: 8px;
   }
   td:not(:empty):hover {
-    background-color: var(--color-background-day-hover);
+    background-color: var(--interactive-hover);
+  }
+
+  td.active:hover {
+    background-color: var(--interactive-accent-hover);
   }
 
   .dot-container {
@@ -56,6 +58,7 @@
     flex-wrap: wrap;
     justify-content: center;
     line-height: 6px;
+    min-height: 6px;
   }
 
   .dot,
@@ -66,10 +69,17 @@
     width: 6px;
     margin: 0 1px;
   }
+  .active .dot {
+    fill: var(--text-on-accent);
+  }
 
   .task {
     fill: none;
     stroke: var(--color-dot);
+  }
+
+  .active .task {
+    stroke: var(--text-on-accent);
   }
 </style>
 
@@ -87,11 +97,13 @@
   {dayOfMonth}
 
   <div class="dot-container">
-    {#each Array(numDots) as _}
-      <svg class="dot" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="3" cy="3" r="2" />
-      </svg>
-    {/each}
+    {#await numDots then dots}
+      {#each Array(dots) as _}
+        <svg class="dot" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="3" cy="3" r="2" />
+        </svg>
+      {/each}
+    {/await}
     {#await numTasksRemaining then hasTask}
       {#if hasTask}
         <svg

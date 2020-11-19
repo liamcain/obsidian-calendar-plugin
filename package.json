@@ -1,6 +1,6 @@
 {
   "name": "calendar",
-  "version": "1.2.5",
+  "version": "1.3.0",
   "description": "Calendar view of your daily notes",
   "author": "liamcain",
   "main": "main.js",
@@ -11,23 +11,23 @@
   },
   "dependencies": {
     "obsidian": "obsidianmd/obsidian-api#master",
-    "svelte": "3.29.4",
+    "svelte": "3.29.7",
     "tslib": "2.0.3"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "16.0.0",
     "@rollup/plugin-node-resolve": "10.0.0",
-    "@rollup/plugin-typescript": "5.0.2",
+    "@rollup/plugin-typescript": "6.1.0",
     "@tsconfig/svelte": "1.0.10",
-    "@types/moment": "^2.13.0",
-    "@types/node": "14.14.6",
-    "@typescript-eslint/eslint-plugin": "^4.8.1",
-    "@typescript-eslint/parser": "^4.8.1",
-    "eslint": "^7.13.0",
+    "@types/moment": "2.13.0",
+    "@types/node": "14.14.8",
+    "@typescript-eslint/eslint-plugin": "4.8.1",
+    "@typescript-eslint/parser": "4.8.1",
+    "eslint": "7.13.0",
     "rollup": "2.33.3",
-    "rollup-plugin-svelte": "6.1.0",
-    "svelte-check": "1.1.6",
-    "svelte-preprocess": "4.5.2",
-    "typescript": "^4.0.5"
+    "rollup-plugin-svelte": "6.1.1",
+    "svelte-check": "1.1.14",
+    "svelte-preprocess": "4.6.0",
+    "typescript": "4.0.5"
   }
 }
