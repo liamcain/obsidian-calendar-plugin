@@ -140,11 +140,18 @@
   }
 
   .week-num {
+    background-color: var(--color-background-day);
     background-color: var(--color-background-weeknum);
     border-right: 1px solid var(--background-modifier-border);
     color: var(--color-text-weeknum);
+    cursor: pointer;
     font-size: 0.65em;
     padding: 0;
+    padding: 8px;
+  }
+
+  .week-num:hover {
+    background-color: var(--interactive-hover);
   }
 
   .table {
@@ -159,15 +166,6 @@
     letter-spacing: 1px;
     padding: 4px 8px;
     text-transform: uppercase;
-  }
-
-  td {
-    cursor: pointer;
-    background-color: var(--color-background-day);
-    padding: 8px;
-  }
-  td:hover {
-    background-color: var(--interactive-hover);
   }
 
   .arrow {
