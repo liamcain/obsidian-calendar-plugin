@@ -2,7 +2,7 @@ import type { Moment } from "moment";
 import { Notice, TFile } from "obsidian";
 
 import { getNotePath } from "src/io/path";
-import type { ISettings } from "src/settings";
+import { getWeeklyNoteSettings, ISettings } from "src/settings";
 import { createConfirmationDialog } from "src/ui/modal";
 
 import { getTemplateContents } from "./dailyNotes";
@@ -12,14 +12,13 @@ export async function createWeeklyNote(
   settings: ISettings
 ): Promise<TFile> {
   const { vault } = window.app;
-  const templateContents = await getTemplateContents(
-    settings.weeklyNoteTemplate
-  );
-  const filename = date.format(settings.weeklyNoteFormat);
-  const normalizedPath = getNotePath(settings.weeklyNoteFolder, filename);
+  const { template, format, folder } = getWeeklyNoteSettings(settings);
+  const templateContents = await getTemplateContents(template);
+  const filename = date.format(format);
+  const normalizedPath = getNotePath(folder, filename);
 
   try {
-    return vault.create(
+    const createdFile = await vault.create(
       normalizedPath,
       templateContents
         .replace(
@@ -36,6 +35,7 @@ export async function createWeeklyNote(
           }
         )
     );
+    return createdFile;
   } catch (err) {
     console.error(`Failed to create file: '${normalizedPath}'`, err);
     new Notice("Unable to create new file.");
@@ -52,7 +52,8 @@ export async function tryToCreateWeeklyNote(
   cb?: () => void
 ): Promise<void> {
   const { workspace } = window.app;
-  const filename = date.format(settings.weeklyNoteFormat);
+  const { format } = getWeeklyNoteSettings(settings);
+  const filename = date.format(format);
 
   const createFile = async () => {
     const dailyNote = await createWeeklyNote(date, settings);

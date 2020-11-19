@@ -79,7 +79,7 @@ export async function createDailyNote(date: Moment): Promise<TFile> {
   const normalizedPath = getNotePath(folder, filename);
 
   try {
-    return vault.create(
+    const createdFile = await vault.create(
       normalizedPath,
       templateContents
         .replace(
@@ -92,6 +92,7 @@ export async function createDailyNote(date: Moment): Promise<TFile> {
         .replace(/{{\s*time\s*}}/gi, moment().format("HH:mm"))
         .replace(/{{\s*title\s*}}/gi, filename)
     );
+    return createdFile;
   } catch (err) {
     console.error(`Failed to create file: '${normalizedPath}'`, err);
     new Notice("Unable to create new file.");
