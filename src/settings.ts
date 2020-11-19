@@ -1,8 +1,11 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import { writable } from "svelte/store";
 
-import { DEFAULT_WEEK_FORMAT } from "./constants";
-import { appHasDailyNotesPluginLoaded, IDailyNoteSettings } from "./dailyNotes";
+import { DEFAULT_WEEK_FORMAT } from "src/constants";
+import {
+  appHasDailyNotesPluginLoaded,
+  IDailyNoteSettings,
+} from "src/io/dailyNotes";
 
 import type CalendarPlugin from "./main";
 
@@ -44,7 +47,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
     this.plugin = plugin;
   }
 
-  display() {
+  display(): void {
     this.containerEl.empty();
 
     this.containerEl.createEl("h3", {
@@ -59,8 +62,8 @@ export class CalendarSettingsTab extends PluginSettingTab {
         text: "Weekly Note Settings",
       });
       this.addWeeklyNoteFormatSetting();
-      this.addWeeklyNoteFolderSetting();
       this.addWeeklyNoteTemplateSetting();
+      this.addWeeklyNoteFolderSetting();
     }
 
     if (!appHasDailyNotesPluginLoaded(this.app)) {
@@ -74,7 +77,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
     }
   }
 
-  addStartWeekOnMondaySetting() {
+  addStartWeekOnMondaySetting(): void {
     new Setting(this.containerEl)
       .setName("Start week on Monday")
       .setDesc("Enable this to show Monday as the first day on the calendar")
@@ -88,7 +91,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
       });
   }
 
-  addConfirmCreateSetting() {
+  addConfirmCreateSetting(): void {
     new Setting(this.containerEl)
       .setName("Confirm before creating new note")
       .setDesc("Show a confirmation modal before creating a new note")
@@ -102,7 +105,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
       });
   }
 
-  addShowWeeklyNoteSetting() {
+  addShowWeeklyNoteSetting(): void {
     new Setting(this.containerEl)
       .setName("Show week number")
       .setDesc("Enable this to add a column with the week number")
@@ -115,7 +118,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
       });
   }
 
-  addWeeklyNoteFormatSetting() {
+  addWeeklyNoteFormatSetting(): void {
     new Setting(this.containerEl)
       .setName("Weekly note format")
       .setDesc("For more syntax help, refer to format reference")
@@ -128,7 +131,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
       });
   }
 
-  addWeeklyNoteTemplateSetting() {
+  addWeeklyNoteTemplateSetting(): void {
     new Setting(this.containerEl)
       .setName("Weekly note template")
       .setDesc(
@@ -142,7 +145,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
       });
   }
 
-  addWeeklyNoteFolderSetting() {
+  addWeeklyNoteFolderSetting(): void {
     new Setting(this.containerEl)
       .setName("Weekly note folder")
       .setDesc("New weekly notes will be placed here")

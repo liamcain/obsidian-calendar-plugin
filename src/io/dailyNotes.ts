@@ -1,9 +1,10 @@
+import type { Moment } from "moment";
 import { normalizePath, App, Notice, TFile } from "obsidian";
-import type { IMoment } from "./moment";
+
+import type { ISettings } from "src/settings";
+import { createConfirmationDialog } from "src/ui/modal";
 
 import { getNotePath } from "./path";
-import type { ISettings } from "./settings";
-import { modal } from "./ui";
 
 export const DEFAULT_DATE_FORMAT = "YYYY-MM-DD";
 
@@ -20,9 +21,9 @@ export interface IDailyNoteSettings {
 export function getDailyNoteSettings(): IDailyNoteSettings {
   try {
     // XXX: Access private API for internal plugins
-    const app = (window as any).app;
-    const settings =
-      app.internalPlugins.plugins["daily-notes"].instance.options;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const settings = (<any>window.app).internalPlugins.plugins["daily-notes"]
+      .instance.options;
     return {
       format: settings.format || DEFAULT_DATE_FORMAT,
       folder: settings.folder?.trim() || "",
@@ -33,26 +34,23 @@ export function getDailyNoteSettings(): IDailyNoteSettings {
   }
 }
 
-export function appHasDailyNotesPluginLoaded(app: App) {
-  const dailyNotesPlugin = (app as any).internalPlugins.plugins["daily-notes"];
+export function appHasDailyNotesPluginLoaded(app: App): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const dailyNotesPlugin = (<any>app).internalPlugins.plugins["daily-notes"];
   return dailyNotesPlugin && dailyNotesPlugin.enabled;
 }
 
-async function getTemplateContents(template: string): Promise<string> {
-  const app = (<any>window).app as App;
-  const { vault } = app;
+export async function getTemplateContents(template: string): Promise<string> {
+  const app = window.app as App;
+  const { metadataCache, vault } = app;
 
-  let templatePath = normalizePath(template);
+  const templatePath = normalizePath(template);
   if (templatePath === "/") {
     return Promise.resolve("");
   }
 
-  if (!templatePath.endsWith(".md")) {
-    templatePath += ".md";
-  }
-
   try {
-    const templateFile = vault.getAbstractFileByPath(templatePath) as TFile;
+    const templateFile = metadataCache.getFirstLinkpathDest(templatePath, "");
     const contents = await vault.cachedRead(templateFile);
     return contents;
   } catch (err) {
@@ -69,16 +67,12 @@ async function getTemplateContents(template: string): Promise<string> {
  *
  * Note: it has an added bonus that it's not 'today' specific.
  */
-export async function createDailyNote(
-  date: IMoment,
-  settings?: IDailyNoteSettings
-): Promise<TFile> {
-  const app = (<any>window).app as App;
+export async function createDailyNote(date: Moment): Promise<TFile> {
+  const app = window.app as App;
   const { vault } = app;
-  const moment = (<any>window).moment;
+  const moment = window.moment;
 
-  const dailyNoteSettings = settings || getDailyNoteSettings();
-  const { template, format, folder } = dailyNoteSettings;
+  const { template, format, folder } = getDailyNoteSettings();
 
   const templateContents = await getTemplateContents(template);
   const filename = date.format(format);
@@ -108,28 +102,27 @@ export async function createDailyNote(
  * Create a Daily Note for a given date.
  */
 export async function tryToCreateDailyNote(
-  date: IMoment,
+  date: Moment,
   inNewSplit: boolean,
-  dailyNoteSettings: IDailyNoteSettings,
   settings: ISettings,
   cb?: () => void
-) {
-  const app = (<any>window).app as App;
-
-  const filename = date.format(dailyNoteSettings.format);
+): Promise<void> {
+  const { workspace } = window.app;
+  const { format } = getDailyNoteSettings();
+  const filename = date.format(format);
 
   const createFile = async () => {
-    const dailyNote = await createDailyNote(date, dailyNoteSettings);
+    const dailyNote = await createDailyNote(date);
     const leaf = inNewSplit
-      ? app.workspace.splitActiveLeaf()
-      : app.workspace.getUnpinnedLeaf();
+      ? workspace.splitActiveLeaf()
+      : workspace.getUnpinnedLeaf();
 
     await leaf.openFile(dailyNote);
     cb?.();
   };
 
   if (settings.shouldConfirmBeforeCreate) {
-    modal.createConfirmationDialog(app, {
+    createConfirmationDialog({
       cta: "Create",
       onAccept: createFile,
       text: `File ${filename} does not exist. Would you like to create it?`,
