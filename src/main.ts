@@ -1,20 +1,28 @@
-import { Plugin, WorkspaceLeaf } from "obsidian";
+import type { Moment } from "moment";
+import { App, Plugin, WorkspaceLeaf } from "obsidian";
 
 import { VIEW_TYPE_CALENDAR } from "./constants";
 import { CalendarSettingsTab, SettingsInstance, ISettings } from "./settings";
 import CalendarView from "./view";
 
+declare global {
+  interface Window {
+    app: App;
+    moment: () => Moment;
+  }
+}
+
 export default class CalendarPlugin extends Plugin {
   public options: ISettings;
   private view: CalendarView;
 
-  onunload() {
+  onunload(): void {
     this.app.workspace
       .getLeavesOfType(VIEW_TYPE_CALENDAR)
       .forEach((leaf) => leaf.detach());
   }
 
-  async onload() {
+  async onload(): Promise<void> {
     this.register(
       SettingsInstance.subscribe((value) => {
         this.options = value;
@@ -41,6 +49,12 @@ export default class CalendarPlugin extends Plugin {
     });
 
     this.addCommand({
+      id: "open-weekly-note",
+      name: "Open Weekly Note",
+      callback: () => this.view.openOrCreateWeeklyNote(window.moment(), false),
+    });
+
+    this.addCommand({
       id: "reload-calendar-view",
       name: "Reload daily note settings",
       callback: () => this.view.redraw(),
@@ -59,7 +73,7 @@ export default class CalendarPlugin extends Plugin {
     }
   }
 
-  initLeaf() {
+  initLeaf(): void {
     if (this.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR).length) {
       return;
     }

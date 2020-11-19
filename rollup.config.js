@@ -17,7 +17,7 @@ export default {
     svelte({
       preprocess: autoPreprocess(),
     }),
-    typescript(),
+    typescript({ sourceMap: true }),
     resolve({
       browser: true,
       dedupe: ["svelte"],

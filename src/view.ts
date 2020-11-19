@@ -1,21 +1,20 @@
-import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
+import type { Moment } from "moment";
+import { Events, FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
 
-import Calendar from "./Calendar.svelte";
-import { VIEW_TYPE_CALENDAR } from "./constants";
-import { normalizedJoin } from "./path";
+import { VIEW_TYPE_CALENDAR } from "src/constants";
 import {
+  createDailyNote,
   getDailyNoteSettings,
-  getDateFormat,
-  getNoteFolder,
-  IDailyNoteSettings,
-  ISettings,
-} from "./settings";
-import { IMoment, createDailyNote } from "./template";
-import { modal } from "./ui";
+  tryToCreateDailyNote,
+} from "src/io/dailyNotes";
+import { tryToCreateWeeklyNote } from "src/io/weeklyNotes";
+import { getNotePath } from "src/io/path";
+import { getWeeklyNoteSettings, ISettings } from "src/settings";
+
+import Calendar from "./ui/Calendar.svelte";
 
 export default class CalendarView extends ItemView {
   private calendar: Calendar;
-  private dailyNoteSettings: IDailyNoteSettings;
   private settings: ISettings;
 
   constructor(leaf: WorkspaceLeaf, settings: ISettings) {
@@ -24,97 +23,93 @@ export default class CalendarView extends ItemView {
     this.settings = settings;
 
     this._openOrCreateDailyNote = this._openOrCreateDailyNote.bind(this);
-    this._createDailyNote = this._createDailyNote.bind(this);
+    this.openOrCreateWeeklyNote = this.openOrCreateWeeklyNote.bind(this);
     this.redraw = this.redraw.bind(this);
+    this.onHover = this.onHover.bind(this);
 
     this.registerEvent(this.app.vault.on("delete", this.redraw));
+
+    // Register a custom event on the workspace for other plugins to
+    // hook into for creating daily-notes
+    //
+    // example usage: workspace.trigger('create-daily-note', momentDate)
+    this.registerEvent(
+      (this.app.workspace as Events).on("create-daily-note", createDailyNote)
+    );
   }
 
-  getViewType() {
+  getViewType(): string {
     return VIEW_TYPE_CALENDAR;
   }
 
-  getDisplayText() {
+  getDisplayText(): string {
     return "Calendar";
   }
 
-  getIcon() {
+  getIcon(): string {
     return "calendar-with-checkmark";
   }
 
-  onClose() {
+  onClose(): Promise<void> {
     if (this.calendar) {
       this.calendar.$destroy();
     }
     return Promise.resolve();
   }
 
-  async onOpen() {
-    const {
-      vault,
-      workspace: { activeLeaf },
-    } = this.app;
+  onHover(targetEl: EventTarget, filepath: string): void {
+    this.app.workspace.trigger("link-hover", this, targetEl, "", filepath);
+  }
 
-    this.dailyNoteSettings = getDailyNoteSettings();
-
+  async onOpen(): Promise<void> {
+    const { vault, workspace } = this.app;
+    const activeLeaf = workspace.activeLeaf;
     const activeFile = activeLeaf
       ? (activeLeaf.view as FileView).file?.path
       : null;
 
     this.calendar = new Calendar({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       target: (this as any).contentEl,
       props: {
         activeFile,
-        dailyNoteSettings: this.dailyNoteSettings,
         openOrCreateDailyNote: this._openOrCreateDailyNote,
+        openOrCreateWeeklyNote: this.openOrCreateWeeklyNote,
+        onHover: this.onHover,
         vault,
       },
     });
   }
 
-  public async redraw() {
+  public async redraw(): Promise<void> {
     if (this.calendar) {
-      this.calendar.$set({
-        vault: this.app.vault,
-      });
+      const { vault, workspace } = this.app;
+      const activeLeaf = workspace.activeLeaf;
+      this.calendar.$set({ activeLeaf, vault });
     }
   }
 
-  _getFormattedDate(date: IMoment): string {
-    const format = getDateFormat(this.settings);
-    return date.format(format);
-  }
-
-  async _openOrCreateDailyNote(
-    date: IMoment,
+  async openOrCreateWeeklyNote(
+    date: Moment,
     inNewSplit: boolean
   ): Promise<void> {
-    const { vault, workspace } = this.app;
+    const { workspace, vault } = this.app;
 
-    const baseFilename = this._getFormattedDate(date);
-    const fullPath = normalizedJoin(
-      getNoteFolder(this.settings),
-      `${baseFilename}.md`
-    );
+    const startOfWeek = this.settings.shouldStartWeekOnMonday
+      ? date.clone().day("monday")
+      : date.clone().day("sunday");
+
+    const { format, folder } = getWeeklyNoteSettings(this.settings);
+    const baseFilename = startOfWeek.format(format);
+
+    const fullPath = getNotePath(folder, baseFilename);
     const fileObj = vault.getAbstractFileByPath(fullPath) as TFile;
 
     if (!fileObj) {
       // File doesn't exist
-      if (this.settings.shouldConfirmBeforeCreate) {
-        this.promptUserToCreateFile(date, inNewSplit, () => {
-          // If the user presses 'Confirm', update the calendar view
-          this.calendar.$set({
-            activeFile: baseFilename,
-            vault,
-          });
-        });
-      } else {
-        await this._createDailyNote(date, inNewSplit);
-        this.calendar.$set({
-          activeFile: baseFilename,
-          vault,
-        });
-      }
+      tryToCreateWeeklyNote(startOfWeek, inNewSplit, this.settings, () => {
+        this.calendar.$set({ activeFile: baseFilename, vault });
+      });
       return;
     }
 
@@ -128,28 +123,32 @@ export default class CalendarView extends ItemView {
     });
   }
 
-  async _createDailyNote(date: IMoment, inNewSplit: boolean): Promise<void> {
-    const dailyNote = await createDailyNote(date, this.settings);
+  async _openOrCreateDailyNote(
+    date: Moment,
+    inNewSplit: boolean
+  ): Promise<void> {
+    const { workspace, vault } = this.app;
+    const { format, folder } = getDailyNoteSettings();
+
+    const baseFilename = date.format(format);
+    const fullPath = getNotePath(folder, baseFilename);
+    const fileObj = vault.getAbstractFileByPath(fullPath) as TFile;
+
+    if (!fileObj) {
+      // File doesn't exist
+      tryToCreateDailyNote(date, inNewSplit, this.settings, () => {
+        this.calendar.$set({ activeFile: baseFilename, vault });
+      });
+      return;
+    }
+
     const leaf = inNewSplit
-      ? this.app.workspace.splitActiveLeaf()
-      : this.app.workspace.getUnpinnedLeaf();
+      ? workspace.splitActiveLeaf()
+      : workspace.getUnpinnedLeaf();
+    await leaf.openFile(fileObj);
 
-    await leaf.openFile(dailyNote);
-  }
-
-  promptUserToCreateFile(date: IMoment, inNewSplit: boolean, cb: () => void) {
-    const filename = this._getFormattedDate(date);
-
-    modal.createConfirmationDialog(this.app, {
-      cta: "Create",
-      onAccept: async () => {
-        await this._createDailyNote(date, inNewSplit);
-        if (cb) {
-          cb();
-        }
-      },
-      text: `File ${filename} does not exist. Would you like to create it?`,
-      title: "New Daily Note",
+    this.calendar.$set({
+      activeFile: fileObj.basename,
     });
   }
 }
