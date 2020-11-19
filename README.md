@@ -89,6 +89,12 @@ If you close the calendar widget (right-clicking on the panel nav and clicking c
 
 From the Settings menu, you can toggle "Start week on Monday".
 
+## I don't like showing the week numbers but I still want to use weekly notes. Can I still use them?
+
+You can open the current weekly note from the command palette by searching `Calendar: Open weekly Note`. This will open the weekly note for the current week.
+
+To configure the `format`, `folder`, and `template`, you will temporarily need to toggle on "Show weekly numbers" in the settings, but if you toggle it back off, your settings will persist.
+
 ## Protips
 
 ### Embed your entire week in a weekly note
