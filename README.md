@@ -73,7 +73,7 @@ By default, the calendar should seamlessly match your theme, but if you'd like t
 
 In the settings, you can enable "Show Week Numbers" to add a "week number" column to the calendar. Click on the week number to open a "weekly note".
 
-## How do I hide the calendar plugin without disabling the plugin?
+### How do I hide the calendar plugin without disabling the plugin?
 
 Just like other sidebar views (e.g. Backlinks, Outline), the calendar view can be closed by right-clicking on the view icon.
 
@@ -133,6 +133,8 @@ You can open **weekly notes** in 2 ways: searching `Calendar: open weekly note` 
 
 - **Folder:** The folder that your weekly notes go into. It can be the same or different from your daily notes. By default they are placed in your vault root.
 - **Template:** Configure a template for weekly notes. Weekly notes have slightly different template tags than daily notes. See here for the list of supported [weekly note template tags](#template-tags).
+
+> Note: The path here won't autocomplete for you, you'll need to enter the full path.
 
 - **Format:** The date format for the weekly note filename. Defaults to `"YYYY-[W]ww`. If you use `DD` in the week format, this will refer to first day of the week (Sunday or Monday, depending on your settings).
 
