@@ -27,6 +27,8 @@ export default class CalendarView extends ItemView {
     this.redraw = this.redraw.bind(this);
     this.onHover = this.onHover.bind(this);
 
+    this.registerEvent(this.app.workspace.on("file-open", this.redraw));
+    this.registerEvent(this.app.workspace.on("quick-preview", this.redraw));
     this.registerEvent(this.app.vault.on("delete", this.redraw));
 
     // Register a custom event on the workspace for other plugins to
@@ -84,8 +86,13 @@ export default class CalendarView extends ItemView {
   public async redraw(): Promise<void> {
     if (this.calendar) {
       const { vault, workspace } = this.app;
-      const activeLeaf = workspace.activeLeaf;
-      this.calendar.$set({ activeLeaf, vault });
+      const view = workspace.activeLeaf.view;
+
+      let activeFile = null;
+      if (view instanceof FileView) {
+        activeFile = view.file.basename;
+      }
+      this.calendar.$set({ activeFile, vault });
     }
   }
 
