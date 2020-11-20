@@ -63,7 +63,7 @@ You can install the plugin via the Community Plugins tab within Obsidian. Just s
 
 Each solid dot represents 250 words in your daily note. So 4 dots means you've written a thousands words for that day! If you want to change that threshold, you can set a different value for "Words Per Dot" in the Calendar settings.
 
-The hollow dots, on the other hand, mean that the day has incomplete tasks in it. **Note:** There will only ever be 1 hollow dot on a particular day, regardless of the number of remaining tasks\*\*
+The hollow dots, on the other hand, mean that the day has incomplete tasks in it. (**Note:** There will only ever be 1 hollow dot on a particular day, regardless of the number of remaining tasks)
 
 ### How do I change the styling of the Calendar?
 
