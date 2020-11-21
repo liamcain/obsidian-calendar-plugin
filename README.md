@@ -49,6 +49,16 @@ The following CSS Variables can be overridden in your `obsidian.css` file.
 }
 ```
 
+In addition to the CSS Variables, there are some classes you can override for further customization. For example, if you don't like how bright the title is, you can override it with:
+
+```css
+#calendar-container .year {
+  color: red;
+}
+```
+
+> **Note:** It's especially important when overriding the classes to prefix them with `#calendar-container` to avoid any unexpected changes within Obsidian!
+
 ## Compatibility
 
 `obsidian-calendar-plugin` currently requires Obsidian v0.9.11 or above to work properly.

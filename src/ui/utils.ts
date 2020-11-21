@@ -1,4 +1,4 @@
-import type { Moment } from "moment";
+import moment, { Moment } from "moment";
 import * as os from "os";
 import type { TFile, Vault } from "obsidian";
 
@@ -48,7 +48,7 @@ async function getNumberOfDots(
   dailyNoteFile: TFile | null,
   settings: ISettings
 ): Promise<number> {
-  if (!dailyNoteFile) {
+  if (!dailyNoteFile || settings.wordsPerDot <= 0) {
     return 0;
   }
   const fileContents = await window.app.vault.cachedRead(dailyNoteFile);
@@ -65,7 +65,7 @@ async function getNumberOfRemainingTasks(
 
   const { vault } = window.app;
   const fileContents = await vault.cachedRead(dailyNoteFile);
-  return (fileContents.match(/- \[ \]/g) || []).length;
+  return (fileContents.match(/(-|\*) \[ \]/g) || []).length;
 }
 
 function isMacOS() {
@@ -82,7 +82,7 @@ export function getWeekNumber(week: IWeek): string {
 }
 
 export function getDaysOfWeek(settings: ISettings): string[] {
-  const [sunday, ...restOfWeek] = window.moment.weekdaysShort();
+  const [sunday, ...restOfWeek] = moment.weekdaysShort();
   return settings.shouldStartWeekOnMonday
     ? [...restOfWeek, sunday]
     : [sunday, ...restOfWeek];

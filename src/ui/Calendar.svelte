@@ -56,7 +56,7 @@
   // 1 minute heartbeat to keep `today` reflecting the current day
   let heartbeat = setInterval(() => {
     const isViewingCurrentMonth = today.isSame(displayedMonth);
-    today = window.moment();
+    today = moment();
 
     if (isViewingCurrentMonth) {
       // if it's midnight on the last day of the month, this will

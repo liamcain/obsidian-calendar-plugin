@@ -1,12 +1,8 @@
 import type { Moment } from "moment";
-import { Events, FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
+import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
 
 import { VIEW_TYPE_CALENDAR } from "src/constants";
-import {
-  createDailyNote,
-  getDailyNoteSettings,
-  tryToCreateDailyNote,
-} from "src/io/dailyNotes";
+import { getDailyNoteSettings, tryToCreateDailyNote } from "src/io/dailyNotes";
 import { tryToCreateWeeklyNote } from "src/io/weeklyNotes";
 import { getNotePath } from "src/io/path";
 import { getWeeklyNoteSettings, ISettings } from "src/settings";
@@ -30,14 +26,6 @@ export default class CalendarView extends ItemView {
     this.registerEvent(this.app.workspace.on("file-open", this.redraw));
     this.registerEvent(this.app.workspace.on("quick-preview", this.redraw));
     this.registerEvent(this.app.vault.on("delete", this.redraw));
-
-    // Register a custom event on the workspace for other plugins to
-    // hook into for creating daily-notes
-    //
-    // example usage: workspace.trigger('create-daily-note', momentDate)
-    this.registerEvent(
-      (this.app.workspace as Events).on("create-daily-note", createDailyNote)
-    );
   }
 
   getViewType(): string {

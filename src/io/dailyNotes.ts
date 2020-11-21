@@ -1,10 +1,9 @@
 import type { Moment } from "moment";
-import { normalizePath, App, Notice, TFile } from "obsidian";
+import { normalizePath, App, Notice } from "obsidian";
+import { createDailyNote } from "obsidian-daily-notes-interface";
 
 import type { ISettings } from "src/settings";
 import { createConfirmationDialog } from "src/ui/modal";
-
-import { getNotePath } from "./path";
 
 export const DEFAULT_DATE_FORMAT = "YYYY-MM-DD";
 
@@ -67,37 +66,37 @@ export async function getTemplateContents(template: string): Promise<string> {
  *
  * Note: it has an added bonus that it's not 'today' specific.
  */
-export async function createDailyNote(date: Moment): Promise<TFile> {
-  const app = window.app as App;
-  const { vault } = app;
-  const moment = window.moment;
+// export async function createDailyNote(date: Moment): Promise<TFile> {
+//   const app = window.app as App;
+//   const { vault } = app;
+//   const moment = window.moment;
 
-  const { template, format, folder } = getDailyNoteSettings();
+//   const { template, format, folder } = getDailyNoteSettings();
 
-  const templateContents = await getTemplateContents(template);
-  const filename = date.format(format);
-  const normalizedPath = getNotePath(folder, filename);
+//   const templateContents = await getTemplateContents(template);
+//   const filename = date.format(format);
+//   const normalizedPath = getNotePath(folder, filename);
 
-  try {
-    const createdFile = await vault.create(
-      normalizedPath,
-      templateContents
-        .replace(
-          /{{\s*(date|time)\s*:(.*?)}}/gi,
-          (_, timeOrDate, momentFormat) => {
-            return date.format(momentFormat.trim());
-          }
-        )
-        .replace(/{{\s*date\s*}}/gi, filename)
-        .replace(/{{\s*time\s*}}/gi, moment().format("HH:mm"))
-        .replace(/{{\s*title\s*}}/gi, filename)
-    );
-    return createdFile;
-  } catch (err) {
-    console.error(`Failed to create file: '${normalizedPath}'`, err);
-    new Notice("Unable to create new file.");
-  }
-}
+//   try {
+//     const createdFile = await vault.create(
+//       normalizedPath,
+//       templateContents
+//         .replace(
+//           /{{\s*(date|time)\s*:(.*?)}}/gi,
+//           (_, timeOrDate, momentFormat) => {
+//             return date.format(momentFormat.trim());
+//           }
+//         )
+//         .replace(/{{\s*date\s*}}/gi, filename)
+//         .replace(/{{\s*time\s*}}/gi, moment().format("HH:mm"))
+//         .replace(/{{\s*title\s*}}/gi, filename)
+//     );
+//     return createdFile;
+//   } catch (err) {
+//     console.error(`Failed to create file: '${normalizedPath}'`, err);
+//     new Notice("Unable to create new file.");
+//   }
+// }
 
 /**
  * Create a Daily Note for a given date.

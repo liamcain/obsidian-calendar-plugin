@@ -12,6 +12,15 @@ declare global {
   }
 }
 
+function configureMomentLocale(): void {
+  const lang = localStorage.getItem("language");
+
+  const currentLocale = window.moment.locale(lang);
+  console.info(
+    `trying to switch moment locale to ${lang}, got ${currentLocale}`
+  );
+}
+
 export default class CalendarPlugin extends Plugin {
   public options: ISettings;
   private view: CalendarView;
@@ -23,6 +32,8 @@ export default class CalendarPlugin extends Plugin {
   }
 
   async onload(): Promise<void> {
+    configureMomentLocale();
+
     this.register(
       SettingsInstance.subscribe((value) => {
         this.options = value;
