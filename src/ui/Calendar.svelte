@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { Moment } from "moment";
-  import type { Vault } from "obsidian";
   import { onDestroy } from "svelte";
 
   import Day from "./Day.svelte";
@@ -11,12 +10,10 @@
     getMonthData,
     getDaysOfWeek,
     IMonth,
+    isWeekend,
   } from "./utils";
 
   const moment = window.moment;
-
-  // Include vault so that calendar refreshes when files are modified
-  export let vault: Vault;
 
   export let activeFile: string = null;
   export let onHover: (targetEl: EventTarget, filepath: string) => void;
@@ -36,9 +33,12 @@
     settings = value;
   });
 
+  // Get the word 'Today' but localized to the current language
+  const todayDisplayStr = today.calendar().split(" ")[0];
+
   $: {
     daysOfWeek = getDaysOfWeek(settings);
-    month = getMonthData(displayedMonth, settings, vault);
+    month = getMonthData(activeFile, displayedMonth, settings);
   }
 
   function incrementMonth(): void {
@@ -76,6 +76,7 @@
     --color-background-heading: transparent;
     --color-background-day: transparent;
     --color-background-weeknum: transparent;
+    --color-background-weekend: transparent;
 
     --color-dot: var(--text-muted);
     --color-arrow: var(--text-muted);
@@ -116,6 +117,7 @@
 
   .month {
     font-weight: 500;
+    text-transform: capitalize;
   }
 
   .year {
@@ -154,7 +156,11 @@
     background-color: var(--interactive-hover);
   }
 
-  .table {
+  .weekend {
+    background-color: var(--color-background-weekend);
+  }
+
+  .calendar {
     border-collapse: collapse;
     width: 100%;
   }
@@ -199,7 +205,9 @@
             fill="currentColor"
             d="M34.52 239.03L228.87 44.69c9.37-9.37 24.57-9.37 33.94 0l22.67 22.67c9.36 9.36 9.37 24.52.04 33.9L131.49 256l154.02 154.75c9.34 9.38 9.32 24.54-.04 33.9l-22.67 22.67c-9.37 9.37-24.57 9.37-33.94 0L34.52 272.97c-9.37-9.37-9.37-24.57 0-33.94z" /></svg>
       </div>
-      <div class="reset-button" on:click={focusCurrentMonth}>Today</div>
+      <div class="reset-button" on:click={focusCurrentMonth}>
+        {todayDisplayStr}
+      </div>
       <div class="arrow" on:click={incrementMonth} aria-label="Next Month">
         <svg
           role="img"
@@ -210,7 +218,15 @@
       </div>
     </div>
   </div>
-  <table class="table">
+  <table class="calendar">
+    <colgroup>
+      {#if settings.showWeeklyNote}
+        <col />
+      {/if}
+      {#each month[1] as day}
+        <col class:weekend={isWeekend(day.date)} />
+      {/each}
+    </colgroup>
     <thead>
       <tr>
         {#if settings.showWeeklyNote}
@@ -238,12 +254,7 @@
             {#if !day.dayOfMonth}
               <td />
             {:else}
-              <Day
-                {day}
-                {activeFile}
-                {onHover}
-                {openOrCreateDailyNote}
-                {today} />
+              <Day {day} {onHover} {openOrCreateDailyNote} {today} />
             {/if}
           {/each}
         </tr>

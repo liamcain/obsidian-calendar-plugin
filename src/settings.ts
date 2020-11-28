@@ -2,12 +2,12 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 import { writable } from "svelte/store";
 
 import { DEFAULT_WEEK_FORMAT, DEFAULT_WORDS_PER_DOT } from "src/constants";
+
+import type CalendarPlugin from "./main";
 import {
   appHasDailyNotesPluginLoaded,
   IDailyNoteSettings,
-} from "src/io/dailyNotes";
-
-import type CalendarPlugin from "./main";
+} from "obsidian-daily-notes-interface";
 
 export interface ISettings {
   shouldStartWeekOnMonday: boolean;
@@ -44,6 +44,17 @@ export const SettingsInstance = writable<ISettings>({
   weeklyNoteFolder: "",
 });
 
+export function syncMomentLocaleWithSettings(settings: ISettings): void {
+  const { moment } = window;
+  const currentLocale = moment.locale();
+
+  moment.updateLocale(currentLocale, {
+    week: {
+      dow: settings.shouldStartWeekOnMonday ? 1 : 0,
+    },
+  });
+}
+
 export class CalendarSettingsTab extends PluginSettingTab {
   private plugin: CalendarPlugin;
 
@@ -72,7 +83,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
       this.addWeeklyNoteFolderSetting();
     }
 
-    if (!appHasDailyNotesPluginLoaded(this.app)) {
+    if (!appHasDailyNotesPluginLoaded()) {
       this.containerEl.createEl("h3", {
         text: "⚠️ Daily Notes plugin not enabled",
       });

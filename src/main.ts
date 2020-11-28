@@ -2,7 +2,12 @@ import type { Moment } from "moment";
 import { App, Plugin, WorkspaceLeaf } from "obsidian";
 
 import { VIEW_TYPE_CALENDAR } from "./constants";
-import { CalendarSettingsTab, SettingsInstance, ISettings } from "./settings";
+import {
+  CalendarSettingsTab,
+  SettingsInstance,
+  ISettings,
+  syncMomentLocaleWithSettings,
+} from "./settings";
 import CalendarView from "./view";
 
 declare global {
@@ -71,7 +76,17 @@ export default class CalendarPlugin extends Plugin {
       callback: () => this.view.redraw(),
     });
 
+    this.addCommand({
+      id: "reveal-active-note",
+      name: "Reveal active note",
+      callback: () => this.view.revealActiveNote(),
+    });
+
     await this.loadOptions();
+
+    // After we retrieve the settings, override window.moment to
+    // reflect 'start week on monday' setting
+    syncMomentLocaleWithSettings(this.options);
 
     this.addSettingTab(new CalendarSettingsTab(this.app, this));
 
@@ -110,6 +125,7 @@ export default class CalendarPlugin extends Plugin {
       changeOpts(old);
       return old;
     });
+    syncMomentLocaleWithSettings(this.options);
     await this.saveData(this.options);
   }
 }

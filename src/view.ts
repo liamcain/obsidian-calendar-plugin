@@ -2,12 +2,16 @@ import type { Moment } from "moment";
 import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
 
 import { VIEW_TYPE_CALENDAR } from "src/constants";
-import { getDailyNoteSettings, tryToCreateDailyNote } from "src/io/dailyNotes";
+import { tryToCreateDailyNote } from "src/io/dailyNotes";
 import { tryToCreateWeeklyNote } from "src/io/weeklyNotes";
 import { getNotePath } from "src/io/path";
 import { getWeeklyNoteSettings, ISettings } from "src/settings";
 
 import Calendar from "./ui/Calendar.svelte";
+import {
+  getDailyNote,
+  getDailyNoteSettings,
+} from "obsidian-daily-notes-interface";
 
 export default class CalendarView extends ItemView {
   private calendar: Calendar;
@@ -52,8 +56,7 @@ export default class CalendarView extends ItemView {
   }
 
   async onOpen(): Promise<void> {
-    const { vault, workspace } = this.app;
-    const activeLeaf = workspace.activeLeaf;
+    const activeLeaf = this.app.workspace.activeLeaf;
     const activeFile = activeLeaf
       ? (activeLeaf.view as FileView).file?.path
       : null;
@@ -66,21 +69,37 @@ export default class CalendarView extends ItemView {
         openOrCreateDailyNote: this._openOrCreateDailyNote,
         openOrCreateWeeklyNote: this.openOrCreateWeeklyNote,
         onHover: this.onHover,
-        vault,
       },
     });
   }
 
   public async redraw(): Promise<void> {
     if (this.calendar) {
-      const { vault, workspace } = this.app;
+      const { workspace } = this.app;
       const view = workspace.activeLeaf.view;
 
       let activeFile = null;
       if (view instanceof FileView) {
-        activeFile = view.file.basename;
+        activeFile = view.file?.basename;
       }
-      this.calendar.$set({ activeFile, vault });
+      this.calendar.$set({ activeFile });
+    }
+  }
+
+  public revealActiveNote(): void {
+    const { moment } = window;
+    const { activeLeaf } = this.app.workspace;
+
+    if (activeLeaf.view instanceof FileView) {
+      const { format } = getDailyNoteSettings();
+      const displayedMonth = moment(
+        activeLeaf.view.file.basename,
+        format,
+        true
+      );
+      if (displayedMonth.isValid()) {
+        this.calendar.$set({ displayedMonth });
+      }
     }
   }
 
@@ -90,9 +109,7 @@ export default class CalendarView extends ItemView {
   ): Promise<void> {
     const { workspace, vault } = this.app;
 
-    const startOfWeek = this.settings.shouldStartWeekOnMonday
-      ? date.clone().day("monday")
-      : date.clone().day("sunday");
+    const startOfWeek = date.clone().weekday(0);
 
     const { format, folder } = getWeeklyNoteSettings(this.settings);
     const baseFilename = startOfWeek.format(format);
@@ -103,7 +120,7 @@ export default class CalendarView extends ItemView {
     if (!fileObj) {
       // File doesn't exist
       tryToCreateWeeklyNote(startOfWeek, inNewSplit, this.settings, () => {
-        this.calendar.$set({ activeFile: baseFilename, vault });
+        this.calendar.$set({ activeFile: baseFilename });
       });
       return;
     }
@@ -122,18 +139,19 @@ export default class CalendarView extends ItemView {
     date: Moment,
     inNewSplit: boolean
   ): Promise<void> {
-    const { workspace, vault } = this.app;
-    const { format, folder } = getDailyNoteSettings();
-
-    const baseFilename = date.format(format);
-    const fullPath = getNotePath(folder, baseFilename);
-    const fileObj = vault.getAbstractFileByPath(fullPath) as TFile;
+    const { workspace } = this.app;
+    const fileObj = getDailyNote(date);
 
     if (!fileObj) {
       // File doesn't exist
-      tryToCreateDailyNote(date, inNewSplit, this.settings, () => {
-        this.calendar.$set({ activeFile: baseFilename, vault });
-      });
+      tryToCreateDailyNote(
+        date,
+        inNewSplit,
+        this.settings,
+        (dailyNote: TFile) => {
+          this.calendar.$set({ activeFile: dailyNote.basename });
+        }
+      );
       return;
     }
 

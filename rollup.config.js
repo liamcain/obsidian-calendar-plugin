@@ -7,7 +7,6 @@ import autoPreprocess from "svelte-preprocess";
 export default {
   input: "src/main.ts",
   output: {
-    sourcemap: "inline",
     format: "cjs",
     file: "main.js",
     exports: "default",
@@ -17,7 +16,7 @@ export default {
     svelte({
       preprocess: autoPreprocess(),
     }),
-    typescript({ sourceMap: true }),
+    typescript(),
     resolve({
       browser: true,
       dedupe: ["svelte"],

@@ -3,16 +3,15 @@
 
   import { IDay, isMetaPressed } from "./utils";
 
-  export let activeFile: string = null;
   export let onHover: (targetEl: EventTarget, filepath: string) => void;
   export let openOrCreateDailyNote: (date: Moment, inNewSplit: boolean) => void;
   export let day: IDay;
   export let today: Moment;
 
   const {
+    isActive,
     dayOfMonth,
     date,
-    formattedDate,
     numTasksRemaining,
     numDots,
     notePath,
@@ -20,7 +19,7 @@
 </script>
 
 <style>
-  td {
+  .day {
     border-radius: 4px;
     height: 100%;
     text-align: center;
@@ -37,7 +36,7 @@
     background-color: var(--interactive-accent);
   }
 
-  td {
+  .day {
     transition: background-color 0.1s ease-in, color 0.1s ease-in;
     background-color: var(--color-background-day);
     color: var(--color-text-day);
@@ -45,11 +44,11 @@
     font-size: 0.8em;
     padding: 8px;
   }
-  td:not(:empty):hover {
+  .day:not(:empty):hover {
     background-color: var(--interactive-hover);
   }
 
-  td.active:hover {
+  .day.active:hover {
     background-color: var(--interactive-accent-hover);
   }
 
@@ -83,37 +82,40 @@
   }
 </style>
 
-<td
-  class:today={date.isSame(today)}
-  class:active={activeFile === formattedDate}
-  on:click={(e) => {
-    openOrCreateDailyNote(date, isMetaPressed(e));
-  }}
-  on:pointerover={(e) => {
-    if (isMetaPressed(e)) {
-      onHover(e.target, notePath);
-    }
-  }}>
-  {dayOfMonth}
+<td>
+  <div
+    class="day"
+    class:active={isActive}
+    class:today={date.isSame(today)}
+    on:click={(e) => {
+      openOrCreateDailyNote(date, isMetaPressed(e));
+    }}
+    on:pointerover={(e) => {
+      if (isMetaPressed(e)) {
+        onHover(e.target, notePath);
+      }
+    }}>
+    {dayOfMonth}
 
-  <div class="dot-container">
-    {#await numDots then dots}
-      {#each Array(dots) as _}
-        <svg class="dot" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="3" cy="3" r="2" />
-        </svg>
-      {/each}
-    {/await}
-    {#await numTasksRemaining then hasTask}
-      {#if hasTask}
-        <svg
-          class="task"
-          viewBox="0 0 6 6"
-          xmlns="http://www.w3.org/2000/svg"><circle
-            cx="3"
-            cy="3"
-            r="2" /></svg>
-      {/if}
-    {/await}
+    <div class="dot-container">
+      {#await numDots then dots}
+        {#each Array(dots) as _}
+          <svg class="dot" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="3" cy="3" r="2" />
+          </svg>
+        {/each}
+      {/await}
+      {#await numTasksRemaining then hasTask}
+        {#if hasTask}
+          <svg
+            class="task"
+            viewBox="0 0 6 6"
+            xmlns="http://www.w3.org/2000/svg"><circle
+              cx="3"
+              cy="3"
+              r="2" /></svg>
+        {/if}
+      {/await}
+    </div>
   </div>
 </td>
