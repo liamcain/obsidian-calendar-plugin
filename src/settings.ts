@@ -2,15 +2,17 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 import { writable } from "svelte/store";
 
 import { DEFAULT_WEEK_FORMAT, DEFAULT_WORDS_PER_DOT } from "src/constants";
+
+import type CalendarPlugin from "./main";
 import {
   appHasDailyNotesPluginLoaded,
   IDailyNoteSettings,
-} from "src/io/dailyNotes";
+} from "obsidian-daily-notes-interface";
 
-import type CalendarPlugin from "./main";
+type IWeekStartOptions = "locale" | "sunday" | "monday";
 
 export interface ISettings {
-  shouldStartWeekOnMonday: boolean;
+  weekStart: IWeekStartOptions;
   shouldConfirmBeforeCreate: boolean;
 
   wordsPerDot: number;
@@ -33,8 +35,8 @@ export function getWeeklyNoteSettings(settings: ISettings): IDailyNoteSettings {
 }
 
 export const SettingsInstance = writable<ISettings>({
-  shouldStartWeekOnMonday: false,
   shouldConfirmBeforeCreate: true,
+  weekStart: "locale",
 
   wordsPerDot: DEFAULT_WORDS_PER_DOT,
 
@@ -43,6 +45,30 @@ export const SettingsInstance = writable<ISettings>({
   weeklyNoteTemplate: "",
   weeklyNoteFolder: "",
 });
+
+export function syncMomentLocaleWithSettings(settings: ISettings): void {
+  const { moment } = window;
+  const currentLocale = moment.locale();
+
+  // Save the initial locale weekspec so that we can restore
+  // it when toggling between the different options in settings.
+  if (!window._bundledLocaleWeekSpec) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    window._bundledLocaleWeekSpec = (<any>moment.localeData())._week;
+  }
+
+  if (settings.weekStart === "locale") {
+    moment.updateLocale(currentLocale, {
+      week: window._bundledLocaleWeekSpec,
+    });
+  } else {
+    moment.updateLocale(currentLocale, {
+      week: {
+        dow: settings.weekStart === "monday" ? 1 : 0,
+      },
+    });
+  }
+}
 
 export class CalendarSettingsTab extends PluginSettingTab {
   private plugin: CalendarPlugin;
@@ -72,7 +98,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
       this.addWeeklyNoteFolderSetting();
     }
 
-    if (!appHasDailyNotesPluginLoaded(this.app)) {
+    if (!appHasDailyNotesPluginLoaded()) {
       this.containerEl.createEl("h3", {
         text: "⚠️ Daily Notes plugin not enabled",
       });
@@ -86,7 +112,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
   addDotThresholdSetting(): void {
     new Setting(this.containerEl)
       .setName("Words per dot")
-      .setDesc("How many words should be represented a single dot?")
+      .setDesc("How many words should be represented by a single dot?")
       .addText((textfield) => {
         textfield.setPlaceholder(String(DEFAULT_WORDS_PER_DOT));
         textfield.inputEl.type = "number";
@@ -98,14 +124,23 @@ export class CalendarSettingsTab extends PluginSettingTab {
   }
 
   addStartWeekOnMondaySetting(): void {
+    const { moment } = window;
+
+    const [sunday, monday] = moment.weekdays();
+
     new Setting(this.containerEl)
-      .setName("Start week on Monday")
-      .setDesc("Enable this to show Monday as the first day on the calendar")
-      .addToggle((toggle) => {
-        toggle.setValue(this.plugin.options.shouldStartWeekOnMonday);
-        toggle.onChange(async (value) => {
+      .setName("Start week on:")
+      .setDesc(
+        "Choose what day of the week to start. Select 'Locale default' to use the default specified by moment.js"
+      )
+      .addDropdown((dropdown) => {
+        dropdown.addOption("locale", "Locale default");
+        dropdown.addOption("sunday", sunday);
+        dropdown.addOption("monday", monday);
+        dropdown.setValue(this.plugin.options.weekStart);
+        dropdown.onChange(async (value) => {
           this.plugin.writeOptions(
-            (old) => (old.shouldStartWeekOnMonday = value)
+            (old) => (old.weekStart = value as IWeekStartOptions)
           );
         });
       });

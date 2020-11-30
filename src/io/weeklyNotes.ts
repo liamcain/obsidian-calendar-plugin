@@ -1,11 +1,18 @@
 import type { Moment } from "moment";
 import { Notice, TFile } from "obsidian";
+import { getTemplateContents } from "obsidian-daily-notes-interface";
 
-import { getNotePath } from "src/io/path";
 import { getWeeklyNoteSettings, ISettings } from "src/settings";
 import { createConfirmationDialog } from "src/ui/modal";
 
-import { getTemplateContents } from "./dailyNotes";
+import { getNotePath } from "./path";
+
+export function getDayOfWeekNumericalValue(dayOfWeekName: string): number {
+  const daysOfWeek = window.moment
+    .weekdays(true)
+    .map((day) => day.toLowerCase());
+  return daysOfWeek.indexOf(dayOfWeekName.toLowerCase());
+}
 
 export async function createWeeklyNote(
   date: Moment,
@@ -23,7 +30,7 @@ export async function createWeeklyNote(
       templateContents
         .replace(
           /{{\s*(date|time)\s*:(.*?)}}/gi,
-          (_, timeOrDate, momentFormat) => {
+          (_, _timeOrDate, momentFormat) => {
             return date.format(momentFormat.trim());
           }
         )
@@ -31,7 +38,8 @@ export async function createWeeklyNote(
         .replace(
           /{{\s*(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\s*:(.*?)}}/gi,
           (_, dayOfWeek, momentFormat) => {
-            return date.day(dayOfWeek).format(momentFormat.trim());
+            const day = getDayOfWeekNumericalValue(dayOfWeek);
+            return date.weekday(day).format(momentFormat.trim());
           }
         )
     );
@@ -40,6 +48,17 @@ export async function createWeeklyNote(
     console.error(`Failed to create file: '${normalizedPath}'`, err);
     new Notice("Unable to create new file.");
   }
+}
+
+export function getWeeklyNote(date: Moment, settings: ISettings): TFile {
+  const { vault } = window.app;
+  const startOfWeek = date.clone().weekday(0);
+
+  const { format, folder } = getWeeklyNoteSettings(settings);
+  const baseFilename = startOfWeek.format(format);
+
+  const fullPath = getNotePath(folder, baseFilename);
+  return vault.getAbstractFileByPath(fullPath) as TFile;
 }
 
 /**

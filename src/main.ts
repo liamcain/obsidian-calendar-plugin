@@ -1,15 +1,30 @@
-import type { Moment } from "moment";
+import type { Moment, WeekSpec } from "moment";
 import { App, Plugin, WorkspaceLeaf } from "obsidian";
 
 import { VIEW_TYPE_CALENDAR } from "./constants";
-import { CalendarSettingsTab, SettingsInstance, ISettings } from "./settings";
+import {
+  CalendarSettingsTab,
+  SettingsInstance,
+  ISettings,
+  syncMomentLocaleWithSettings,
+} from "./settings";
 import CalendarView from "./view";
 
 declare global {
   interface Window {
     app: App;
     moment: () => Moment;
+    _bundledLocaleWeekSpec: WeekSpec;
   }
+}
+
+function configureMomentLocale(): void {
+  const lang = localStorage.getItem("language");
+
+  const currentLocale = window.moment.locale(lang);
+  console.info(
+    `trying to switch moment locale to ${lang}, got ${currentLocale}`
+  );
 }
 
 export default class CalendarPlugin extends Plugin {
@@ -23,6 +38,8 @@ export default class CalendarPlugin extends Plugin {
   }
 
   async onload(): Promise<void> {
+    configureMomentLocale();
+
     this.register(
       SettingsInstance.subscribe((value) => {
         this.options = value;
@@ -51,7 +68,8 @@ export default class CalendarPlugin extends Plugin {
     this.addCommand({
       id: "open-weekly-note",
       name: "Open Weekly Note",
-      callback: () => this.view.openOrCreateWeeklyNote(window.moment(), false),
+      callback: () =>
+        this.view.openOrCreateWeeklyNote(window.moment(), null, false),
     });
 
     this.addCommand({
@@ -60,7 +78,17 @@ export default class CalendarPlugin extends Plugin {
       callback: () => this.view.redraw(),
     });
 
+    this.addCommand({
+      id: "reveal-active-note",
+      name: "Reveal active note",
+      callback: () => this.view.revealActiveNote(),
+    });
+
     await this.loadOptions();
+
+    // After we retrieve the settings, override window.moment to
+    // reflect 'start week on monday' setting
+    syncMomentLocaleWithSettings(this.options);
 
     this.addSettingTab(new CalendarSettingsTab(this.app, this));
 
@@ -99,6 +127,7 @@ export default class CalendarPlugin extends Plugin {
       changeOpts(old);
       return old;
     });
+    syncMomentLocaleWithSettings(this.options);
     await this.saveData(this.options);
   }
 }

@@ -1,63 +1,71 @@
 <script lang="ts">
   import type { Moment } from "moment";
   import type { TFile } from "obsidian";
-  import { getDailyNoteSettings } from "obsidian-daily-notes-interface";
 
-  import { isMetaPressed } from "./utils";
+  import { getWeeklyNote } from "src/io/weeklyNotes";
+  import type { ISettings } from "src/settings";
 
-  const { format } = getDailyNoteSettings();
+  import {
+    getNumberOfDots,
+    getNumberOfRemainingTasks,
+    IDay,
+    isMetaPressed,
+  } from "./utils";
 
-  export let isActive: boolean;
-  export let date: Moment;
-  export let note: TFile;
-  export let numTasksRemaining: Promise<number>;
-  export let numDots: Promise<number>;
+  export let weeklyNote: TFile;
+  export let weekNum: number;
+  export let days: IDay[];
+
+  export let activeFile: string;
+  export let settings: ISettings;
 
   export let onHover: (
     targetEl: EventTarget,
     filename: string,
     note: TFile
   ) => void;
-  export let openOrCreateDailyNote: (
+  export let openOrCreateWeeklyNote: (
     date: Moment,
     existingFile: TFile,
     inNewSplit: boolean
   ) => void;
-  export let displayedMonth: Moment;
-  export let today: Moment;
+
+  let isActive: boolean;
+
+  const startOfWeek = days[0].date.weekday(0);
+  const { format } = getWeeklyNote(settings);
+  const formattedDate = startOfWeek.format(format);
+
+  $: isActive = activeFile && weeklyNote?.basename === activeFile;
 </script>
 
 <style>
-  .day {
-    background-color: var(--color-background-day);
+  .week-num {
+    background-color: var(--color-background-weeknum);
     border-radius: 4px;
-    color: var(--color-text-day);
+    color: var(--color-text-weeknum);
     cursor: pointer;
-    font-size: 0.8em;
+    font-size: 0.65em;
     height: 100%;
     padding: 4px;
     text-align: center;
     transition: background-color 0.1s ease-in, color 0.1s ease-in;
     vertical-align: baseline;
   }
-  .day:hover {
+
+  td {
+    border-right: 1px solid var(--background-modifier-border);
+  }
+
+  .week-num:hover {
     background-color: var(--interactive-hover);
   }
 
-  .day.active:hover {
+  .week-num.active:hover {
     background-color: var(--interactive-accent-hover);
   }
 
-  .adjacent-month {
-    opacity: 0.25;
-  }
-
-  .today {
-    color: var(--color-text-today);
-  }
-
-  .active,
-  .active.today {
+  .active {
     color: var(--text-on-accent);
     background-color: var(--interactive-accent);
   }
@@ -94,29 +102,27 @@
 
 <td>
   <div
-    class="day"
-    class:adjacent-month={!date.isSame(displayedMonth, 'month')}
+    class="week-num"
     class:active={isActive}
-    class:today={date.isSame(today, 'day')}
     on:click={(e) => {
-      openOrCreateDailyNote(date, note, isMetaPressed(e));
+      openOrCreateWeeklyNote(startOfWeek, weeklyNote, isMetaPressed(e));
     }}
     on:pointerover={(e) => {
       if (isMetaPressed(e)) {
-        onHover(e.target, date.format(format), note);
+        onHover(e.target, formattedDate, weeklyNote);
       }
     }}>
-    {date.format('D')}
+    {weekNum}
 
     <div class="dot-container">
-      {#await numDots then dots}
+      {#await getNumberOfDots(weeklyNote, settings) then dots}
         {#each Array(dots) as _}
           <svg class="dot" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
             <circle cx="3" cy="3" r="2" />
           </svg>
         {/each}
       {/await}
-      {#await numTasksRemaining then hasTask}
+      {#await getNumberOfRemainingTasks(weeklyNote) then hasTask}
         {#if hasTask}
           <svg
             class="task"

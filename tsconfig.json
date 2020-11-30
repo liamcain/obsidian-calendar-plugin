@@ -4,7 +4,7 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules/*"],
   "compilerOptions": {
-    "types": ["node", "svelte"],
+    "types": ["node", "svelte", "jest"],
     "baseUrl": ".",
     "paths": {
       "src": ["src/*"]

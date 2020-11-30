@@ -1,29 +1,30 @@
 <script lang="ts">
   import type { Moment } from "moment";
-  import type { Vault } from "obsidian";
   import { onDestroy } from "svelte";
 
   import Day from "./Day.svelte";
+  import WeekNum from "./WeekNum.svelte";
   import { SettingsInstance } from "../settings";
-  import {
-    isMetaPressed,
-    getWeekNumber,
-    getMonthData,
-    getDaysOfWeek,
-    IMonth,
-  } from "./utils";
+  import { getMonthData, getDaysOfWeek, IMonth, isWeekend } from "./utils";
+  import type { TFile } from "obsidian";
 
   const moment = window.moment;
 
-  // Include vault so that calendar refreshes when files are modified
-  export let vault: Vault;
-
   export let activeFile: string = null;
-  export let onHover: (targetEl: EventTarget, filepath: string) => void;
+  export let onHover: (
+    targetEl: EventTarget,
+    filename: string,
+    note: TFile
+  ) => void;
   export let displayedMonth: Moment = moment();
-  export let openOrCreateDailyNote: (date: Moment, inNewSplit: boolean) => void;
+  export let openOrCreateDailyNote: (
+    date: Moment,
+    existingFile: TFile,
+    inNewSplit: boolean
+  ) => void;
   export let openOrCreateWeeklyNote: (
     date: Moment,
+    existingFile: TFile,
     inNewSplit: boolean
   ) => void;
 
@@ -36,9 +37,12 @@
     settings = value;
   });
 
+  // Get the word 'Today' but localized to the current language
+  const todayDisplayStr = today.calendar().split(" ")[0];
+
   $: {
     daysOfWeek = getDaysOfWeek(settings);
-    month = getMonthData(displayedMonth, settings, vault);
+    month = getMonthData(activeFile, displayedMonth, settings);
   }
 
   function incrementMonth(): void {
@@ -55,8 +59,8 @@
 
   // 1 minute heartbeat to keep `today` reflecting the current day
   let heartbeat = setInterval(() => {
-    const isViewingCurrentMonth = today.isSame(displayedMonth);
-    today = window.moment();
+    const isViewingCurrentMonth = today.isSame(displayedMonth, "day");
+    today = moment();
 
     if (isViewingCurrentMonth) {
       // if it's midnight on the last day of the month, this will
@@ -76,6 +80,7 @@
     --color-background-heading: transparent;
     --color-background-day: transparent;
     --color-background-weeknum: transparent;
+    --color-background-weekend: transparent;
 
     --color-dot: var(--text-muted);
     --color-arrow: var(--text-muted);
@@ -92,12 +97,8 @@
     padding: 0 8px;
   }
 
-  th,
-  td {
-    border-radius: 4px;
-    height: 100%;
+  th {
     text-align: center;
-    vertical-align: baseline;
   }
 
   .nav {
@@ -116,6 +117,7 @@
 
   .month {
     font-weight: 500;
+    text-transform: capitalize;
   }
 
   .year {
@@ -139,22 +141,11 @@
     text-transform: uppercase;
   }
 
-  .week-num {
-    background-color: var(--color-background-day);
-    background-color: var(--color-background-weeknum);
-    border-right: 1px solid var(--background-modifier-border);
-    color: var(--color-text-weeknum);
-    cursor: pointer;
-    font-size: 0.65em;
-    padding: 0;
-    padding: 8px;
+  .weekend {
+    background-color: var(--color-background-weekend);
   }
 
-  .week-num:hover {
-    background-color: var(--interactive-hover);
-  }
-
-  .table {
+  .calendar {
     border-collapse: collapse;
     width: 100%;
   }
@@ -199,7 +190,9 @@
             fill="currentColor"
             d="M34.52 239.03L228.87 44.69c9.37-9.37 24.57-9.37 33.94 0l22.67 22.67c9.36 9.36 9.37 24.52.04 33.9L131.49 256l154.02 154.75c9.34 9.38 9.32 24.54-.04 33.9l-22.67 22.67c-9.37 9.37-24.57 9.37-33.94 0L34.52 272.97c-9.37-9.37-9.37-24.57 0-33.94z" /></svg>
       </div>
-      <div class="reset-button" on:click={focusCurrentMonth}>Today</div>
+      <div class="reset-button" on:click={focusCurrentMonth}>
+        {todayDisplayStr}
+      </div>
       <div class="arrow" on:click={incrementMonth} aria-label="Next Month">
         <svg
           role="img"
@@ -210,7 +203,15 @@
       </div>
     </div>
   </div>
-  <table class="table">
+  <table class="calendar">
+    <colgroup>
+      {#if settings.showWeeklyNote}
+        <col />
+      {/if}
+      {#each month[1].days as day}
+        <col class:weekend={isWeekend(day.date)} />
+      {/each}
+    </colgroup>
     <thead>
       <tr>
         {#if settings.showWeeklyNote}
@@ -225,26 +226,20 @@
       {#each month as week}
         <tr>
           {#if settings.showWeeklyNote}
-            <td
-              class="week-num"
-              on:click={(e) => {
-                const { date } = week.find((day) => !!day.date);
-                openOrCreateWeeklyNote(date, isMetaPressed(e));
-              }}>
-              {getWeekNumber(week)}
-            </td>
+            <WeekNum
+              {...week}
+              {activeFile}
+              {onHover}
+              {openOrCreateWeeklyNote}
+              {settings} />
           {/if}
-          {#each week as day (day)}
-            {#if !day.dayOfMonth}
-              <td />
-            {:else}
-              <Day
-                {day}
-                {activeFile}
-                {onHover}
-                {openOrCreateDailyNote}
-                {today} />
-            {/if}
+          {#each week.days as day}
+            <Day
+              {...day}
+              {onHover}
+              {openOrCreateDailyNote}
+              {today}
+              {displayedMonth} />
           {/each}
         </tr>
       {/each}
