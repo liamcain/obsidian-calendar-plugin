@@ -9,7 +9,7 @@ import {
   IDailyNoteSettings,
 } from "obsidian-daily-notes-interface";
 
-type IWeekStartOptions = "locale" | "monday" | "tuesday";
+type IWeekStartOptions = "locale" | "sunday" | "monday";
 
 export interface ISettings {
   weekStart: IWeekStartOptions;

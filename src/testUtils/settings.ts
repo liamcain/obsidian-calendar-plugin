@@ -6,7 +6,7 @@ export function getDefaultSettings(
   const settings = Object.assign(
     {},
     {
-      shouldStartWeekOnMonday: false,
+      weekStart: "sunday",
       shouldConfirmBeforeCreate: false,
       wordsPerDot: 50,
       showWeeklyNote: false,

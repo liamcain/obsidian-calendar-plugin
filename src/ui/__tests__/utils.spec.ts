@@ -17,17 +17,18 @@ describe("getMonthData", () => {
       const monthData = getMonthData(
         null,
         moment({ year: 2020, month: 0, day: 1 }),
-        getDefaultSettings({ shouldStartWeekOnMonday: false })
+        getDefaultSettings({ weekStart: "monday" })
       );
 
       expect(
-        monthData.map((week) => week.days.map((day) => day.dayOfMonth))
+        monthData.map((week) => week.days.map((day) => day.date.date()))
       ).toEqual([
-        [undefined, undefined, undefined, 1, 2, 3, 4],
+        [29, 30, 31, 1, 2, 3, 4],
         [5, 6, 7, 8, 9, 10, 11],
         [12, 13, 14, 15, 16, 17, 18],
         [19, 20, 21, 22, 23, 24, 25],
-        [26, 27, 28, 29, 30, 31, undefined],
+        [26, 27, 28, 29, 30, 31, 1],
+        [2, 3, 4, 5, 6, 7, 8],
       ]);
     });
 
@@ -35,17 +36,18 @@ describe("getMonthData", () => {
       const monthData = getMonthData(
         null,
         moment({ year: 2020, month: 0, day: 1 }),
-        getDefaultSettings({ shouldStartWeekOnMonday: true })
+        getDefaultSettings({ weekStart: "monday" })
       );
 
       expect(
-        monthData.map((week) => week.days.map((day) => day.dayOfMonth))
+        monthData.map((week) => week.days.map((day) => day.date.date()))
       ).toEqual([
-        [undefined, undefined, 1, 2, 3, 4, 5],
+        [30, 31, 1, 2, 3, 4, 5],
         [6, 7, 8, 9, 10, 11, 12],
         [13, 14, 15, 16, 17, 18, 19],
         [20, 21, 22, 23, 24, 25, 26],
-        [27, 28, 29, 30, 31, undefined, undefined],
+        [27, 28, 29, 30, 31, 1, 2],
+        [3, 4, 5, 6, 7, 8, 9],
       ]);
     });
   });
@@ -55,17 +57,18 @@ describe("getMonthData", () => {
       const monthData = getMonthData(
         null,
         moment({ year: 2020, month: 1, day: 1 }),
-        getDefaultSettings({ shouldStartWeekOnMonday: false })
+        getDefaultSettings({ weekStart: "sunday" })
       );
 
       expect(
-        monthData.map((week) => week.days.map((day) => day.dayOfMonth))
+        monthData.map((week) => week.days.map((day) => day.date.date()))
       ).toEqual([
-        [undefined, undefined, undefined, undefined, undefined, undefined, 1],
+        [26, 27, 28, 29, 30, 31, 1],
         [2, 3, 4, 5, 6, 7, 8],
         [9, 10, 11, 12, 13, 14, 15],
         [16, 17, 18, 19, 20, 21, 22],
         [23, 24, 25, 26, 27, 28, 29],
+        [1, 2, 3, 4, 5, 6, 7],
       ]);
     });
 
@@ -73,17 +76,18 @@ describe("getMonthData", () => {
       const monthData = getMonthData(
         null,
         moment({ year: 2020, month: 1, day: 1 }),
-        getDefaultSettings({ shouldStartWeekOnMonday: true })
+        getDefaultSettings({ weekStart: "monday" })
       );
 
       expect(
-        monthData.map((week) => week.days.map((day) => day.dayOfMonth))
+        monthData.map((week) => week.days.map((day) => day.date.date()))
       ).toEqual([
-        [undefined, undefined, undefined, undefined, undefined, 1, 2],
+        [27, 28, 29, 30, 31, 1, 2],
         [3, 4, 5, 6, 7, 8, 9],
         [10, 11, 12, 13, 14, 15, 16],
         [17, 18, 19, 20, 21, 22, 23],
-        [24, 25, 26, 27, 28, 29, undefined],
+        [24, 25, 26, 27, 28, 29, 1],
+        [2, 3, 4, 5, 6, 7, 8],
       ]);
     });
   });

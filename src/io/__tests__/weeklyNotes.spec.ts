@@ -19,14 +19,14 @@ describe("getDayOfWeekNumericalValue", () => {
   describe("start week on Sunday", () => {
     test("returns 0 for sunday", () => {
       getDefaultSettings({
-        shouldStartWeekOnMonday: false,
+        weekStart: "sunday",
       });
       expect(weeklyNote.getDayOfWeekNumericalValue("sunday")).toEqual(0);
     });
 
     test("returns 1 for monday", () => {
       getDefaultSettings({
-        shouldStartWeekOnMonday: false,
+        weekStart: "sunday",
       });
       expect(weeklyNote.getDayOfWeekNumericalValue("monday")).toEqual(1);
     });
@@ -35,14 +35,14 @@ describe("getDayOfWeekNumericalValue", () => {
   describe("start week on Monday", () => {
     test("returns 0 for sunday", () => {
       getDefaultSettings({
-        shouldStartWeekOnMonday: true,
+        weekStart: "monday",
       });
       expect(weeklyNote.getDayOfWeekNumericalValue("sunday")).toEqual(6);
     });
 
     test("returns 1 for monday", () => {
       getDefaultSettings({
-        shouldStartWeekOnMonday: true,
+        weekStart: "monday",
       });
       expect(weeklyNote.getDayOfWeekNumericalValue("monday")).toEqual(0);
     });
@@ -114,7 +114,7 @@ describe("createWeeklyNote", () => {
 
       await weeklyNote.createWeeklyNote(
         moment({ day: 22, month: 10, year: 2020 }),
-        getDefaultSettings({ shouldStartWeekOnMonday: true })
+        getDefaultSettings({ weekStart: "monday" })
       );
 
       expect(window.app.vault.create).toHaveBeenCalledWith(
