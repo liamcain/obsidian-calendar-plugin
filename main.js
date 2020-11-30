@@ -802,7 +802,7 @@ class CalendarSettingsTab extends obsidian.PluginSettingTab {
     addDotThresholdSetting() {
         new obsidian.Setting(this.containerEl)
             .setName("Words per dot")
-            .setDesc("How many words should be represented a single dot?")
+            .setDesc("How many words should be represented by a single dot?")
             .addText((textfield) => {
             textfield.setPlaceholder(String(DEFAULT_WORDS_PER_DOT));
             textfield.inputEl.type = "number";
@@ -1462,19 +1462,19 @@ function add_css$1() {
 
 function get_each_context$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[14] = list[i];
+	child_ctx[15] = list[i];
 	return child_ctx;
 }
 
-// (1:0) <script lang="ts">; ; ; import { getNumberOfDots, getNumberOfRemainingTasks, IDay, isMetaPressed, }
+// (1:0) <script lang="ts">; ; import { getWeeklyNoteSettings, ISettings }
 function create_catch_block_1$1(ctx) {
 	return { c: noop, m: noop, p: noop, d: noop };
 }
 
-// (94:62)          {#each Array(dots) as _}
+// (95:62)          {#each Array(dots) as _}
 function create_then_block_1$1(ctx) {
 	let each_1_anchor;
-	let each_value = Array(/*dots*/ ctx[13]);
+	let each_value = Array(/*dots*/ ctx[14]);
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -1499,7 +1499,7 @@ function create_then_block_1$1(ctx) {
 		p(ctx, dirty) {
 			if (dirty & /*weeklyNote, settings*/ 5) {
 				const old_length = each_value.length;
-				each_value = Array(/*dots*/ ctx[13]);
+				each_value = Array(/*dots*/ ctx[14]);
 				let i;
 
 				for (i = old_length; i < each_value.length; i += 1) {
@@ -1526,7 +1526,7 @@ function create_then_block_1$1(ctx) {
 	};
 }
 
-// (95:8) {#each Array(dots) as _}
+// (96:8) {#each Array(dots) as _}
 function create_each_block$1(ctx) {
 	let svg;
 	let circle;
@@ -1552,20 +1552,20 @@ function create_each_block$1(ctx) {
 	};
 }
 
-// (1:0) <script lang="ts">; ; ; import { getNumberOfDots, getNumberOfRemainingTasks, IDay, isMetaPressed, }
+// (1:0) <script lang="ts">; ; import { getWeeklyNoteSettings, ISettings }
 function create_pending_block_1$1(ctx) {
 	return { c: noop, m: noop, p: noop, d: noop };
 }
 
-// (1:0) <script lang="ts">; ; ; import { getNumberOfDots, getNumberOfRemainingTasks, IDay, isMetaPressed, }
+// (1:0) <script lang="ts">; ; import { getWeeklyNoteSettings, ISettings }
 function create_catch_block$1(ctx) {
 	return { c: noop, m: noop, p: noop, d: noop };
 }
 
-// (101:65)          {#if hasTask}
+// (102:65)          {#if hasTask}
 function create_then_block$1(ctx) {
 	let if_block_anchor;
-	let if_block = /*hasTask*/ ctx[12] && create_if_block$1();
+	let if_block = /*hasTask*/ ctx[13] && create_if_block$1();
 
 	return {
 		c() {
@@ -1577,7 +1577,7 @@ function create_then_block$1(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*hasTask*/ ctx[12]) {
+			if (/*hasTask*/ ctx[13]) {
 				if (if_block) ; else {
 					if_block = create_if_block$1();
 					if_block.c();
@@ -1595,7 +1595,7 @@ function create_then_block$1(ctx) {
 	};
 }
 
-// (102:8) {#if hasTask}
+// (103:8) {#if hasTask}
 function create_if_block$1(ctx) {
 	let svg;
 	let circle;
@@ -1621,7 +1621,7 @@ function create_if_block$1(ctx) {
 	};
 }
 
-// (1:0) <script lang="ts">; ; ; import { getNumberOfDots, getNumberOfRemainingTasks, IDay, isMetaPressed, }
+// (1:0) <script lang="ts">; ; import { getWeeklyNoteSettings, ISettings }
 function create_pending_block$1(ctx) {
 	return { c: noop, m: noop, p: noop, d: noop };
 }
@@ -1646,7 +1646,7 @@ function create_fragment$1(ctx) {
 		pending: create_pending_block_1$1,
 		then: create_then_block_1$1,
 		catch: create_catch_block_1$1,
-		value: 13
+		value: 14
 	};
 
 	handle_promise(promise = getNumberOfDots(/*weeklyNote*/ ctx[0], /*settings*/ ctx[2]), info);
@@ -1659,7 +1659,7 @@ function create_fragment$1(ctx) {
 		pending: create_pending_block$1,
 		then: create_then_block$1,
 		catch: create_catch_block$1,
-		value: 12
+		value: 13
 	};
 
 	handle_promise(promise_1 = getNumberOfRemainingTasks(/*weeklyNote*/ ctx[0]), info_1);
@@ -1709,7 +1709,7 @@ function create_fragment$1(ctx) {
 
 			if (dirty & /*weeklyNote, settings*/ 5 && promise !== (promise = getNumberOfDots(/*weeklyNote*/ ctx[0], /*settings*/ ctx[2])) && handle_promise(promise, info)) ; else {
 				const child_ctx = ctx.slice();
-				child_ctx[13] = info.resolved;
+				child_ctx[14] = info.resolved;
 				info.block.p(child_ctx, dirty);
 			}
 
@@ -1717,7 +1717,7 @@ function create_fragment$1(ctx) {
 
 			if (dirty & /*weeklyNote*/ 1 && promise_1 !== (promise_1 = getNumberOfRemainingTasks(/*weeklyNote*/ ctx[0])) && handle_promise(promise_1, info_1)) ; else {
 				const child_ctx = ctx.slice();
-				child_ctx[12] = info_1.resolved;
+				child_ctx[13] = info_1.resolved;
 				info_1.block.p(child_ctx, dirty);
 			}
 
@@ -1744,7 +1744,6 @@ function create_fragment$1(ctx) {
 function instance$1($$self, $$props, $$invalidate) {
 	
 	
-	
 	let { weeklyNote } = $$props;
 	let { weekNum } = $$props;
 	let { days } = $$props;
@@ -1754,7 +1753,8 @@ function instance$1($$self, $$props, $$invalidate) {
 	let { openOrCreateWeeklyNote } = $$props;
 	let isActive;
 	const startOfWeek = days[0].date.weekday(0);
-	const formattedDate = startOfWeek.format(settings.weeklyNoteFormat);
+	const { format } = getWeeklyNoteSettings(settings);
+	const formattedDate = startOfWeek.format(format);
 
 	const click_handler = e => {
 		openOrCreateWeeklyNote(startOfWeek, weeklyNote, isMetaPressed(e));

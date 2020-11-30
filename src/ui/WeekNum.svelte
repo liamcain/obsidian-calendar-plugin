@@ -2,8 +2,7 @@
   import type { Moment } from "moment";
   import type { TFile } from "obsidian";
 
-  import { getWeeklyNote } from "src/io/weeklyNotes";
-  import type { ISettings } from "src/settings";
+  import { getWeeklyNoteSettings, ISettings } from "src/settings";
 
   import {
     getNumberOfDots,
@@ -33,7 +32,7 @@
   let isActive: boolean;
 
   const startOfWeek = days[0].date.weekday(0);
-  const { format } = getWeeklyNote(settings);
+  const { format } = getWeeklyNoteSettings(settings);
   const formattedDate = startOfWeek.format(format);
 
   $: isActive = activeFile && weeklyNote?.basename === activeFile;
