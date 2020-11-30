@@ -9,8 +9,10 @@ import {
   IDailyNoteSettings,
 } from "obsidian-daily-notes-interface";
 
+type IWeekStartOptions = "locale" | "monday" | "tuesday";
+
 export interface ISettings {
-  shouldStartWeekOnMonday: boolean;
+  weekStart: IWeekStartOptions;
   shouldConfirmBeforeCreate: boolean;
 
   wordsPerDot: number;
@@ -33,8 +35,8 @@ export function getWeeklyNoteSettings(settings: ISettings): IDailyNoteSettings {
 }
 
 export const SettingsInstance = writable<ISettings>({
-  shouldStartWeekOnMonday: false,
   shouldConfirmBeforeCreate: true,
+  weekStart: "locale",
 
   wordsPerDot: DEFAULT_WORDS_PER_DOT,
 
@@ -48,11 +50,24 @@ export function syncMomentLocaleWithSettings(settings: ISettings): void {
   const { moment } = window;
   const currentLocale = moment.locale();
 
-  moment.updateLocale(currentLocale, {
-    week: {
-      dow: settings.shouldStartWeekOnMonday ? 1 : 0,
-    },
-  });
+  // Save the initial locale weekspec so that we can restore
+  // it when toggling between the different options in settings.
+  if (!window._bundledLocaleWeekSpec) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    window._bundledLocaleWeekSpec = (<any>moment.localeData())._week;
+  }
+
+  if (settings.weekStart === "locale") {
+    moment.updateLocale(currentLocale, {
+      week: window._bundledLocaleWeekSpec,
+    });
+  } else {
+    moment.updateLocale(currentLocale, {
+      week: {
+        dow: settings.weekStart === "monday" ? 1 : 0,
+      },
+    });
+  }
 }
 
 export class CalendarSettingsTab extends PluginSettingTab {
@@ -112,11 +127,14 @@ export class CalendarSettingsTab extends PluginSettingTab {
     new Setting(this.containerEl)
       .setName("Start week on Monday")
       .setDesc("Enable this to show Monday as the first day on the calendar")
-      .addToggle((toggle) => {
-        toggle.setValue(this.plugin.options.shouldStartWeekOnMonday);
-        toggle.onChange(async (value) => {
+      .addDropdown((dropdown) => {
+        dropdown.addOption("locale", "Locale default");
+        dropdown.addOption("sunday", "Sunday");
+        dropdown.addOption("monday", "Monday");
+        dropdown.setValue(this.plugin.options.weekStart);
+        dropdown.onChange(async (value) => {
           this.plugin.writeOptions(
-            (old) => (old.shouldStartWeekOnMonday = value)
+            (old) => (old.weekStart = value as IWeekStartOptions)
           );
         });
       });

@@ -4,14 +4,10 @@ import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
 import { VIEW_TYPE_CALENDAR } from "src/constants";
 import { tryToCreateDailyNote } from "src/io/dailyNotes";
 import { tryToCreateWeeklyNote } from "src/io/weeklyNotes";
-import { getNotePath } from "src/io/path";
 import { getWeeklyNoteSettings, ISettings } from "src/settings";
 
 import Calendar from "./ui/Calendar.svelte";
-import {
-  getDailyNote,
-  getDailyNoteSettings,
-} from "obsidian-daily-notes-interface";
+import { getDailyNoteSettings } from "obsidian-daily-notes-interface";
 
 export default class CalendarView extends ItemView {
   private calendar: Calendar;
@@ -51,8 +47,14 @@ export default class CalendarView extends ItemView {
     return Promise.resolve();
   }
 
-  onHover(targetEl: EventTarget, filepath: string): void {
-    this.app.workspace.trigger("link-hover", this, targetEl, "", filepath);
+  onHover(targetEl: EventTarget, filename: string, note: TFile): void {
+    this.app.workspace.trigger(
+      "link-hover",
+      this,
+      targetEl,
+      filename,
+      note?.path
+    );
   }
 
   async onOpen(): Promise<void> {
@@ -105,19 +107,17 @@ export default class CalendarView extends ItemView {
 
   async openOrCreateWeeklyNote(
     date: Moment,
+    existingFile: TFile,
     inNewSplit: boolean
   ): Promise<void> {
-    const { workspace, vault } = this.app;
+    const { workspace } = this.app;
 
     const startOfWeek = date.clone().weekday(0);
 
-    const { format, folder } = getWeeklyNoteSettings(this.settings);
+    const { format } = getWeeklyNoteSettings(this.settings);
     const baseFilename = startOfWeek.format(format);
 
-    const fullPath = getNotePath(folder, baseFilename);
-    const fileObj = vault.getAbstractFileByPath(fullPath) as TFile;
-
-    if (!fileObj) {
+    if (!existingFile) {
       // File doesn't exist
       tryToCreateWeeklyNote(startOfWeek, inNewSplit, this.settings, () => {
         this.calendar.$set({ activeFile: baseFilename });
@@ -128,21 +128,21 @@ export default class CalendarView extends ItemView {
     const leaf = inNewSplit
       ? workspace.splitActiveLeaf()
       : workspace.getUnpinnedLeaf();
-    await leaf.openFile(fileObj);
+    await leaf.openFile(existingFile);
 
     this.calendar.$set({
-      activeFile: fileObj.basename,
+      activeFile: existingFile.basename,
     });
   }
 
   async _openOrCreateDailyNote(
     date: Moment,
+    existingFile: TFile,
     inNewSplit: boolean
   ): Promise<void> {
     const { workspace } = this.app;
-    const fileObj = getDailyNote(date);
 
-    if (!fileObj) {
+    if (!existingFile) {
       // File doesn't exist
       tryToCreateDailyNote(
         date,
@@ -158,10 +158,10 @@ export default class CalendarView extends ItemView {
     const leaf = inNewSplit
       ? workspace.splitActiveLeaf()
       : workspace.getUnpinnedLeaf();
-    await leaf.openFile(fileObj);
+    await leaf.openFile(existingFile);
 
     this.calendar.$set({
-      activeFile: fileObj.basename,
+      activeFile: existingFile.basename,
     });
   }
 }

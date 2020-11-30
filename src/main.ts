@@ -1,4 +1,4 @@
-import type { Moment } from "moment";
+import type { Moment, WeekSpec } from "moment";
 import { App, Plugin, WorkspaceLeaf } from "obsidian";
 
 import { VIEW_TYPE_CALENDAR } from "./constants";
@@ -14,6 +14,7 @@ declare global {
   interface Window {
     app: App;
     moment: () => Moment;
+    _bundledLocaleWeekSpec: WeekSpec;
   }
 }
 
@@ -67,7 +68,8 @@ export default class CalendarPlugin extends Plugin {
     this.addCommand({
       id: "open-weekly-note",
       name: "Open Weekly Note",
-      callback: () => this.view.openOrCreateWeeklyNote(window.moment(), false),
+      callback: () =>
+        this.view.openOrCreateWeeklyNote(window.moment(), null, false),
     });
 
     this.addCommand({

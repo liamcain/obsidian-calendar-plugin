@@ -21,7 +21,7 @@ describe("getMonthData", () => {
       );
 
       expect(
-        monthData.map((week) => week.map((day) => day.dayOfMonth))
+        monthData.map((week) => week.days.map((day) => day.dayOfMonth))
       ).toEqual([
         [undefined, undefined, undefined, 1, 2, 3, 4],
         [5, 6, 7, 8, 9, 10, 11],
@@ -39,7 +39,7 @@ describe("getMonthData", () => {
       );
 
       expect(
-        monthData.map((week) => week.map((day) => day.dayOfMonth))
+        monthData.map((week) => week.days.map((day) => day.dayOfMonth))
       ).toEqual([
         [undefined, undefined, 1, 2, 3, 4, 5],
         [6, 7, 8, 9, 10, 11, 12],
@@ -59,7 +59,7 @@ describe("getMonthData", () => {
       );
 
       expect(
-        monthData.map((week) => week.map((day) => day.dayOfMonth))
+        monthData.map((week) => week.days.map((day) => day.dayOfMonth))
       ).toEqual([
         [undefined, undefined, undefined, undefined, undefined, undefined, 1],
         [2, 3, 4, 5, 6, 7, 8],
@@ -77,7 +77,7 @@ describe("getMonthData", () => {
       );
 
       expect(
-        monthData.map((week) => week.map((day) => day.dayOfMonth))
+        monthData.map((week) => week.days.map((day) => day.dayOfMonth))
       ).toEqual([
         [undefined, undefined, undefined, undefined, undefined, 1, 2],
         [3, 4, 5, 6, 7, 8, 9],

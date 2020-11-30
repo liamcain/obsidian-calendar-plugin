@@ -3,24 +3,28 @@
   import { onDestroy } from "svelte";
 
   import Day from "./Day.svelte";
+  import WeekNum from "./WeekNum.svelte";
   import { SettingsInstance } from "../settings";
-  import {
-    isMetaPressed,
-    getWeekNumber,
-    getMonthData,
-    getDaysOfWeek,
-    IMonth,
-    isWeekend,
-  } from "./utils";
+  import { getMonthData, getDaysOfWeek, IMonth, isWeekend } from "./utils";
+  import type { TFile } from "obsidian";
 
   const moment = window.moment;
 
   export let activeFile: string = null;
-  export let onHover: (targetEl: EventTarget, filepath: string) => void;
+  export let onHover: (
+    targetEl: EventTarget,
+    filename: string,
+    note: TFile
+  ) => void;
   export let displayedMonth: Moment = moment();
-  export let openOrCreateDailyNote: (date: Moment, inNewSplit: boolean) => void;
+  export let openOrCreateDailyNote: (
+    date: Moment,
+    existingFile: TFile,
+    inNewSplit: boolean
+  ) => void;
   export let openOrCreateWeeklyNote: (
     date: Moment,
+    existingFile: TFile,
     inNewSplit: boolean
   ) => void;
 
@@ -55,7 +59,7 @@
 
   // 1 minute heartbeat to keep `today` reflecting the current day
   let heartbeat = setInterval(() => {
-    const isViewingCurrentMonth = today.isSame(displayedMonth);
+    const isViewingCurrentMonth = today.isSame(displayedMonth, "day");
     today = moment();
 
     if (isViewingCurrentMonth) {
@@ -93,12 +97,8 @@
     padding: 0 8px;
   }
 
-  th,
-  td {
-    border-radius: 4px;
-    height: 100%;
+  th {
     text-align: center;
-    vertical-align: baseline;
   }
 
   .nav {
@@ -139,21 +139,6 @@
     margin: 0 4px;
     padding: 0px 4px;
     text-transform: uppercase;
-  }
-
-  .week-num {
-    background-color: var(--color-background-day);
-    background-color: var(--color-background-weeknum);
-    border-right: 1px solid var(--background-modifier-border);
-    color: var(--color-text-weeknum);
-    cursor: pointer;
-    font-size: 0.65em;
-    padding: 0;
-    padding: 8px;
-  }
-
-  .week-num:hover {
-    background-color: var(--interactive-hover);
   }
 
   .weekend {
@@ -223,7 +208,7 @@
       {#if settings.showWeeklyNote}
         <col />
       {/if}
-      {#each month[1] as day}
+      {#each month[1].days as day}
         <col class:weekend={isWeekend(day.date)} />
       {/each}
     </colgroup>
@@ -241,21 +226,20 @@
       {#each month as week}
         <tr>
           {#if settings.showWeeklyNote}
-            <td
-              class="week-num"
-              on:click={(e) => {
-                const { date } = week.find((day) => !!day.date);
-                openOrCreateWeeklyNote(date, isMetaPressed(e));
-              }}>
-              {getWeekNumber(week)}
-            </td>
+            <WeekNum
+              {...week}
+              {activeFile}
+              {onHover}
+              {openOrCreateWeeklyNote}
+              {settings} />
           {/if}
-          {#each week as day (day)}
-            {#if !day.dayOfMonth}
-              <td />
-            {:else}
-              <Day {day} {onHover} {openOrCreateDailyNote} {today} />
-            {/if}
+          {#each week.days as day}
+            <Day
+              {...day}
+              {onHover}
+              {openOrCreateDailyNote}
+              {today}
+              {displayedMonth} />
           {/each}
         </tr>
       {/each}

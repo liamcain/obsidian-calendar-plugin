@@ -13,12 +13,11 @@
   },
   "dependencies": {
     "obsidian": "obsidianmd/obsidian-api#master",
-    "obsidian-daily-notes-interface": "0.1.3",
+    "obsidian-daily-notes-interface": "0.2.0",
     "svelte": "3.29.7",
     "tslib": "2.0.3"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.12.7",
     "@rollup/plugin-commonjs": "16.0.0",
     "@rollup/plugin-node-resolve": "10.0.0",
     "@rollup/plugin-typescript": "6.1.0",
@@ -30,7 +29,6 @@
     "@types/node": "14.14.8",
     "@typescript-eslint/eslint-plugin": "4.8.1",
     "@typescript-eslint/parser": "4.8.1",
-    "babel-jest": "^26.6.3",
     "eslint": "7.13.0",
     "jest": "^26.6.3",
     "moment": "^2.29.1",

@@ -3,20 +3,24 @@ import * as os from "os";
 import type { TFile } from "obsidian";
 
 import type { ISettings } from "src/settings";
-import { getDailyNote } from "obsidian-daily-notes-interface";
+import { getAllDailyNotes, getDailyNote } from "obsidian-daily-notes-interface";
+import { getWeeklyNote } from "src/io/weeklyNotes";
 
 const NUM_MAX_DOTS = 5;
 
 export interface IDay {
-  isActive: string | null;
+  isActive: boolean;
   date: Moment;
-  dayOfMonth: number;
+  note: TFile;
   numTasksRemaining: Promise<number>;
   numDots: Promise<number>;
-  notePath: string;
 }
 
-export type IWeek = IDay[];
+export interface IWeek {
+  weekNum: number;
+  weeklyNote: TFile;
+  days: IDay[];
+}
 export type IMonth = IWeek[];
 
 function clamp(num: number, lowerBound: number, upperBound: number) {
@@ -28,27 +32,26 @@ function getWordCount(text: string): number {
   return (text.match(wordChars) || []).length;
 }
 
-async function getNumberOfDots(
-  dailyNoteFile: TFile | null,
+export async function getNumberOfDots(
+  note: TFile,
   settings: ISettings
 ): Promise<number> {
-  if (!dailyNoteFile || settings.wordsPerDot <= 0) {
+  if (!note || settings.wordsPerDot <= 0) {
     return 0;
   }
-  const fileContents = await window.app.vault.cachedRead(dailyNoteFile);
+  const fileContents = await window.app.vault.cachedRead(note);
+
   const numDots = getWordCount(fileContents) / settings.wordsPerDot;
   return clamp(Math.floor(numDots), 1, NUM_MAX_DOTS);
 }
 
-async function getNumberOfRemainingTasks(
-  dailyNoteFile?: TFile
-): Promise<number> {
-  if (!dailyNoteFile) {
+export async function getNumberOfRemainingTasks(note: TFile): Promise<number> {
+  if (!note) {
     return 0;
   }
 
   const { vault } = window.app;
-  const fileContents = await vault.cachedRead(dailyNoteFile);
+  const fileContents = await vault.cachedRead(note);
   return (fileContents.match(/(-|\*) \[ \]/g) || []).length;
 }
 
@@ -58,11 +61,6 @@ function isMacOS() {
 
 export function isMetaPressed(e: MouseEvent): boolean {
   return isMacOS() ? e.metaKey : e.ctrlKey;
-}
-
-export function getWeekNumber(week: IWeek): string {
-  const day = week.find((day) => !!day.date);
-  return day ? String(day.date.week()) : "";
 }
 
 export function getDaysOfWeek(_settings: ISettings): string[] {
@@ -83,41 +81,34 @@ export function getMonthData(
   settings: ISettings
 ): IMonth {
   const month = [];
+  let week: IWeek;
 
-  const startDate = displayedMonth.clone().date(1);
-  const endDayOfMonth = startDate.daysInMonth();
-  const startOffset = startDate.weekday();
+  const dailyNotes = getAllDailyNotes();
+  const startOfMonth = displayedMonth.clone().date(1);
+  const startOffset = startOfMonth.weekday();
+  let date: Moment = startOfMonth.clone().subtract(startOffset, "days");
 
-  let dayOfMonth = 1;
-  for (let weekNum = 0; weekNum <= 5; weekNum++) {
-    const week = [];
-    month.push(week);
-
-    for (let weekday = 0; weekday < 7; weekday++) {
-      // Insert empty objects for spacers
-      if (weekNum * 6 + weekday < startOffset || dayOfMonth > endDayOfMonth) {
-        week.push({});
-        continue;
-      }
-
-      const date: Moment = displayedMonth.clone().date(dayOfMonth);
-      const fileForDay = getDailyNote(date);
-
-      week.push({
-        date,
-        dayOfMonth,
-        isActive: activeFile && activeFile === fileForDay?.basename,
-        numDots: getNumberOfDots(fileForDay, settings),
-        numTasksRemaining: getNumberOfRemainingTasks(fileForDay),
-        notePath: fileForDay?.path,
-      });
-
-      dayOfMonth++;
+  for (let _day = 0; _day < 42; _day++) {
+    if (_day % 7 === 0) {
+      week = {
+        days: [],
+        weekNum: date.week(),
+        weeklyNote: getWeeklyNote(date, settings),
+      };
+      month.push(week);
     }
 
-    if (dayOfMonth > startDate.daysInMonth()) {
-      break;
-    }
+    const note = getDailyNote(date, dailyNotes);
+
+    week.days.push({
+      date,
+      note,
+      isActive: activeFile && activeFile === note?.basename,
+      numDots: getNumberOfDots(note, settings),
+      numTasksRemaining: getNumberOfRemainingTasks(note),
+    });
+
+    date = date.clone().add(1, "days");
   }
 
   return month;
