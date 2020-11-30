@@ -51,8 +51,7 @@
           "preprocess": true
         }
       ],
-      "^.+\\.ts$": "ts-jest",
-      "^.+\\.js$": "babel-jest"
+      "^.+\\.ts$": "ts-jest"
     },
     "moduleFileExtensions": [
       "js",

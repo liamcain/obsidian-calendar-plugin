@@ -112,7 +112,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
   addDotThresholdSetting(): void {
     new Setting(this.containerEl)
       .setName("Words per dot")
-      .setDesc("How many words should be represented a single dot?")
+      .setDesc("How many words should be represented by a single dot?")
       .addText((textfield) => {
         textfield.setPlaceholder(String(DEFAULT_WORDS_PER_DOT));
         textfield.inputEl.type = "number";
@@ -124,13 +124,19 @@ export class CalendarSettingsTab extends PluginSettingTab {
   }
 
   addStartWeekOnMondaySetting(): void {
+    const { moment } = window;
+
+    const [sunday, monday] = moment.weekdays();
+
     new Setting(this.containerEl)
-      .setName("Start week on Monday")
-      .setDesc("Enable this to show Monday as the first day on the calendar")
+      .setName("Start week on:")
+      .setDesc(
+        "Choose what day of the week to start. Select 'Locale default' to use the default specified by moment.js"
+      )
       .addDropdown((dropdown) => {
         dropdown.addOption("locale", "Locale default");
-        dropdown.addOption("sunday", "Sunday");
-        dropdown.addOption("monday", "Monday");
+        dropdown.addOption("sunday", sunday);
+        dropdown.addOption("monday", monday);
         dropdown.setValue(this.plugin.options.weekStart);
         dropdown.onChange(async (value) => {
           this.plugin.writeOptions(

@@ -93,14 +93,20 @@ export default class CalendarView extends ItemView {
     const { activeLeaf } = this.app.workspace;
 
     if (activeLeaf.view instanceof FileView) {
-      const { format } = getDailyNoteSettings();
-      const displayedMonth = moment(
-        activeLeaf.view.file.basename,
-        format,
-        true
-      );
+      // Check to see if the active note is a daily-note
+      let { format } = getDailyNoteSettings();
+      let displayedMonth = moment(activeLeaf.view.file.basename, format, true);
       if (displayedMonth.isValid()) {
         this.calendar.$set({ displayedMonth });
+        return;
+      }
+
+      // Check to see if the active note is a weekly-note
+      format = getWeeklyNoteSettings(this.settings).format;
+      displayedMonth = moment(activeLeaf.view.file.basename, format, true);
+      if (displayedMonth.isValid()) {
+        this.calendar.$set({ displayedMonth });
+        return;
       }
     }
   }

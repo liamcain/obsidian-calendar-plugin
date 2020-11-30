@@ -813,13 +813,15 @@ class CalendarSettingsTab extends obsidian.PluginSettingTab {
         });
     }
     addStartWeekOnMondaySetting() {
+        const { moment } = window;
+        const [sunday, monday] = moment.weekdays();
         new obsidian.Setting(this.containerEl)
-            .setName("Start week on Monday")
-            .setDesc("Enable this to show Monday as the first day on the calendar")
+            .setName("Start week on:")
+            .setDesc("Choose what day of the week to start. Select 'Locale default' to use the default specified by moment.js")
             .addDropdown((dropdown) => {
             dropdown.addOption("locale", "Locale default");
-            dropdown.addOption("sunday", "Sunday");
-            dropdown.addOption("monday", "Monday");
+            dropdown.addOption("sunday", sunday);
+            dropdown.addOption("monday", monday);
             dropdown.setValue(this.plugin.options.weekStart);
             dropdown.onChange(async (value) => {
                 this.plugin.writeOptions((old) => (old.weekStart = value));
@@ -2649,10 +2651,19 @@ class CalendarView extends obsidian.ItemView {
         const { moment } = window;
         const { activeLeaf } = this.app.workspace;
         if (activeLeaf.view instanceof obsidian.FileView) {
-            const { format } = main.getDailyNoteSettings();
-            const displayedMonth = moment(activeLeaf.view.file.basename, format, true);
+            // Check to see if the active note is a daily-note
+            let { format } = main.getDailyNoteSettings();
+            let displayedMonth = moment(activeLeaf.view.file.basename, format, true);
             if (displayedMonth.isValid()) {
                 this.calendar.$set({ displayedMonth });
+                return;
+            }
+            // Check to see if the active note is a weekly-note
+            format = getWeeklyNoteSettings(this.settings).format;
+            displayedMonth = moment(activeLeaf.view.file.basename, format, true);
+            if (displayedMonth.isValid()) {
+                this.calendar.$set({ displayedMonth });
+                return;
             }
         }
     }

@@ -716,9 +716,9 @@
     moment "*"
 
 "@types/node@*":
-  version "14.14.6"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.6.tgz#146d3da57b3c636cc0d1769396ce1cfa8991147f"
-  integrity sha512-6QlRuqsQ/Ox/aJEQWBEJG7A9+u7oSYl3mem/K8IzxXG/kAGbV1YPD9Bg9Zw3vyxC/YP+zONKwy8hGkSt1jxFMw==
+  version "14.14.10"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.10.tgz#5958a82e41863cfc71f2307b3748e3491ba03785"
+  integrity sha512-J32dgx2hw8vXrSbu4ZlVhn1Nm3GbeCFNw2FWL8S5QKucHGY0cyNwjdQdO+KMBZ4wpmC7KhLCiNsdk1RFRIYUQQ==
 
 "@types/node@14.14.8":
   version "14.14.8"
@@ -1470,14 +1470,7 @@ debug@^2.2.0, debug@^2.3.3:
   dependencies:
     ms "2.0.0"
 
-debug@^4.0.1, debug@^4.1.1:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/debug/-/debug-4.2.0.tgz#7f150f93920e94c58f5574c2fd01a3110effe7f1"
-  integrity sha512-IX2ncY78vDTjZMFUdmsvIRFY2Cf4FnD0wRs+nQwJU8Lu99/tPFdb0VybiiMTPe3I6rQmwsqQqRBvxU+bZ/I8sg==
-  dependencies:
-    ms "2.1.2"
-
-debug@^4.1.0:
+debug@^4.0.1, debug@^4.1.0, debug@^4.1.1:
   version "4.3.1"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.1.tgz#f0d229c505e0c6d8c49ac553d1b13dc183f6b2ee"
   integrity sha512-doEwdvm4PCeK4K3RQN2ZC2BYUBaxwLARCqZmMjtF8a51J2Rb0xpVloFRnCODwqjpwnAoao4pelN8l3RJdv3gRQ==
@@ -2217,18 +2210,10 @@ ignore@^5.1.4:
   resolved "https://registry.yarnpkg.com/ignore/-/ignore-5.1.8.tgz#f150a8b50a34289b33e22f5889abd4d8016f0e57"
   integrity sha512-BMpfD7PpiETpBl/A6S498BaIJ6Y/ABT93ETbby2fP00v4EbvPBXWEoaR1UBPKs3iR53pJY7EtZk5KACI57i1Uw==
 
-import-fresh@^3.0.0, import-fresh@^3.1.0:
+import-fresh@^3.0.0, import-fresh@^3.1.0, import-fresh@^3.2.1:
   version "3.2.2"
   resolved "https://registry.yarnpkg.com/import-fresh/-/import-fresh-3.2.2.tgz#fc129c160c5d68235507f4331a6baad186bdbc3e"
   integrity sha512-cTPNrlvJT6twpYy+YmKUKrTSjWFs3bjYjAhCwm+z4EOCubZxAuO+hHpRN64TqjEaYSHs7tJAE0w1CKMGmsG/lw==
-  dependencies:
-    parent-module "^1.0.0"
-    resolve-from "^4.0.0"
-
-import-fresh@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/import-fresh/-/import-fresh-3.2.1.tgz#633ff618506e793af5ac91bf48b72677e15cbe66"
-  integrity sha512-6e1q1cnWP2RXD9/keSkxHScg508CdXqXWgWBaETNhyuBFz+kUZlKboh+ISK+bU++DmbHimVBrOz/zzPe0sZ3sQ==
   dependencies:
     parent-module "^1.0.0"
     resolve-from "^4.0.0"
@@ -2306,13 +2291,6 @@ is-ci@^2.0.0:
   integrity sha512-YfJT7rkpQB0updsdHLGWrvhBJfcfzNNawYDNIyQXJz0IViGf75O8EBPKSdvw2rF+LGCsX4FZ8tcr3b19LcZq4w==
   dependencies:
     ci-info "^2.0.0"
-
-is-core-module@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/is-core-module/-/is-core-module-2.0.0.tgz#58531b70aed1db7c0e8d4eb1a0a2d1ddd64bd12d"
-  integrity sha512-jq1AH6C8MuteOoBPwkxHafmByhL9j5q4OaPGdbuD+ZtQJVzH+i6E3BJDQcBA09k57i2Hh2yQbEG8yObZ0jdlWw==
-  dependencies:
-    has "^1.0.3"
 
 is-core-module@^2.1.0:
   version "2.2.0"
@@ -3352,6 +3330,7 @@ obsidian-daily-notes-interface@0.2.0:
 
 "obsidian@github:obsidianmd/obsidian-api#master", obsidian@obsidianmd/obsidian-api#master:
   version "0.9.16"
+  uid "3efab21fc0cfef3ae75951beb66aadd479ae610d"
   resolved "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/3efab21fc0cfef3ae75951beb66aadd479ae610d"
   dependencies:
     "@types/codemirror" "0.0.98"
@@ -3716,20 +3695,12 @@ resolve-url@^0.2.1:
   resolved "https://registry.yarnpkg.com/resolve-url/-/resolve-url-0.2.1.tgz#2c637fe77c893afd2a663fe21aa9080068e2052a"
   integrity sha1-LGN/53yJOv0qZj/iGqkIAGjiBSo=
 
-resolve@^1.10.0, resolve@^1.18.1, resolve@^1.3.2:
+resolve@^1.10.0, resolve@^1.17.0, resolve@^1.18.1, resolve@^1.3.2:
   version "1.19.0"
   resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.19.0.tgz#1af5bf630409734a067cae29318aac7fa29a267c"
   integrity sha512-rArEXAgsBG4UgRGcynxWIWKFvh/XZCcS8UJdHhwy91zwAvCZIbcs+vAbflgBnNjYMs/i/i+/Ux6IZhML1yPvxg==
   dependencies:
     is-core-module "^2.1.0"
-    path-parse "^1.0.6"
-
-resolve@^1.17.0:
-  version "1.18.1"
-  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.18.1.tgz#018fcb2c5b207d2a6424aee361c5a266da8f4130"
-  integrity sha512-lDfCPaMKfOJXjy0dPayzPdF1phampNWr3qFCjAu+rw/qbQmr5jWH5xN2hwh9QKfw9E5v4hwV7A+jrCmL8yjjqA==
-  dependencies:
-    is-core-module "^2.0.0"
     path-parse "^1.0.6"
 
 ret@~0.1.10:
@@ -4020,9 +3991,9 @@ spdx-expression-parse@^3.0.0:
     spdx-license-ids "^3.0.0"
 
 spdx-license-ids@^3.0.0:
-  version "3.0.6"
-  resolved "https://registry.yarnpkg.com/spdx-license-ids/-/spdx-license-ids-3.0.6.tgz#c80757383c28abf7296744998cbc106ae8b854ce"
-  integrity sha512-+orQK83kyMva3WyPf59k1+Y525csj5JejicWut55zeTWANuN17qSiSLUXWtzHeNWORSvT7GLDJ/E/XiIWoXBTw==
+  version "3.0.7"
+  resolved "https://registry.yarnpkg.com/spdx-license-ids/-/spdx-license-ids-3.0.7.tgz#e9c18a410e5ed7e12442a549fbd8afa767038d65"
+  integrity sha512-U+MTEOO0AiDzxwFvoa4JVnMV6mZlJKk2sBLt90s7G0Gd0Mlknc7kxEn3nuDPNZRta7O2uy8oLcZLVT+4sqNZHQ==
 
 split-string@^3.0.1, split-string@^3.0.2:
   version "3.1.0"
@@ -4192,9 +4163,9 @@ svelte-preprocess@4.6.0:
     strip-indent "^3.0.0"
 
 svelte-preprocess@^4.0.0:
-  version "4.5.2"
-  resolved "https://registry.yarnpkg.com/svelte-preprocess/-/svelte-preprocess-4.5.2.tgz#37976d1e0d866eb382411d486f7468d2275087e9"
-  integrity sha512-ClUX5NecnGBwI+nJnnBvKKy0XutCq5uHTIKe6cPhpvuOj9AAnyvef9wOZAE93yr85OKPutGCNIJa/X1TrJ7O0Q==
+  version "4.6.1"
+  resolved "https://registry.yarnpkg.com/svelte-preprocess/-/svelte-preprocess-4.6.1.tgz#a7de4d91b32d5608b6637da960ee81e6089ae276"
+  integrity sha512-s7KdhR2pOsffyOzZIMEb315f6pfgeDnOWN47m6YKFeSEx3NMf/79Znc3vuG/Ai79SL/vsi86WDrjFPLGRfDesg==
   dependencies:
     "@types/pug" "^2.0.4"
     "@types/sass" "^1.16.0"
@@ -4401,7 +4372,12 @@ typedarray-to-buffer@^3.1.5:
   dependencies:
     is-typedarray "^1.0.0"
 
-typescript@*, typescript@4.0.5:
+typescript@*:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.1.2.tgz#6369ef22516fe5e10304aae5a5c4862db55380e9"
+  integrity sha512-thGloWsGH3SOxv1SoY7QojKi0tc+8FnOmiarEGMbd/lar7QOEd3hvlx3Fp5y6FlDUGl9L+pd4n2e+oToGMmhRQ==
+
+typescript@4.0.5:
   version "4.0.5"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.0.5.tgz#ae9dddfd1069f1cb5beb3ef3b2170dd7c1332389"
   integrity sha512-ywmr/VrTVCmNTJ6iV2LwIrfG1P+lv6luD8sUJs+2eI9NLGigaN+nUQc13iHqisq7bra9lnmUSYqbJvegraBOPQ==
