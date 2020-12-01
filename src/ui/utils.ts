@@ -1,9 +1,13 @@
 import type { Moment } from "moment";
 import * as os from "os";
-import type { TFile } from "obsidian";
+import { Notice, TFile } from "obsidian";
 
 import type { ISettings } from "src/settings";
-import { getAllDailyNotes, getDailyNote } from "obsidian-daily-notes-interface";
+import {
+  getAllDailyNotes,
+  getDailyNote,
+  IDailyNote,
+} from "obsidian-daily-notes-interface";
 import { getWeeklyNote } from "src/io/weeklyNotes";
 
 const NUM_MAX_DOTS = 5;
@@ -83,7 +87,12 @@ export function getMonthData(
   const month = [];
   let week: IWeek;
 
-  const dailyNotes = getAllDailyNotes();
+  let dailyNotes: IDailyNote[] = [];
+  try {
+    dailyNotes = getAllDailyNotes();
+  } catch (err) {
+    new Notice(err);
+  }
   const startOfMonth = displayedMonth.clone().date(1);
   const startOffset = startOfMonth.weekday();
   let date: Moment = startOfMonth.clone().subtract(startOffset, "days");

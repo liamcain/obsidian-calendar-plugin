@@ -522,6 +522,20 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 ***************************************************************************** */
+/* global Reflect, Promise */
+
+var extendStatics = function(d, b) {
+    extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+    return extendStatics(d, b);
+};
+
+function __extends(d, b) {
+    extendStatics(d, b);
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+}
 
 function __awaiter(thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -562,6 +576,13 @@ function __generator(thisArg, body) {
 }
 
 var DEFAULT_DATE_FORMAT = "YYYY-MM-DD";
+var DailyNotesFolderMissingError = /** @class */ (function (_super) {
+    __extends(DailyNotesFolderMissingError, _super);
+    function DailyNotesFolderMissingError() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return DailyNotesFolderMissingError;
+}(Error));
 function getNotePath(directory, filename) {
     if (!filename.endsWith(".md")) {
         filename += ".md";
@@ -702,6 +723,9 @@ function getAllDailyNotes() {
     var dailyNotesFolder = folder
         ? vault.getAbstractFileByPath(folder)
         : vault.getRoot();
+    if (!dailyNotesFolder) {
+        throw new DailyNotesFolderMissingError("Failed to find daily notes folder");
+    }
     var dailyNotes = [];
     for (var _i = 0, _b = dailyNotesFolder.children; _i < _b.length; _i++) {
         var loadedFile = _b[_i];
@@ -719,6 +743,7 @@ function getAllDailyNotes() {
 }
 
 exports.DEFAULT_DATE_FORMAT = DEFAULT_DATE_FORMAT;
+exports.DailyNotesFolderMissingError = DailyNotesFolderMissingError;
 exports.appHasDailyNotesPluginLoaded = appHasDailyNotesPluginLoaded;
 exports.createDailyNote = createDailyNote;
 exports.getAllDailyNotes = getAllDailyNotes;
@@ -1054,7 +1079,13 @@ function isWeekend(date) {
 function getMonthData(activeFile, displayedMonth, settings) {
     const month = [];
     let week;
-    const dailyNotes = main.getAllDailyNotes();
+    let dailyNotes = [];
+    try {
+        dailyNotes = main.getAllDailyNotes();
+    }
+    catch (err) {
+        new obsidian.Notice(err);
+    }
     const startOfMonth = displayedMonth.clone().date(1);
     const startOffset = startOfMonth.weekday();
     let date = startOfMonth.clone().subtract(startOffset, "days");
