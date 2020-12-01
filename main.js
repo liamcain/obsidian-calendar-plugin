@@ -721,7 +721,7 @@ function getAllDailyNotes() {
     var vault = window.app.vault;
     var _a = getDailyNoteSettings(), format = _a.format, folder = _a.folder;
     var dailyNotesFolder = folder
-        ? vault.getAbstractFileByPath(folder)
+        ? vault.getAbstractFileByPath(obsidian__default['default'].normalizePath(folder))
         : vault.getRoot();
     if (!dailyNotesFolder) {
         throw new DailyNotesFolderMissingError("Failed to find daily notes folder");
