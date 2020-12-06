@@ -9,13 +9,12 @@ import {
   IDailyNoteSettings,
 } from "obsidian-daily-notes-interface";
 
-type IWeekStartOptions = "locale" | "sunday" | "monday";
+type IWeekStartOption = "sunday" | "monday" | "locale";
 
 export interface ISettings {
-  weekStart: IWeekStartOptions;
-  shouldConfirmBeforeCreate: boolean;
-
   wordsPerDot: number;
+  weekStart: IWeekStartOption;
+  shouldConfirmBeforeCreate: boolean;
 
   // Weekly Note settings
   showWeeklyNote: boolean;
@@ -128,19 +127,23 @@ export class CalendarSettingsTab extends PluginSettingTab {
 
     const [sunday, monday] = moment.weekdays();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const localeWeekStartNum = (<any>moment.localeData())._week.dow;
+    const localeWeekStart = moment.weekdays()[localeWeekStartNum];
+
     new Setting(this.containerEl)
       .setName("Start week on:")
       .setDesc(
         "Choose what day of the week to start. Select 'Locale default' to use the default specified by moment.js"
       )
       .addDropdown((dropdown) => {
-        dropdown.addOption("locale", "Locale default");
+        dropdown.addOption("locale", `Locale default (${localeWeekStart})`);
         dropdown.addOption("sunday", sunday);
         dropdown.addOption("monday", monday);
         dropdown.setValue(this.plugin.options.weekStart);
         dropdown.onChange(async (value) => {
           this.plugin.writeOptions(
-            (old) => (old.weekStart = value as IWeekStartOptions)
+            (old) => (old.weekStart = value as IWeekStartOption)
           );
         });
       });

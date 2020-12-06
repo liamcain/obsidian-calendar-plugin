@@ -9,6 +9,38 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 var obsidian__default = /*#__PURE__*/_interopDefaultLegacy(obsidian);
 var path__default = /*#__PURE__*/_interopDefaultLegacy(path);
 
+const langToMomentLocale = {
+    en: null,
+    zh: "zh-cn",
+    "zh-TW": "zh-tw",
+    ru: "ru",
+    ko: "ko",
+    it: "it",
+    id: "id",
+    ro: "ro",
+    "pt-BR": "pt-br",
+    cz: "cs",
+    de: "de",
+    es: "es",
+    fr: "fr",
+    no: "nn",
+    pl: "pl",
+    pt: "pt",
+    tr: "tr",
+    hi: "hi",
+    nl: "nl",
+    ar: "ar",
+    ja: "ja",
+};
+async function configureMomentLocale() {
+    var _a;
+    const obsidianLang = localStorage.getItem("language");
+    const systemLang = (_a = navigator.language) === null || _a === void 0 ? void 0 : _a.toLowerCase();
+    const momentLocale = langToMomentLocale[obsidianLang] || systemLang;
+    const currentLocale = window.moment.locale(momentLocale);
+    console.info(`Calendar initialization: Trying to switch Moment.js global locale to ${momentLocale}, got ${currentLocale}`);
+}
+
 const DEFAULT_WEEK_FORMAT = "YYYY-[W]ww";
 const DEFAULT_WORDS_PER_DOT = 250;
 const VIEW_TYPE_CALENDAR = "calendar";
@@ -840,11 +872,14 @@ class CalendarSettingsTab extends obsidian.PluginSettingTab {
     addStartWeekOnMondaySetting() {
         const { moment } = window;
         const [sunday, monday] = moment.weekdays();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const localeWeekStartNum = moment.localeData()._week.dow;
+        const localeWeekStart = moment.weekdays()[localeWeekStartNum];
         new obsidian.Setting(this.containerEl)
             .setName("Start week on:")
             .setDesc("Choose what day of the week to start. Select 'Locale default' to use the default specified by moment.js")
             .addDropdown((dropdown) => {
-            dropdown.addOption("locale", "Locale default");
+            dropdown.addOption("locale", `Locale default (${localeWeekStart})`);
             dropdown.addOption("sunday", sunday);
             dropdown.addOption("monday", monday);
             dropdown.setValue(this.plugin.options.weekStart);
@@ -1071,6 +1106,9 @@ function getDaysOfWeek(_settings) {
 }
 function isWeekend(date) {
     return date.isoWeekday() === 6 || date.isoWeekday() === 7;
+}
+function getStartOfWeek(days, _weekNum) {
+    return days[0].date.weekday(0);
 }
 /**
  * Generate a 2D array of daily information to power
@@ -1502,7 +1540,7 @@ function create_catch_block_1$1(ctx) {
 	return { c: noop, m: noop, p: noop, d: noop };
 }
 
-// (95:62)          {#each Array(dots) as _}
+// (97:62)          {#each Array(dots) as _}
 function create_then_block_1$1(ctx) {
 	let each_1_anchor;
 	let each_value = Array(/*dots*/ ctx[14]);
@@ -1557,7 +1595,7 @@ function create_then_block_1$1(ctx) {
 	};
 }
 
-// (96:8) {#each Array(dots) as _}
+// (98:8) {#each Array(dots) as _}
 function create_each_block$1(ctx) {
 	let svg;
 	let circle;
@@ -1593,7 +1631,7 @@ function create_catch_block$1(ctx) {
 	return { c: noop, m: noop, p: noop, d: noop };
 }
 
-// (102:65)          {#if hasTask}
+// (104:65)          {#if hasTask}
 function create_then_block$1(ctx) {
 	let if_block_anchor;
 	let if_block = /*hasTask*/ ctx[13] && create_if_block$1();
@@ -1626,7 +1664,7 @@ function create_then_block$1(ctx) {
 	};
 }
 
-// (103:8) {#if hasTask}
+// (105:8) {#if hasTask}
 function create_if_block$1(ctx) {
 	let svg;
 	let circle;
@@ -1707,7 +1745,7 @@ function create_fragment$1(ctx) {
 			info_1.block.c();
 			attr(div0, "class", "dot-container svelte-8sk2hp");
 			attr(div1, "class", "week-num svelte-8sk2hp");
-			toggle_class(div1, "active", /*isActive*/ ctx[5]);
+			toggle_class(div1, "active", /*isActive*/ ctx[7]);
 			attr(td, "class", "svelte-8sk2hp");
 		},
 		m(target, anchor) {
@@ -1752,8 +1790,8 @@ function create_fragment$1(ctx) {
 				info_1.block.p(child_ctx, dirty);
 			}
 
-			if (dirty & /*isActive*/ 32) {
-				toggle_class(div1, "active", /*isActive*/ ctx[5]);
+			if (dirty & /*isActive*/ 128) {
+				toggle_class(div1, "active", /*isActive*/ ctx[7]);
 			}
 		},
 		i: noop,
@@ -1782,10 +1820,10 @@ function instance$1($$self, $$props, $$invalidate) {
 	let { settings } = $$props;
 	let { onHover } = $$props;
 	let { openOrCreateWeeklyNote } = $$props;
-	let isActive;
-	const startOfWeek = days[0].date.weekday(0);
 	const { format } = getWeeklyNoteSettings(settings);
-	const formattedDate = startOfWeek.format(format);
+	let startOfWeek;
+	let formattedDate;
+	let isActive;
 
 	const click_handler = e => {
 		openOrCreateWeeklyNote(startOfWeek, weeklyNote, isMetaPressed(e));
@@ -1809,9 +1847,17 @@ function instance$1($$self, $$props, $$invalidate) {
 
 	$$self.$$.update = () => {
 		if ($$self.$$.dirty & /*activeFile, weeklyNote*/ 513) {
-			 $$invalidate(5, isActive = activeFile && (weeklyNote === null || weeklyNote === void 0
+			 $$invalidate(7, isActive = activeFile && (weeklyNote === null || weeklyNote === void 0
 			? void 0
 			: weeklyNote.basename) === activeFile);
+		}
+
+		if ($$self.$$.dirty & /*days, weekNum*/ 258) {
+			 $$invalidate(5, startOfWeek = getStartOfWeek(days));
+		}
+
+		if ($$self.$$.dirty & /*startOfWeek*/ 32) {
+			 $$invalidate(6, formattedDate = startOfWeek.format(format));
 		}
 	};
 
@@ -1821,9 +1867,9 @@ function instance$1($$self, $$props, $$invalidate) {
 		settings,
 		onHover,
 		openOrCreateWeeklyNote,
-		isActive,
 		startOfWeek,
 		formattedDate,
+		isActive,
 		days,
 		activeFile,
 		click_handler,
@@ -2737,11 +2783,6 @@ class CalendarView extends obsidian.ItemView {
     }
 }
 
-function configureMomentLocale() {
-    const lang = localStorage.getItem("language");
-    const currentLocale = window.moment.locale(lang);
-    console.info(`trying to switch moment locale to ${lang}, got ${currentLocale}`);
-}
 class CalendarPlugin extends obsidian.Plugin {
     onunload() {
         this.app.workspace
