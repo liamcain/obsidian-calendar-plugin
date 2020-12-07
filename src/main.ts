@@ -1,6 +1,8 @@
 import type { Moment, WeekSpec } from "moment";
 import { App, Plugin, WorkspaceLeaf } from "obsidian";
 
+import { configureMomentLocale } from "src/localization";
+
 import { VIEW_TYPE_CALENDAR } from "./constants";
 import {
   CalendarSettingsTab,
@@ -16,15 +18,6 @@ declare global {
     moment: () => Moment;
     _bundledLocaleWeekSpec: WeekSpec;
   }
-}
-
-function configureMomentLocale(): void {
-  const lang = localStorage.getItem("language");
-
-  const currentLocale = window.moment.locale(lang);
-  console.info(
-    `trying to switch moment locale to ${lang}, got ${currentLocale}`
-  );
 }
 
 export default class CalendarPlugin extends Plugin {

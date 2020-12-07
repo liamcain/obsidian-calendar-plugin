@@ -75,6 +75,10 @@ export function isWeekend(date: Moment): boolean {
   return date.isoWeekday() === 6 || date.isoWeekday() === 7;
 }
 
+export function getStartOfWeek(days: IDay[], _weekNum: number): Moment {
+  return days[0].date.weekday(0);
+}
+
 /**
  * Generate a 2D array of daily information to power
  * the calendar view.

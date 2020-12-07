@@ -3328,9 +3328,8 @@ obsidian-daily-notes-interface@0.2.2:
     obsidian obsidianmd/obsidian-api#master
     tslib "2.0.3"
 
-"obsidian@github:obsidianmd/obsidian-api#master", obsidian@obsidianmd/obsidian-api#master:
+obsidian@obsidianmd/obsidian-api#master:
   version "0.9.16"
-  uid "3efab21fc0cfef3ae75951beb66aadd479ae610d"
   resolved "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/3efab21fc0cfef3ae75951beb66aadd479ae610d"
   dependencies:
     "@types/codemirror" "0.0.98"

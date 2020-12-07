@@ -7,6 +7,7 @@
   import {
     getNumberOfDots,
     getNumberOfRemainingTasks,
+    getStartOfWeek,
     IDay,
     isMetaPressed,
   } from "./utils";
@@ -29,13 +30,15 @@
     inNewSplit: boolean
   ) => void;
 
+  const { format } = getWeeklyNoteSettings(settings);
+
+  let startOfWeek: Moment;
+  let formattedDate: string;
   let isActive: boolean;
 
-  const startOfWeek = days[0].date.weekday(0);
-  const { format } = getWeeklyNoteSettings(settings);
-  const formattedDate = startOfWeek.format(format);
-
   $: isActive = activeFile && weeklyNote?.basename === activeFile;
+  $: startOfWeek = getStartOfWeek(days, weekNum);
+  $: formattedDate = startOfWeek.format(format);
 </script>
 
 <style>
