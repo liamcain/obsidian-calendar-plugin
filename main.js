@@ -10,7 +10,7 @@ var obsidian__default = /*#__PURE__*/_interopDefaultLegacy(obsidian);
 var path__default = /*#__PURE__*/_interopDefaultLegacy(path);
 
 const langToMomentLocale = {
-    en: null,
+    en: "en-gb",
     zh: "zh-cn",
     "zh-TW": "zh-tw",
     ru: "ru",
@@ -36,7 +36,10 @@ async function configureMomentLocale() {
     var _a;
     const obsidianLang = localStorage.getItem("language");
     const systemLang = (_a = navigator.language) === null || _a === void 0 ? void 0 : _a.toLowerCase();
-    const momentLocale = langToMomentLocale[obsidianLang] || systemLang;
+    let momentLocale = langToMomentLocale[obsidianLang];
+    if (obsidianLang === "en" && systemLang === "en-us") {
+        momentLocale = "en-us";
+    }
     const currentLocale = window.moment.locale(momentLocale);
     console.info(`Calendar initialization: Trying to switch Moment.js global locale to ${momentLocale}, got ${currentLocale}`);
 }
@@ -1169,7 +1172,7 @@ function create_catch_block_1(ctx) {
 	return { c: noop, m: noop, p: noop, d: noop };
 }
 
-// (99:32)          {#each Array(dots) as _}
+// (100:32)          {#each Array(dots) as _}
 function create_then_block_1(ctx) {
 	let each_1_anchor;
 	let each_value = Array(/*dots*/ ctx[13]);
@@ -1224,7 +1227,7 @@ function create_then_block_1(ctx) {
 	};
 }
 
-// (100:8) {#each Array(dots) as _}
+// (101:8) {#each Array(dots) as _}
 function create_each_block(ctx) {
 	let svg;
 	let circle;
@@ -1260,7 +1263,7 @@ function create_catch_block(ctx) {
 	return { c: noop, m: noop, p: noop, d: noop };
 }
 
-// (106:45)          {#if hasTask}
+// (107:45)          {#if hasTask}
 function create_then_block(ctx) {
 	let if_block_anchor;
 	let if_block = /*hasTask*/ ctx[12] && create_if_block();
@@ -1293,7 +1296,7 @@ function create_then_block(ctx) {
 	};
 }
 
-// (107:8) {#if hasTask}
+// (108:8) {#if hasTask}
 function create_if_block(ctx) {
 	let svg;
 	let circle;
@@ -1377,6 +1380,7 @@ function create_fragment(ctx) {
 			attr(div1, "class", "day svelte-1ynt2s5");
 			toggle_class(div1, "adjacent-month", !/*date*/ ctx[1].isSame(/*displayedMonth*/ ctx[7], "month"));
 			toggle_class(div1, "active", /*isActive*/ ctx[0]);
+			toggle_class(div1, "has-note", !!/*note*/ ctx[2]);
 			toggle_class(div1, "today", /*date*/ ctx[1].isSame(/*today*/ ctx[8], "day"));
 		},
 		m(target, anchor) {
@@ -1427,6 +1431,10 @@ function create_fragment(ctx) {
 
 			if (dirty & /*isActive*/ 1) {
 				toggle_class(div1, "active", /*isActive*/ ctx[0]);
+			}
+
+			if (dirty & /*note*/ 4) {
+				toggle_class(div1, "has-note", !!/*note*/ ctx[2]);
 			}
 
 			if (dirty & /*date, today*/ 258) {

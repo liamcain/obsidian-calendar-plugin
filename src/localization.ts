@@ -1,5 +1,5 @@
 const langToMomentLocale = {
-  en: null,
+  en: "en-gb",
   zh: "zh-cn",
   "zh-TW": "zh-tw",
   ru: "ru",
@@ -25,7 +25,11 @@ const langToMomentLocale = {
 export async function configureMomentLocale(): Promise<void> {
   const obsidianLang = localStorage.getItem("language");
   const systemLang = navigator.language?.toLowerCase();
-  const momentLocale = langToMomentLocale[obsidianLang] || systemLang;
+
+  let momentLocale = langToMomentLocale[obsidianLang];
+  if (obsidianLang === "en" && systemLang === "en-us") {
+    momentLocale = "en-us";
+  }
 
   const currentLocale = window.moment.locale(momentLocale);
   console.info(
