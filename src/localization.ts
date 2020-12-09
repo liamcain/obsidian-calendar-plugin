@@ -27,8 +27,8 @@ export async function configureMomentLocale(): Promise<void> {
   const systemLang = navigator.language?.toLowerCase();
 
   let momentLocale = langToMomentLocale[obsidianLang];
-  if (obsidianLang === "en" && systemLang === "en-us") {
-    momentLocale = "en-us";
+  if (systemLang.startsWith(obsidianLang)) {
+    momentLocale = systemLang;
   }
 
   const currentLocale = window.moment.locale(momentLocale);

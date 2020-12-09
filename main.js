@@ -37,8 +37,8 @@ async function configureMomentLocale() {
     const obsidianLang = localStorage.getItem("language");
     const systemLang = (_a = navigator.language) === null || _a === void 0 ? void 0 : _a.toLowerCase();
     let momentLocale = langToMomentLocale[obsidianLang];
-    if (obsidianLang === "en" && systemLang === "en-us") {
-        momentLocale = "en-us";
+    if (systemLang.startsWith(obsidianLang)) {
+        momentLocale = systemLang;
     }
     const currentLocale = window.moment.locale(momentLocale);
     console.info(`Calendar initialization: Trying to switch Moment.js global locale to ${momentLocale}, got ${currentLocale}`);
@@ -75,6 +75,9 @@ function safe_not_equal(a, b) {
 }
 function is_empty(obj) {
     return Object.keys(obj).length === 0;
+}
+function null_to_empty(value) {
+    return value == null ? '' : value;
 }
 
 function append(target, node) {
@@ -1090,6 +1093,15 @@ async function getNumberOfDots(note, settings) {
     const numDots = getWordCount(fileContents) / settings.wordsPerDot;
     return clamp(Math.floor(numDots), 1, NUM_MAX_DOTS);
 }
+function getNoteTags(note) {
+    if (!note) {
+        return [];
+    }
+    const { metadataCache } = window.app;
+    const frontmatter = metadataCache.getFileCache(note).frontmatter;
+    const tags = obsidian.parseFrontMatterTags(frontmatter) || [];
+    return tags.map((tag) => tag.substring(1));
+}
 async function getNumberOfRemainingTasks(note) {
     if (!note) {
         return 0;
@@ -1146,6 +1158,8 @@ function getMonthData(activeFile, displayedMonth, settings) {
             isActive: activeFile && activeFile === (note === null || note === void 0 ? void 0 : note.basename),
             numDots: getNumberOfDots(note, settings),
             numTasksRemaining: getNumberOfRemainingTasks(note),
+            contiguousStreakCount: 0,
+            tags: getNoteTags(note),
         });
         date = date.clone().add(1, "days");
     }
@@ -1163,7 +1177,7 @@ function add_css() {
 
 function get_each_context(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[14] = list[i];
+	child_ctx[15] = list[i];
 	return child_ctx;
 }
 
@@ -1172,10 +1186,10 @@ function create_catch_block_1(ctx) {
 	return { c: noop, m: noop, p: noop, d: noop };
 }
 
-// (100:32)          {#each Array(dots) as _}
+// (101:32)          {#each Array(dots) as _}
 function create_then_block_1(ctx) {
 	let each_1_anchor;
-	let each_value = Array(/*dots*/ ctx[13]);
+	let each_value = Array(/*dots*/ ctx[14]);
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -1200,7 +1214,7 @@ function create_then_block_1(ctx) {
 		p(ctx, dirty) {
 			if (dirty & /*numDots*/ 16) {
 				const old_length = each_value.length;
-				each_value = Array(/*dots*/ ctx[13]);
+				each_value = Array(/*dots*/ ctx[14]);
 				let i;
 
 				for (i = old_length; i < each_value.length; i += 1) {
@@ -1227,7 +1241,7 @@ function create_then_block_1(ctx) {
 	};
 }
 
-// (101:8) {#each Array(dots) as _}
+// (102:8) {#each Array(dots) as _}
 function create_each_block(ctx) {
 	let svg;
 	let circle;
@@ -1263,10 +1277,10 @@ function create_catch_block(ctx) {
 	return { c: noop, m: noop, p: noop, d: noop };
 }
 
-// (107:45)          {#if hasTask}
+// (108:45)          {#if hasTask}
 function create_then_block(ctx) {
 	let if_block_anchor;
-	let if_block = /*hasTask*/ ctx[12] && create_if_block();
+	let if_block = /*hasTask*/ ctx[13] && create_if_block();
 
 	return {
 		c() {
@@ -1278,7 +1292,7 @@ function create_then_block(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*hasTask*/ ctx[12]) {
+			if (/*hasTask*/ ctx[13]) {
 				if (if_block) ; else {
 					if_block = create_if_block();
 					if_block.c();
@@ -1296,7 +1310,7 @@ function create_then_block(ctx) {
 	};
 }
 
-// (108:8) {#if hasTask}
+// (109:8) {#if hasTask}
 function create_if_block(ctx) {
 	let svg;
 	let circle;
@@ -1337,6 +1351,7 @@ function create_fragment(ctx) {
 	let promise;
 	let t2;
 	let promise_1;
+	let div1_class_value;
 	let mounted;
 	let dispose;
 
@@ -1348,7 +1363,7 @@ function create_fragment(ctx) {
 		pending: create_pending_block_1,
 		then: create_then_block_1,
 		catch: create_catch_block_1,
-		value: 13
+		value: 14
 	};
 
 	handle_promise(promise = /*numDots*/ ctx[4], info);
@@ -1361,7 +1376,7 @@ function create_fragment(ctx) {
 		pending: create_pending_block,
 		then: create_then_block,
 		catch: create_catch_block,
-		value: 12
+		value: 13
 	};
 
 	handle_promise(promise_1 = /*numTasksRemaining*/ ctx[3], info_1);
@@ -1377,11 +1392,11 @@ function create_fragment(ctx) {
 			t2 = space();
 			info_1.block.c();
 			attr(div0, "class", "dot-container svelte-1ynt2s5");
-			attr(div1, "class", "day svelte-1ynt2s5");
-			toggle_class(div1, "adjacent-month", !/*date*/ ctx[1].isSame(/*displayedMonth*/ ctx[7], "month"));
+			attr(div1, "class", div1_class_value = "" + (null_to_empty(`day ${/*tags*/ ctx[5].join(" ")}`) + " svelte-1ynt2s5"));
+			toggle_class(div1, "adjacent-month", !/*date*/ ctx[1].isSame(/*displayedMonth*/ ctx[8], "month"));
 			toggle_class(div1, "active", /*isActive*/ ctx[0]);
 			toggle_class(div1, "has-note", !!/*note*/ ctx[2]);
-			toggle_class(div1, "today", /*date*/ ctx[1].isSame(/*today*/ ctx[8], "day"));
+			toggle_class(div1, "today", /*date*/ ctx[1].isSame(/*today*/ ctx[9], "day"));
 		},
 		m(target, anchor) {
 			insert(target, td, anchor);
@@ -1399,8 +1414,8 @@ function create_fragment(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(div1, "click", /*click_handler*/ ctx[10]),
-					listen(div1, "pointerover", /*pointerover_handler*/ ctx[11])
+					listen(div1, "click", /*click_handler*/ ctx[11]),
+					listen(div1, "pointerover", /*pointerover_handler*/ ctx[12])
 				];
 
 				mounted = true;
@@ -1413,7 +1428,7 @@ function create_fragment(ctx) {
 
 			if (dirty & /*numDots*/ 16 && promise !== (promise = /*numDots*/ ctx[4]) && handle_promise(promise, info)) ; else {
 				const child_ctx = ctx.slice();
-				child_ctx[13] = info.resolved;
+				child_ctx[14] = info.resolved;
 				info.block.p(child_ctx, dirty);
 			}
 
@@ -1421,24 +1436,28 @@ function create_fragment(ctx) {
 
 			if (dirty & /*numTasksRemaining*/ 8 && promise_1 !== (promise_1 = /*numTasksRemaining*/ ctx[3]) && handle_promise(promise_1, info_1)) ; else {
 				const child_ctx = ctx.slice();
-				child_ctx[12] = info_1.resolved;
+				child_ctx[13] = info_1.resolved;
 				info_1.block.p(child_ctx, dirty);
 			}
 
-			if (dirty & /*date, displayedMonth*/ 130) {
-				toggle_class(div1, "adjacent-month", !/*date*/ ctx[1].isSame(/*displayedMonth*/ ctx[7], "month"));
+			if (dirty & /*tags*/ 32 && div1_class_value !== (div1_class_value = "" + (null_to_empty(`day ${/*tags*/ ctx[5].join(" ")}`) + " svelte-1ynt2s5"))) {
+				attr(div1, "class", div1_class_value);
 			}
 
-			if (dirty & /*isActive*/ 1) {
+			if (dirty & /*tags, date, displayedMonth*/ 290) {
+				toggle_class(div1, "adjacent-month", !/*date*/ ctx[1].isSame(/*displayedMonth*/ ctx[8], "month"));
+			}
+
+			if (dirty & /*tags, isActive*/ 33) {
 				toggle_class(div1, "active", /*isActive*/ ctx[0]);
 			}
 
-			if (dirty & /*note*/ 4) {
+			if (dirty & /*tags, note*/ 36) {
 				toggle_class(div1, "has-note", !!/*note*/ ctx[2]);
 			}
 
-			if (dirty & /*date, today*/ 258) {
-				toggle_class(div1, "today", /*date*/ ctx[1].isSame(/*today*/ ctx[8], "day"));
+			if (dirty & /*tags, date, today*/ 546) {
+				toggle_class(div1, "today", /*date*/ ctx[1].isSame(/*today*/ ctx[9], "day"));
 			}
 		},
 		i: noop,
@@ -1466,6 +1485,7 @@ function instance($$self, $$props, $$invalidate) {
 	let { note } = $$props;
 	let { numTasksRemaining } = $$props;
 	let { numDots } = $$props;
+	let { tags } = $$props;
 	let { onHover } = $$props;
 	let { openOrCreateDailyNote } = $$props;
 	let { displayedMonth } = $$props;
@@ -1487,10 +1507,11 @@ function instance($$self, $$props, $$invalidate) {
 		if ("note" in $$props) $$invalidate(2, note = $$props.note);
 		if ("numTasksRemaining" in $$props) $$invalidate(3, numTasksRemaining = $$props.numTasksRemaining);
 		if ("numDots" in $$props) $$invalidate(4, numDots = $$props.numDots);
-		if ("onHover" in $$props) $$invalidate(5, onHover = $$props.onHover);
-		if ("openOrCreateDailyNote" in $$props) $$invalidate(6, openOrCreateDailyNote = $$props.openOrCreateDailyNote);
-		if ("displayedMonth" in $$props) $$invalidate(7, displayedMonth = $$props.displayedMonth);
-		if ("today" in $$props) $$invalidate(8, today = $$props.today);
+		if ("tags" in $$props) $$invalidate(5, tags = $$props.tags);
+		if ("onHover" in $$props) $$invalidate(6, onHover = $$props.onHover);
+		if ("openOrCreateDailyNote" in $$props) $$invalidate(7, openOrCreateDailyNote = $$props.openOrCreateDailyNote);
+		if ("displayedMonth" in $$props) $$invalidate(8, displayedMonth = $$props.displayedMonth);
+		if ("today" in $$props) $$invalidate(9, today = $$props.today);
 	};
 
 	return [
@@ -1499,6 +1520,7 @@ function instance($$self, $$props, $$invalidate) {
 		note,
 		numTasksRemaining,
 		numDots,
+		tags,
 		onHover,
 		openOrCreateDailyNote,
 		displayedMonth,
@@ -1520,10 +1542,11 @@ class Day extends SvelteComponent {
 			note: 2,
 			numTasksRemaining: 3,
 			numDots: 4,
-			onHover: 5,
-			openOrCreateDailyNote: 6,
-			displayedMonth: 7,
-			today: 8
+			tags: 5,
+			onHover: 6,
+			openOrCreateDailyNote: 7,
+			displayedMonth: 8,
+			today: 9
 		});
 	}
 }

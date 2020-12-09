@@ -12,6 +12,7 @@
   export let note: TFile;
   export let numTasksRemaining: Promise<number>;
   export let numDots: Promise<number>;
+  export let tags: string[];
 
   export let onHover: (
     targetEl: EventTarget,
@@ -94,7 +95,7 @@
 
 <td>
   <div
-    class="day"
+    class={`day ${tags.join(' ')}`}
     class:adjacent-month={!date.isSame(displayedMonth, 'month')}
     class:active={isActive}
     class:has-note={!!note}

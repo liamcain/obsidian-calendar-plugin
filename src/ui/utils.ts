@@ -1,6 +1,6 @@
 import type { Moment } from "moment";
 import * as os from "os";
-import { Notice, TFile } from "obsidian";
+import { Notice, parseFrontMatterTags, TFile } from "obsidian";
 
 import type { ISettings } from "src/settings";
 import {
@@ -16,8 +16,11 @@ export interface IDay {
   isActive: boolean;
   date: Moment;
   note: TFile;
+
   numTasksRemaining: Promise<number>;
   numDots: Promise<number>;
+  contiguousStreakCount: number;
+  tags: string[];
 }
 
 export interface IWeek {
@@ -49,6 +52,18 @@ export async function getNumberOfDots(
   return clamp(Math.floor(numDots), 1, NUM_MAX_DOTS);
 }
 
+export function getNoteTags(note: TFile | null): string[] {
+  if (!note) {
+    return [];
+  }
+
+  const { metadataCache } = window.app;
+  const frontmatter = metadataCache.getFileCache(note).frontmatter;
+  const tags = parseFrontMatterTags(frontmatter) || [];
+
+  return tags.map((tag) => `tag-${tag.substring(1)}`);
+}
+
 export async function getNumberOfRemainingTasks(note: TFile): Promise<number> {
   if (!note) {
     return 0;
@@ -77,6 +92,17 @@ export function isWeekend(date: Moment): boolean {
 
 export function getStartOfWeek(days: IDay[], _weekNum: number): Moment {
   return days[0].date.weekday(0);
+}
+
+function getContiguousStreakCounts(dailyNotes: IDailyNote[]): number[] {
+  const streak = 0;
+
+  const streaks = [];
+  let prevDailyNote: ?IDailyNote = null;
+  dailyNotes.forEach((dailyNote) => {
+    if (dailyNote) prevDailyNote = dailyNote;
+  });
+  return streaks;
 }
 
 /**
@@ -117,8 +143,11 @@ export function getMonthData(
       date,
       note,
       isActive: activeFile && activeFile === note?.basename,
+
       numDots: getNumberOfDots(note, settings),
       numTasksRemaining: getNumberOfRemainingTasks(note),
+      contiguousStreakCount: 0,
+      tags: getNoteTags(note),
     });
 
     date = date.clone().add(1, "days");
