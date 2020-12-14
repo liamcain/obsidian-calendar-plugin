@@ -15,6 +15,7 @@ export default {
   external: ["obsidian", "fs", "os", "path"],
   plugins: [
     svelte({
+      emitCss: false,
       preprocess: autoPreprocess(),
     }),
     typescript({ sourceMap: env.env === "DEV" }),

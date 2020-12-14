@@ -12,6 +12,7 @@
   export let note: TFile;
   export let numTasksRemaining: Promise<number>;
   export let numDots: Promise<number>;
+  export let tags: string[];
 
   export let onHover: (
     targetEl: EventTarget,
@@ -36,6 +37,7 @@
     font-size: 0.8em;
     height: 100%;
     padding: 4px;
+    position: relative;
     text-align: center;
     transition: background-color 0.1s ease-in, color 0.1s ease-in;
     vertical-align: baseline;
@@ -99,6 +101,7 @@
     class:active={isActive}
     class:has-note={!!note}
     class:today={date.isSame(today, 'day')}
+    data-tags={tags.join(' ')}
     on:click={(e) => {
       openOrCreateDailyNote(date, note, isMetaPressed(e));
     }}

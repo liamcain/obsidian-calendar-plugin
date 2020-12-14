@@ -1,6 +1,6 @@
 import type { Moment } from "moment";
 import * as os from "os";
-import { Notice, TFile } from "obsidian";
+import { Notice, parseFrontMatterTags, TFile } from "obsidian";
 
 import type { ISettings } from "src/settings";
 import {
@@ -16,8 +16,10 @@ export interface IDay {
   isActive: boolean;
   date: Moment;
   note: TFile;
+
   numTasksRemaining: Promise<number>;
   numDots: Promise<number>;
+  tags: string[];
 }
 
 export interface IWeek {
@@ -47,6 +49,24 @@ export async function getNumberOfDots(
 
   const numDots = getWordCount(fileContents) / settings.wordsPerDot;
   return clamp(Math.floor(numDots), 1, NUM_MAX_DOTS);
+}
+
+export function getNoteTags(note: TFile | null): string[] {
+  if (!note) {
+    return [];
+  }
+
+  const { metadataCache } = window.app;
+  const frontmatter = metadataCache.getFileCache(note)?.frontmatter;
+
+  const tags = [];
+
+  if (frontmatter) {
+    const frontmatterTags = parseFrontMatterTags(frontmatter) || [];
+    tags.push(...frontmatterTags);
+  }
+
+  return tags.map((tag) => tag.substring(1));
 }
 
 export async function getNumberOfRemainingTasks(note: TFile): Promise<number> {
@@ -117,8 +137,10 @@ export function getMonthData(
       date,
       note,
       isActive: activeFile && activeFile === note?.basename,
+
       numDots: getNumberOfDots(note, settings),
       numTasksRemaining: getNumberOfRemainingTasks(note),
+      tags: getNoteTags(note),
     });
 
     date = date.clone().add(1, "days");

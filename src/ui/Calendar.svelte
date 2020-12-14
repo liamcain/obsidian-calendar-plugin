@@ -38,7 +38,7 @@
   });
 
   // Get the word 'Today' but localized to the current language
-  const todayDisplayStr = today.calendar().split(" ")[0];
+  const todayDisplayStr = today.calendar().split(/\d|\s/)[0];
 
   $: {
     daysOfWeek = getDaysOfWeek(settings);
@@ -153,7 +153,7 @@
   th {
     background-color: var(--color-background-heading);
     color: var(--color-text-heading);
-    font-size: 0.6rem;
+    font-size: 0.6em;
     letter-spacing: 1px;
     padding: 4px 8px;
     text-transform: uppercase;
