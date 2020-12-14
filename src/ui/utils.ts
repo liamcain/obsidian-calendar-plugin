@@ -19,7 +19,6 @@ export interface IDay {
 
   numTasksRemaining: Promise<number>;
   numDots: Promise<number>;
-  contiguousStreakCount: number;
   tags: string[];
 }
 
@@ -67,7 +66,7 @@ export function getNoteTags(note: TFile | null): string[] {
     tags.push(...frontmatterTags);
   }
 
-  return tags.map((tag) => `tag-${tag.substring(1)}`);
+  return tags.map((tag) => tag.substring(1));
 }
 
 export async function getNumberOfRemainingTasks(note: TFile): Promise<number> {
@@ -99,19 +98,6 @@ export function isWeekend(date: Moment): boolean {
 export function getStartOfWeek(days: IDay[], _weekNum: number): Moment {
   return days[0].date.weekday(0);
 }
-
-// function getContiguousStreakCounts(dailyNotes: IDailyNote[]): number[] {
-// const streak = 0;
-
-// const streaks = [];
-// let prevDailyNote: ?IDailyNote = null;
-// dailyNotes.forEach((dailyNote) => {
-//   if (dailyNote.diff(prevDailyNote, 'days')) {
-//     streak++;
-//   } prevDailyNote = dailyNote;
-// });
-// return streaks;
-// }
 
 /**
  * Generate a 2D array of daily information to power
@@ -154,7 +140,6 @@ export function getMonthData(
 
       numDots: getNumberOfDots(note, settings),
       numTasksRemaining: getNumberOfRemainingTasks(note),
-      contiguousStreakCount: 0,
       tags: getNoteTags(note),
     });
 

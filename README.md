@@ -120,7 +120,7 @@ To configure the `format`, `folder`, and `template`, you will temporarily need t
 
 If you add the following snippet to your weekly note template, you can a seamless view of your week in a single click.
 
-```
+```md
 ## Week at a Glance
 
 ![[{{sunday:YYYY-MM-DD}}]]

@@ -96,11 +96,12 @@
 
 <td>
   <div
-    class={`day ${tags.join(' ')}`}
+    class="day"
     class:adjacent-month={!date.isSame(displayedMonth, 'month')}
     class:active={isActive}
     class:has-note={!!note}
     class:today={date.isSame(today, 'day')}
+    data-tags={tags.join(' ')}
     on:click={(e) => {
       openOrCreateDailyNote(date, note, isMetaPressed(e));
     }}
