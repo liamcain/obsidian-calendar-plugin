@@ -8,10 +8,19 @@ import { createConfirmationDialog } from "src/ui/modal";
 import { getNotePath } from "./path";
 
 export function getDayOfWeekNumericalValue(dayOfWeekName: string): number {
-  const daysOfWeek = window.moment
-    .weekdays(true)
-    .map((day) => day.toLowerCase());
-  return daysOfWeek.indexOf(dayOfWeekName.toLowerCase());
+  const { moment } = window;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const weekStart = (<any>moment.localeData())._week.dow;
+  const daysOfWeek = [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+  ];
+  return (daysOfWeek.indexOf(dayOfWeekName.toLowerCase()) + weekStart) % 7;
 }
 
 export async function createWeeklyNote(

@@ -37,6 +37,7 @@
     font-size: 0.8em;
     height: 100%;
     padding: 4px;
+    position: relative;
     text-align: center;
     transition: background-color 0.1s ease-in, color 0.1s ease-in;
     vertical-align: baseline;

@@ -58,8 +58,14 @@ export function getNoteTags(note: TFile | null): string[] {
   }
 
   const { metadataCache } = window.app;
-  const frontmatter = metadataCache.getFileCache(note).frontmatter;
-  const tags = parseFrontMatterTags(frontmatter) || [];
+  const frontmatter = metadataCache.getFileCache(note)?.frontmatter;
+
+  const tags = [];
+
+  if (frontmatter) {
+    const frontmatterTags = parseFrontMatterTags(frontmatter) || [];
+    tags.push(...frontmatterTags);
+  }
 
   return tags.map((tag) => `tag-${tag.substring(1)}`);
 }
@@ -94,16 +100,18 @@ export function getStartOfWeek(days: IDay[], _weekNum: number): Moment {
   return days[0].date.weekday(0);
 }
 
-function getContiguousStreakCounts(dailyNotes: IDailyNote[]): number[] {
-  const streak = 0;
+// function getContiguousStreakCounts(dailyNotes: IDailyNote[]): number[] {
+// const streak = 0;
 
-  const streaks = [];
-  let prevDailyNote: ?IDailyNote = null;
-  dailyNotes.forEach((dailyNote) => {
-    if (dailyNote) prevDailyNote = dailyNote;
-  });
-  return streaks;
-}
+// const streaks = [];
+// let prevDailyNote: ?IDailyNote = null;
+// dailyNotes.forEach((dailyNote) => {
+//   if (dailyNote.diff(prevDailyNote, 'days')) {
+//     streak++;
+//   } prevDailyNote = dailyNote;
+// });
+// return streaks;
+// }
 
 /**
  * Generate a 2D array of daily information to power
