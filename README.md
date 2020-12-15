@@ -179,8 +179,8 @@ You can open **weekly notes** in 2 ways: searching `Calendar: open weekly note` 
 
 If you like this plugin and would like to buy me a coffee, you can!
 
-<a href="https://www.buymeacoffee.com/liamcain" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-violet.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+[<img src="https://cdn.buymeacoffee.com/buttons/v2/default-purple.png" alt="BuyMeACoffee" width="100">](https://www.buymeacoffee.com/liamcain)
 
 Like my work and want to see more like it? You can sponsor me.
 
-<iframe src="https://github.com/sponsors/liamcain/button" title="Sponsor liamcain" height="35" width="116" style="border: 0;"></iframe>
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/liamcain?style=social)](https://github.com/sponsors/liamcain)
