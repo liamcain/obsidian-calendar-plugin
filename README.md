@@ -174,3 +174,13 @@ You can open **weekly notes** in 2 ways: searching `Calendar: open weekly note` 
 | `sunday`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, `saturday`, `sunday` | Because weekly tags refer to main days, you can refer to individual days like this `{{sunday:YYYY-MM-DD}}` to automatically insert the date for that particular day. Note, you must specify the date format! |
 | `title`                                                                                | Works the same as the daily note `{{title}}`. It will insert the title of the note                                                                                                                           |
 | `date`, `time`                                                                         | Works the same as the daily note `{{date}}` and `{{time}}`. It will insert the date and time of the first day of the week. Useful for creating a heading (e.g. `# # {{date:YYYY [Week] ww}}`).               |
+
+## Say Thanks 🙏
+
+If you like this plugin and would like to buy me a coffee, you can!
+
+<a href="https://www.buymeacoffee.com/liamcain" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-violet.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
+Like my work and want to see more like it? You can sponsor me.
+
+<iframe src="https://github.com/sponsors/liamcain/button" title="Sponsor liamcain" height="35" width="116" style="border: 0;"></iframe>
