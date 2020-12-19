@@ -1,22 +1,19 @@
 <script lang="ts">
   import type { Moment } from "moment";
   import type { TFile } from "obsidian";
+  import type { IDailyNote } from "obsidian-daily-notes-interface";
 
   import { getWeeklyNoteSettings, ISettings } from "src/settings";
 
-  import {
-    getNumberOfDots,
-    getNumberOfRemainingTasks,
-    getStartOfWeek,
-    IDay,
-    isMetaPressed,
-  } from "./utils";
+  import Dot from "./Dot.svelte";
+  import { getStartOfWeek, IDayMetadata, isMetaPressed } from "./utils";
 
   export let weeklyNote: TFile;
   export let weekNum: number;
-  export let days: IDay[];
+  export let days: IDailyNote[];
 
   export let activeFile: string;
+  export let metadata: IDayMetadata;
   export let settings: ISettings;
 
   export let onHover: (
@@ -79,27 +76,6 @@
     line-height: 6px;
     min-height: 6px;
   }
-
-  .dot,
-  .task {
-    display: inline-block;
-    fill: var(--color-dot);
-    height: 6px;
-    width: 6px;
-    margin: 0 1px;
-  }
-  .active .dot {
-    fill: var(--text-on-accent);
-  }
-
-  .task {
-    fill: none;
-    stroke: var(--color-dot);
-  }
-
-  .active .task {
-    stroke: var(--text-on-accent);
-  }
 </style>
 
 <td>
@@ -117,23 +93,10 @@
     {weekNum}
 
     <div class="dot-container">
-      {#await getNumberOfDots(weeklyNote, settings) then dots}
-        {#each Array(dots) as _}
-          <svg class="dot" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="3" cy="3" r="2" />
-          </svg>
+      {#await metadata.dots then dots}
+        {#each dots as dot}
+          <Dot {...dot} />
         {/each}
-      {/await}
-      {#await getNumberOfRemainingTasks(weeklyNote) then hasTask}
-        {#if hasTask}
-          <svg
-            class="task"
-            viewBox="0 0 6 6"
-            xmlns="http://www.w3.org/2000/svg"><circle
-              cx="3"
-              cy="3"
-              r="2" /></svg>
-        {/if}
       {/await}
     </div>
   </div>

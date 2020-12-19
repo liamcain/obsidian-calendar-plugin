@@ -3,21 +3,22 @@
   import type { TFile } from "obsidian";
   import { getDailyNoteSettings } from "obsidian-daily-notes-interface";
 
-  import { isMetaPressed } from "./utils";
+  import Dot from "./Dot.svelte";
+  import { activeFile } from "./stores";
+  import { CalendarSource, IDayMetadata, isMetaPressed } from "./utils";
 
   const { format } = getDailyNoteSettings();
 
-  export let isActive: boolean;
+  let isActive: boolean;
+  let metadata: IDayMetadata;
   export let date: Moment;
-  export let note: TFile;
-  export let numTasksRemaining: Promise<number>;
-  export let numDots: Promise<number>;
-  export let tags: string[];
+  export let file: TFile;
+  export let source: CalendarSource;
 
   export let onHover: (
     targetEl: EventTarget,
     filename: string,
-    note: TFile
+    file: TFile
   ) => void;
   export let openOrCreateDailyNote: (
     date: Moment,
@@ -26,6 +27,11 @@
   ) => void;
   export let displayedMonth: Moment;
   export let today: Moment;
+
+  $: {
+    isActive = $activeFile === file;
+    metadata = source.getMetadata(date);
+  }
 </script>
 
 <style>
@@ -71,27 +77,6 @@
     line-height: 6px;
     min-height: 6px;
   }
-
-  .dot,
-  .task {
-    display: inline-block;
-    fill: var(--color-dot);
-    height: 6px;
-    width: 6px;
-    margin: 0 1px;
-  }
-  .active .dot {
-    fill: var(--text-on-accent);
-  }
-
-  .task {
-    fill: none;
-    stroke: var(--color-dot);
-  }
-
-  .active .task {
-    stroke: var(--text-on-accent);
-  }
 </style>
 
 <td>
@@ -99,37 +84,23 @@
     class="day"
     class:adjacent-month={!date.isSame(displayedMonth, 'month')}
     class:active={isActive}
-    class:has-note={!!note}
+    class:has-note={!!file}
     class:today={date.isSame(today, 'day')}
-    data-tags={tags.join(' ')}
     on:click={(e) => {
-      openOrCreateDailyNote(date, note, isMetaPressed(e));
+      openOrCreateDailyNote(date, file, isMetaPressed(e));
     }}
     on:pointerover={(e) => {
       if (isMetaPressed(e)) {
-        onHover(e.target, date.format(format), note);
+        onHover(e.target, date.format(format), file);
       }
     }}>
     {date.format('D')}
 
     <div class="dot-container">
-      {#await numDots then dots}
-        {#each Array(dots) as _}
-          <svg class="dot" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="3" cy="3" r="2" />
-          </svg>
+      {#await metadata.dots then dots}
+        {#each dots as dot}
+          <Dot {...dot} />
         {/each}
-      {/await}
-      {#await numTasksRemaining then hasTask}
-        {#if hasTask}
-          <svg
-            class="task"
-            viewBox="0 0 6 6"
-            xmlns="http://www.w3.org/2000/svg"><circle
-              cx="3"
-              cy="3"
-              r="2" /></svg>
-        {/if}
       {/await}
     </div>
   </div>

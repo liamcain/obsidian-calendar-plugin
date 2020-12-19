@@ -1,5 +1,4 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import { writable } from "svelte/store";
 
 import { DEFAULT_WEEK_FORMAT, DEFAULT_WORDS_PER_DOT } from "src/constants";
 
@@ -32,18 +31,6 @@ export function getWeeklyNoteSettings(settings: ISettings): IDailyNoteSettings {
       : "",
   };
 }
-
-export const SettingsInstance = writable<ISettings>({
-  shouldConfirmBeforeCreate: true,
-  weekStart: "locale",
-
-  wordsPerDot: DEFAULT_WORDS_PER_DOT,
-
-  showWeeklyNote: false,
-  weeklyNoteFormat: "",
-  weeklyNoteTemplate: "",
-  weeklyNoteFolder: "",
-});
 
 export function syncMomentLocaleWithSettings(settings: ISettings): void {
   const { moment } = window;
@@ -126,9 +113,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
     const { moment } = window;
 
     const [sunday, monday] = moment.weekdays();
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const localeWeekStartNum = (<any>moment.localeData())._week.dow;
+    const localeWeekStartNum = window._bundledLocaleWeekSpec.dow;
     const localeWeekStart = moment.weekdays()[localeWeekStartNum];
 
     new Setting(this.containerEl)
