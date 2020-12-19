@@ -1,33 +1,34 @@
 import type { Moment } from "moment";
 import * as os from "os";
-import { Notice, parseFrontMatterTags, TFile } from "obsidian";
+import { parseFrontMatterTags, TFile } from "obsidian";
 
 import type { ISettings } from "src/settings";
-import {
-  getAllDailyNotes,
-  getDailyNote,
-  IDailyNote,
-} from "obsidian-daily-notes-interface";
+import { getDailyNote, IDailyNote } from "obsidian-daily-notes-interface";
 import { getWeeklyNote } from "src/io/weeklyNotes";
 
 const NUM_MAX_DOTS = 5;
 
-export interface IDay {
-  isActive: boolean;
-  date: Moment;
-  note: TFile;
-
-  numTasksRemaining: Promise<number>;
-  numDots: Promise<number>;
-  tags: string[];
-}
-
 export interface IWeek {
+  days: IDailyNote[];
   weekNum: number;
   weeklyNote: TFile;
-  days: IDay[];
 }
 export type IMonth = IWeek[];
+
+export interface IDot {
+  color: string;
+  isFilled: boolean;
+}
+export interface IDayMetadata {
+  classes?: string[];
+  dataAttributes?: string[];
+  dots: Promise<IDot[]>;
+}
+// export type IActualizedCalendarSource = Record<string, IDayMetadata>;
+// export type ICalendarSource = (
+//   month: IMonth,
+//   settings: ISettings
+// ) => IActualizedCalendarSource;
 
 function clamp(num: number, lowerBound: number, upperBound: number) {
   return Math.min(Math.max(lowerBound, num), upperBound);
@@ -38,7 +39,24 @@ function getWordCount(text: string): number {
   return (text.match(wordChars) || []).length;
 }
 
-export async function getNumberOfDots(
+// export function mergeSources(
+//   sources: IActualizedCalendarSource[]
+// ): IActualizedCalendarSource {
+//   const target: IActualizedCalendarSource = {};
+//   const merger = (source: IActualizedCalendarSource) => {
+//     for (const prop in source) {
+//       if (Object.prototype.hasOwnProperty.call(source, prop)) {
+//         target[prop] = source[prop];
+//       }
+//     }
+//   };
+//   for (let i = 0; i < arguments.length; i++) {
+//     merger(sources[i]);
+//   }
+//   return target;
+// }
+
+export async function getWordLengthAsDots(
   note: TFile,
   settings: ISettings
 ): Promise<number> {
@@ -95,7 +113,7 @@ export function isWeekend(date: Moment): boolean {
   return date.isoWeekday() === 6 || date.isoWeekday() === 7;
 }
 
-export function getStartOfWeek(days: IDay[], _weekNum: number): Moment {
+export function getStartOfWeek(days: IDailyNote[], _weekNum: number): Moment {
   return days[0].date.weekday(0);
 }
 
@@ -104,19 +122,13 @@ export function getStartOfWeek(days: IDay[], _weekNum: number): Moment {
  * the calendar view.
  */
 export function getMonthData(
-  activeFile: string | null,
+  dailyNotes: IDailyNote[],
   displayedMonth: Moment,
   settings: ISettings
 ): IMonth {
   const month = [];
   let week: IWeek;
 
-  let dailyNotes: IDailyNote[] = [];
-  try {
-    dailyNotes = getAllDailyNotes();
-  } catch (err) {
-    new Notice(err);
-  }
   const startOfMonth = displayedMonth.clone().date(1);
   const startOffset = startOfMonth.weekday();
   let date: Moment = startOfMonth.clone().subtract(startOffset, "days");
@@ -131,20 +143,83 @@ export function getMonthData(
       month.push(week);
     }
 
-    const note = getDailyNote(date, dailyNotes);
+    const file = getDailyNote(date, dailyNotes);
 
     week.days.push({
       date,
-      note,
-      isActive: activeFile && activeFile === note?.basename,
+      file,
+      // isActive: activeFile && activeFile === note?.basename,
 
-      numDots: getNumberOfDots(note, settings),
-      numTasksRemaining: getNumberOfRemainingTasks(note),
-      tags: getNoteTags(note),
+      // numDots: getNumberOfDots(note, settings),
+      // numTasksRemaining: getNumberOfRemainingTasks(note),
+      // tags: getNoteTags(note),
     });
 
     date = date.clone().add(1, "days");
   }
 
   return month;
+}
+
+export async function getDotsForDailyNote(
+  dailyNote: TFile,
+  settings: ISettings
+): Promise<IDot[]> {
+  const numSolidDots = await getWordLengthAsDots(dailyNote, settings);
+  const numHollowDots = await getNumberOfRemainingTasks(dailyNote);
+
+  const dots = [];
+  for (let i = 0; i < numSolidDots; i++) {
+    dots.push({
+      color: "default",
+      isFilled: true,
+    });
+  }
+  for (let i = 0; i < numHollowDots; i++) {
+    dots.push({
+      color: "default",
+      isFilled: false,
+    });
+  }
+
+  return dots;
+}
+
+export abstract class CalendarSource {
+  abstract getMetadata(date: Moment): IDayMetadata;
+}
+
+export class DailyNoteSource extends CalendarSource {
+  dailyNotes: IDailyNote[];
+  settings: ISettings;
+
+  constructor(dailyNotes: IDailyNote[], settings: ISettings) {
+    super();
+
+    this.dailyNotes = dailyNotes;
+    this.settings = settings;
+  }
+
+  getMetadata(date: Moment): IDayMetadata {
+    const file = this.dailyNotes.find((item) => item.date === date).file;
+    return {
+      classes: [],
+      dataAttributes: getNoteTags(file),
+      dots: getDotsForDailyNote(file, this.settings),
+    };
+  }
+}
+
+export function buildDailyNotesSource(
+  dailyNotes: IDailyNote[],
+  settings: ISettings
+): (date: Moment) => IDayMetadata {
+  return (date: Moment) => {
+    const file = dailyNotes.find((item) => item.date === date).file;
+    return {
+      classes: [],
+      dataAttributes: getNoteTags(file),
+      dots: getDotsForDailyNote(file, settings),
+    };
+  };
 }

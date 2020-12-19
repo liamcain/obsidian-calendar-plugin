@@ -4,10 +4,9 @@ import { App, Plugin, WorkspaceLeaf } from "obsidian";
 import { configureMomentLocale } from "src/localization";
 
 import { VIEW_TYPE_CALENDAR } from "./constants";
-import { getWeeklyNote } from "./io/weeklyNotes";
+import { settings } from "./ui/stores";
 import {
   CalendarSettingsTab,
-  SettingsInstance,
   ISettings,
   syncMomentLocaleWithSettings,
 } from "./settings";
@@ -33,7 +32,7 @@ export default class CalendarPlugin extends Plugin {
 
   async onload(): Promise<void> {
     this.register(
-      SettingsInstance.subscribe((value) => {
+      settings.subscribe((value) => {
         this.options = value;
         configureMomentLocale(this.options);
       })
@@ -108,7 +107,7 @@ export default class CalendarPlugin extends Plugin {
 
   async loadOptions(): Promise<void> {
     const options = await this.loadData();
-    SettingsInstance.update((old) => {
+    settings.update((old) => {
       return {
         ...old,
         ...(options || {}),
@@ -119,7 +118,7 @@ export default class CalendarPlugin extends Plugin {
   }
 
   async writeOptions(changeOpts: (settings: ISettings) => void): Promise<void> {
-    SettingsInstance.update((old) => {
+    settings.update((old) => {
       changeOpts(old);
       return old;
     });

@@ -1,16 +1,22 @@
 <script lang="ts">
   import type { Moment } from "moment";
+  import { Notice, TFile } from "obsidian";
   import { onDestroy } from "svelte";
 
   import Day from "./Day.svelte";
-  import WeekNum from "./WeekNum.svelte";
-  import { SettingsInstance } from "../settings";
-  import { getMonthData, getDaysOfWeek, IMonth, isWeekend } from "./utils";
-  import type { TFile } from "obsidian";
+  // import WeekNum from "./WeekNum.svelte";
+  import { settings } from "./stores";
+  import {
+    getMonthData,
+    getDaysOfWeek,
+    CalendarSource,
+    IMonth,
+    isWeekend,
+  } from "./utils";
+  import { getAllDailyNotes, IDailyNote } from "obsidian-daily-notes-interface";
 
   const moment = window.moment;
 
-  export let activeFile: string = null;
   export let onHover: (
     targetEl: EventTarget,
     filename: string,
@@ -22,27 +28,31 @@
     existingFile: TFile,
     inNewSplit: boolean
   ) => void;
-  export let openOrCreateWeeklyNote: (
-    date: Moment,
-    existingFile: TFile,
-    inNewSplit: boolean
-  ) => void;
+  // export let openOrCreateWeeklyNote: (
+  //   date: Moment,
+  //   existingFile: TFile,
+  //   inNewSplit: boolean
+  // ) => void;
+  export let source: CalendarSource;
 
   let month: IMonth;
   let daysOfWeek: string[];
 
   let today = moment();
-  let settings = null;
-  let settingsUnsubscribe = SettingsInstance.subscribe((value) => {
-    settings = value;
-  });
 
   // Get the word 'Today' but localized to the current language
   const todayDisplayStr = today.calendar().split(/\d|\s/)[0];
 
+  let dailyNotes: IDailyNote[] = [];
+  try {
+    dailyNotes = getAllDailyNotes();
+  } catch (err) {
+    new Notice(err);
+  }
+
   $: {
-    daysOfWeek = getDaysOfWeek(settings);
-    month = getMonthData(activeFile, displayedMonth, settings);
+    daysOfWeek = getDaysOfWeek($settings);
+    month = getMonthData(dailyNotes, displayedMonth, $settings);
   }
 
   function incrementMonth(): void {
@@ -70,7 +80,6 @@
   }, 1000 * 60);
 
   onDestroy(() => {
-    settingsUnsubscribe();
     clearInterval(heartbeat);
   });
 </script>
@@ -205,7 +214,7 @@
   </div>
   <table class="calendar">
     <colgroup>
-      {#if settings.showWeeklyNote}
+      {#if $settings.showWeeklyNote}
         <col />
       {/if}
       {#each month[1].days as day}
@@ -214,7 +223,7 @@
     </colgroup>
     <thead>
       <tr>
-        {#if settings.showWeeklyNote}
+        {#if $settings.showWeeklyNote}
           <th>W</th>
         {/if}
         {#each daysOfWeek as dayOfWeek}
@@ -225,21 +234,15 @@
     <tbody>
       {#each month as week}
         <tr>
-          {#if settings.showWeeklyNote}
-            <WeekNum
-              {...week}
-              {activeFile}
-              {onHover}
-              {openOrCreateWeeklyNote}
-              {settings} />
-          {/if}
-          {#each week.days as day}
+          {#each week.days as { date, file } (file)}
             <Day
-              {...day}
+              {date}
+              {displayedMonth}
+              {file}
               {onHover}
               {openOrCreateDailyNote}
-              {today}
-              {displayedMonth} />
+              {source}
+              {today} />
           {/each}
         </tr>
       {/each}

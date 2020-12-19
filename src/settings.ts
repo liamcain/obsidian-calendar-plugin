@@ -1,5 +1,4 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import { writable } from "svelte/store";
 
 import { DEFAULT_WEEK_FORMAT, DEFAULT_WORDS_PER_DOT } from "src/constants";
 
@@ -35,20 +34,6 @@ export function getWeeklyNoteSettings(settings: ISettings): IDailyNoteSettings {
       : "",
   };
 }
-
-export const SettingsInstance = writable<ISettings>({
-  shouldConfirmBeforeCreate: true,
-  weekStart: "locale",
-
-  wordsPerDot: DEFAULT_WORDS_PER_DOT,
-
-  showWeeklyNote: false,
-  weeklyNoteFormat: "",
-  weeklyNoteTemplate: "",
-  weeklyNoteFolder: "",
-
-  localeOverride: "system-default",
-});
 
 export function syncMomentLocaleWithSettings(settings: ISettings): void {
   const { moment } = window;
