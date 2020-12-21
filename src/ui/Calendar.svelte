@@ -5,13 +5,10 @@
 
   import Day from "./Day.svelte";
   // import WeekNum from "./WeekNum.svelte";
-  import { dailyNotes, displayedMonth, settings } from "./stores";
-  import type { CalendarSource } from "./sources/CalendarSource";
+  import { activeFile, dayCache, displayedMonth, settings } from "./stores";
   import { getMonthData, getDaysOfWeek, IMonth, isWeekend } from "./utils";
 
   const moment = window.moment;
-
-  export let source: CalendarSource;
 
   export let onHover: (date: Moment, targetEl: EventTarget) => void;
   export let onClick: (date: Moment, isMetaPressed: boolean) => void;
@@ -29,7 +26,7 @@
 
   // Get the word 'Today' but localized to the current language
   const todayDisplayStr = today.calendar().split(/\d|\s/)[0];
-  month = getMonthData($displayedMonth);
+  $: month = getMonthData($displayedMonth, $settings);
   $: daysOfWeek = getDaysOfWeek($settings);
 
   // 1 minute heartbeat to keep `today` reflecting the current day
@@ -207,7 +204,12 @@
       {#each month as week}
         <tr>
           {#each week.days as date (date.format())}
-            <Day {date} {onHover} {onClick} {source} {today} />
+            <Day
+              {date}
+              {onClick}
+              {onHover}
+              {today}
+              metadata={dayCache.get(date, $activeFile)} />
           {/each}
         </tr>
       {/each}

@@ -2,21 +2,15 @@
   import type { Moment } from "moment";
 
   import Dot from "./Dot.svelte";
-  import type { CalendarSource, IDayMetadata } from "./sources/CalendarSource";
-  import { displayedMonth, dayCache } from "./stores";
+  import type { IDayMetadata } from "./sources/CalendarSource";
+  import { displayedMonth } from "./stores";
   import { isMetaPressed } from "./utils";
 
   export let date: Moment;
-  export let source: CalendarSource;
-
   export let onHover: (date: Moment, targetEl: EventTarget) => void;
   export let onClick: (date: Moment, isMetaPressed: boolean) => void;
   export let today: Moment;
-
-  let metadata: IDayMetadata;
-
-  const key = dayCache.get(date.format());
-  $: metadata = source.getMetadata(date, $key);
+  export let metadata: IDayMetadata;
 </script>
 
 <style>

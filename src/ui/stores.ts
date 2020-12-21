@@ -1,40 +1,45 @@
 import type { Moment } from "moment";
 import type { TFile } from "obsidian";
-import { writable, Writable } from "svelte/store";
-import {
-  getAllDailyNotes,
-  getDateFromFile,
-  getDateUID,
-} from "obsidian-daily-notes-interface";
+import { writable } from "svelte/store";
+import { getAllDailyNotes, getDateUID } from "obsidian-daily-notes-interface";
 
 import { DEFAULT_WORDS_PER_DOT } from "src/constants";
 import type { ISettings } from "src/settings";
 
-import type { IDayMetadata } from "./sources/CalendarSource";
+import type { CalendarSource, IDayMetadata } from "./sources/CalendarSource";
 
 export class DailyNoteMetadataCache {
   private cache: Record<string, IDayMetadata>;
+  private source: CalendarSource;
 
   constructor() {
     this.cache = {};
   }
 
-  // generate
-
-  add(file: TFile, value: IDayMetadata): Writable<string> {
-    const key = getDateUID(getDateFromFile(file));
-    const store = writable<string>(value);
-    this.cache[key] = store;
-    return store;
+  addSource(source: CalendarSource): void {
+    this.source = source;
   }
 
-  set(file: TFile, value: string): void {
-    const key = getDateUID(getDateFromFile(file));
-    this.cache[key].set(value);
+  set(date: Moment, metadata: IDayMetadata): void {
+    const key = getDateUID(date);
+    this.cache = Object.assign(
+      {},
+      {
+        [key]: metadata,
+      }
+    );
   }
 
-  get(key: string): Writable<string> {
-    return this.cache[key];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  get(date: Moment, ..._args: any[]): IDayMetadata {
+    const dateStr = getDateUID(date);
+    let value = this.cache[dateStr];
+    if (value) {
+      return value;
+    }
+    value = this.source.getMetadata(date);
+    this.set(date, value);
+    return value;
   }
 
   reset(): void {
@@ -51,11 +56,12 @@ function createDailyNotesStore() {
 }
 
 function createDisplayedMonthStore() {
-  const store = writable<Moment>(window.moment());
+  const store = writable<Moment>(null);
   return {
     reset: () => store.set(window.moment()),
-    increment: () => store.update((month) => month.add(1, "months")),
-    decrement: () => store.update((month) => month.subtract(1, "months")),
+    increment: () => store.update((month) => month.clone().add(1, "months")),
+    decrement: () =>
+      store.update((month) => month.clone().subtract(1, "months")),
     ...store,
   };
 }

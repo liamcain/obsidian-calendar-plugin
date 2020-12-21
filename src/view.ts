@@ -1,30 +1,25 @@
 import type { Moment } from "moment";
-import {
-  getDailyNote,
-  getDailyNoteSettings,
-  getDateFromFile,
-} from "obsidian-daily-notes-interface";
+import { getDailyNote, getDateFromFile } from "obsidian-daily-notes-interface";
 import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
+import { get } from "svelte/store";
 
 import { VIEW_TYPE_CALENDAR } from "src/constants";
 import { tryToCreateDailyNote } from "src/io/dailyNotes";
 import { tryToCreateWeeklyNote } from "src/io/weeklyNotes";
 import { getWeeklyNoteSettings, ISettings } from "src/settings";
 
-import { activeFile, displayedMonth, dayCache } from "./ui/stores";
-import DailyNoteSource from "./ui/sources/DailyNoteSource";
+import { activeFile, displayedMonth, dailyNotes, dayCache } from "./ui/stores";
 import Calendar from "./ui/Calendar.svelte";
+import DailyNoteSource from "./ui/sources/DailyNoteSource";
 
 export default class CalendarView extends ItemView {
   private calendar: Calendar;
   private settings: ISettings;
-  private dailyNotesSource: DailyNoteSource;
 
   constructor(leaf: WorkspaceLeaf, settings: ISettings) {
     super(leaf);
 
     this.settings = settings;
-    this.dailyNotesSource = new DailyNoteSource(this.settings);
 
     this._openOrCreateDailyNote = this._openOrCreateDailyNote.bind(this);
     this.openOrCreateWeeklyNote = this.openOrCreateWeeklyNote.bind(this);
@@ -61,11 +56,13 @@ export default class CalendarView extends ItemView {
   }
 
   async onOpen(): Promise<void> {
+    displayedMonth.reset();
+    dayCache.addSource(new DailyNoteSource());
+
     this.calendar = new Calendar({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       target: (this as any).contentEl,
       props: {
-        source: this.dailyNotesSource,
         onClick: this._openOrCreateDailyNote,
         openOrCreateWeeklyNote: this.openOrCreateWeeklyNote,
         onHover: this.onHover,
@@ -74,25 +71,23 @@ export default class CalendarView extends ItemView {
   }
 
   onHover(date: Moment, targetEl: EventTarget): void {
-    const note = getDailyNote(date, this.dailyNotesSource.dailyNotes);
+    const note = getDailyNote(date, get(dailyNotes));
     // TODO: Fix this ""
     this.app.workspace.trigger("link-hover", this, targetEl, "", note?.path);
   }
 
-  private async onFileDeleted(file: TFile): Promise<void> {
-    this.dailyNotesSource.reindex();
+  private async onFileDeleted(_file: TFile): Promise<void> {
+    // this.dailyNotesSource.reindex();
     this.updateActiveFile();
     this.redraw();
     // dayCache.set()
   }
 
-  private onFileCreated(file: TFile): void {
+  private onFileCreated(_file: TFile): void {
     // if file is daily note
-    // dayCache.add(date, file);
-    // if (this.app.workspace.layoutReady) {
-    //   this.dailyNotesSource.reindex();
-    //   dayCache.add('', () => Date.now());
-    // }
+    if (this.app.workspace.layoutReady) {
+      dailyNotes.reindex();
+    }
   }
 
   private updateActiveFile(): void {
@@ -101,13 +96,11 @@ export default class CalendarView extends ItemView {
     if (view instanceof FileView) {
       file = view.file;
     }
-    activeFile.update(() => file);
+    activeFile.set(file);
   }
 
   public redraw(): void {
     this.updateActiveFile();
-    // dayCache.set
-    // lastUpdatedAt.update(() => Date.now());
   }
 
   public revealActiveNote(): void {
@@ -161,7 +154,7 @@ export default class CalendarView extends ItemView {
     inNewSplit: boolean
   ): Promise<void> {
     const { workspace } = this.app;
-    const existingFile = getDailyNote(date, this.dailyNotesSource.dailyNotes);
+    const existingFile = getDailyNote(date, get(dailyNotes));
     if (!existingFile) {
       // File doesn't exist
       tryToCreateDailyNote(
@@ -169,7 +162,7 @@ export default class CalendarView extends ItemView {
         inNewSplit,
         this.settings,
         (dailyNote: TFile) => {
-          this.dailyNotesSource.reindex();
+          // this.dailyNotesSource.reindex();
           activeFile.update(() => dailyNote);
         }
       );

@@ -1,30 +1,23 @@
 import type { Moment } from "moment";
-import { Notice, parseFrontMatterTags, TFile } from "obsidian";
-import {
-  getAllDailyNotes,
-  getDailyNote,
-  getDateUID,
-} from "obsidian-daily-notes-interface";
+import { parseFrontMatterTags, TFile } from "obsidian";
+import { getDailyNote } from "obsidian-daily-notes-interface";
 import { get } from "svelte/store";
 
-import type { ISettings } from "src/settings";
 import { clamp, getWordCount } from "src/ui/utils";
 
 import { CalendarSource, IDayMetadata, IDot } from "./CalendarSource";
-import { activeFile, dailyNotes } from "../stores";
+import { activeFile, dailyNotes, settings } from "../stores";
 
 const NUM_MAX_DOTS = 5;
 
-export async function getWordLengthAsDots(
-  note: TFile,
-  settings: ISettings
-): Promise<number> {
-  if (!note || settings.wordsPerDot <= 0) {
+export async function getWordLengthAsDots(note: TFile): Promise<number> {
+  const { wordsPerDot } = get(settings);
+  if (!note || wordsPerDot <= 0) {
     return 0;
   }
   const fileContents = await window.app.vault.cachedRead(note);
 
-  const numDots = getWordCount(fileContents) / settings.wordsPerDot;
+  const numDots = getWordCount(fileContents) / wordsPerDot;
   return clamp(Math.floor(numDots), 1, NUM_MAX_DOTS);
 }
 
@@ -57,13 +50,12 @@ export async function getNumberOfRemainingTasks(note: TFile): Promise<number> {
 }
 
 export async function getDotsForDailyNote(
-  dailyNote: TFile | null,
-  settings: ISettings
+  dailyNote: TFile | null
 ): Promise<IDot[]> {
   if (!dailyNote) {
     return [];
   }
-  const numSolidDots = await getWordLengthAsDots(dailyNote, settings);
+  const numSolidDots = await getWordLengthAsDots(dailyNote);
   const numHollowDots = await getNumberOfRemainingTasks(dailyNote);
 
   const dots = [];
@@ -84,24 +76,17 @@ export async function getDotsForDailyNote(
 }
 
 export default class DailyNoteSource extends CalendarSource {
-  metadata: Record<string, IDayMetadata>;
-  settings: ISettings;
-
-  constructor(settings: ISettings) {
+  constructor() {
     super();
-
-    this.metadata = {};
-    this.settings = settings;
-
-    dailyNotes.set(getAllDailyNotes());
+    dailyNotes.reindex();
   }
 
-  isActive(file: TFile): boolean {
+  private isActive(file: TFile): boolean {
     const currentActiveFile = get(activeFile);
     return currentActiveFile && currentActiveFile == file;
   }
 
-  getClasses(file: TFile): string[] {
+  private getClasses(file: TFile): string[] {
     const classes = [];
     if (file) {
       classes.push("has-note");
@@ -112,19 +97,12 @@ export default class DailyNoteSource extends CalendarSource {
     return classes;
   }
 
-  buildMetadata(file: TFile): IDayMetadata {
+  public getMetadata(date: Moment): IDayMetadata {
+    const file = getDailyNote(date, get(dailyNotes));
     return {
       classes: this.getClasses(file),
       dataAttributes: getNoteTags(file),
-      dots: getDotsForDailyNote(file, this.settings),
+      dots: getDotsForDailyNote(file),
     };
-  }
-
-  getMetadata(date: Moment): IDayMetadata {
-    const dateStr = getDateUID(date);
-    return (
-      this.metadata[dateStr] ??
-      this.buildMetadata(getDailyNote(date, get(dailyNotes)))
-    );
   }
 }

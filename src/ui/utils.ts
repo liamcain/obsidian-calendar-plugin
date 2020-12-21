@@ -80,10 +80,9 @@ export function getStartOfWeek(days: Moment[], _weekNum: number): Moment {
  * the calendar view.
  */
 export function getMonthData(
-  displayedMonth: Moment
-  // source: CalendarSource,
-  //eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // ..._upstreamChanges: any[]
+  displayedMonth: Moment,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ..._upstreamChanges: any[]
 ): IMonth {
   const month = [];
   let week: IWeek;
@@ -103,15 +102,6 @@ export function getMonthData(
     }
 
     week.days.push(date);
-    // date,
-    // file,
-    // isActive: activeFile && activeFile === note?.basename,
-
-    // numDots: getNumberOfDots(note, settings),
-    // numTasksRemaining: getNumberOfRemainingTasks(note),
-    // tags: getNoteTags(note),
-    // });
-
     date = date.clone().add(1, "days");
   }
 
