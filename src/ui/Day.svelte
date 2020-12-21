@@ -1,37 +1,22 @@
 <script lang="ts">
   import type { Moment } from "moment";
-  import type { TFile } from "obsidian";
-  import { getDailyNoteSettings } from "obsidian-daily-notes-interface";
 
   import Dot from "./Dot.svelte";
-  import { activeFile } from "./stores";
-  import { CalendarSource, IDayMetadata, isMetaPressed } from "./utils";
+  import type { CalendarSource, IDayMetadata } from "./sources/CalendarSource";
+  import { displayedMonth, dayCache } from "./stores";
+  import { isMetaPressed } from "./utils";
 
-  const { format } = getDailyNoteSettings();
-
-  let isActive: boolean;
-  let metadata: IDayMetadata;
   export let date: Moment;
-  export let file: TFile;
   export let source: CalendarSource;
 
-  export let onHover: (
-    targetEl: EventTarget,
-    filename: string,
-    file: TFile
-  ) => void;
-  export let openOrCreateDailyNote: (
-    date: Moment,
-    existingFile: TFile,
-    inNewSplit: boolean
-  ) => void;
-  export let displayedMonth: Moment;
+  export let onHover: (date: Moment, targetEl: EventTarget) => void;
+  export let onClick: (date: Moment, isMetaPressed: boolean) => void;
   export let today: Moment;
 
-  $: {
-    isActive = $activeFile === file;
-    metadata = source.getMetadata(date);
-  }
+  let metadata: IDayMetadata;
+
+  const key = dayCache.get(date.format());
+  $: metadata = source.getMetadata(date, $key);
 </script>
 
 <style>
@@ -79,19 +64,18 @@
   }
 </style>
 
+<svelte:options immutable />
 <td>
   <div
-    class="day"
-    class:adjacent-month={!date.isSame(displayedMonth, 'month')}
-    class:active={isActive}
-    class:has-note={!!file}
+    class={`day ${metadata.classes.join(' ')}`}
+    class:adjacent-month={!date.isSame($displayedMonth, 'month')}
     class:today={date.isSame(today, 'day')}
     on:click={(e) => {
-      openOrCreateDailyNote(date, file, isMetaPressed(e));
+      onClick(date, isMetaPressed(e));
     }}
     on:pointerover={(e) => {
       if (isMetaPressed(e)) {
-        onHover(e.target, date.format(format), file);
+        onHover(date, e.target);
       }
     }}>
     {date.format('D')}

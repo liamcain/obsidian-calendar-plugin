@@ -1,16 +1,16 @@
 <script lang="ts">
   import type { Moment } from "moment";
   import type { TFile } from "obsidian";
-  import type { IDailyNote } from "obsidian-daily-notes-interface";
 
   import { getWeeklyNoteSettings, ISettings } from "src/settings";
 
   import Dot from "./Dot.svelte";
-  import { getStartOfWeek, IDayMetadata, isMetaPressed } from "./utils";
+  import type { IDayMetadata } from "./sources/CalendarSource";
+  import { getStartOfWeek, isMetaPressed } from "./utils";
 
   export let weeklyNote: TFile;
   export let weekNum: number;
-  export let days: IDailyNote[];
+  export let days: Moment[];
 
   export let activeFile: string;
   export let metadata: IDayMetadata;

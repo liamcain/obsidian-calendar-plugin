@@ -1,7 +1,6 @@
 <script lang="ts">
   export let isFilled: boolean;
   export let isActive: boolean;
-  console.log("isActive", isActive, isFilled);
 </script>
 
 <style>

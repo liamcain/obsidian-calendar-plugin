@@ -1,39 +1,26 @@
 <script lang="ts">
   import type { Moment } from "moment";
-  import { Notice, TFile } from "obsidian";
   import { onDestroy } from "svelte";
+  import { get } from "svelte/store";
 
   import Day from "./Day.svelte";
   // import WeekNum from "./WeekNum.svelte";
-  import { settings } from "./stores";
-  import {
-    getMonthData,
-    getDaysOfWeek,
-    CalendarSource,
-    IMonth,
-    isWeekend,
-  } from "./utils";
-  import { getAllDailyNotes, IDailyNote } from "obsidian-daily-notes-interface";
+  import { dailyNotes, displayedMonth, settings } from "./stores";
+  import type { CalendarSource } from "./sources/CalendarSource";
+  import { getMonthData, getDaysOfWeek, IMonth, isWeekend } from "./utils";
 
   const moment = window.moment;
 
-  export let onHover: (
-    targetEl: EventTarget,
-    filename: string,
-    note: TFile
-  ) => void;
-  export let displayedMonth: Moment = moment();
-  export let openOrCreateDailyNote: (
-    date: Moment,
-    existingFile: TFile,
-    inNewSplit: boolean
-  ) => void;
+  export let source: CalendarSource;
+
+  export let onHover: (date: Moment, targetEl: EventTarget) => void;
+  export let onClick: (date: Moment, isMetaPressed: boolean) => void;
+
   // export let openOrCreateWeeklyNote: (
   //   date: Moment,
   //   existingFile: TFile,
   //   inNewSplit: boolean
   // ) => void;
-  export let source: CalendarSource;
 
   let month: IMonth;
   let daysOfWeek: string[];
@@ -42,40 +29,18 @@
 
   // Get the word 'Today' but localized to the current language
   const todayDisplayStr = today.calendar().split(/\d|\s/)[0];
-
-  let dailyNotes: IDailyNote[] = [];
-  try {
-    dailyNotes = getAllDailyNotes();
-  } catch (err) {
-    new Notice(err);
-  }
-
-  $: {
-    daysOfWeek = getDaysOfWeek($settings);
-    month = getMonthData(dailyNotes, displayedMonth, $settings);
-  }
-
-  function incrementMonth(): void {
-    displayedMonth = displayedMonth.add(1, "months");
-  }
-
-  function decrementMonth(): void {
-    displayedMonth = displayedMonth.subtract(1, "months");
-  }
-
-  function focusCurrentMonth(): void {
-    displayedMonth = today.clone();
-  }
+  month = getMonthData($displayedMonth);
+  $: daysOfWeek = getDaysOfWeek($settings);
 
   // 1 minute heartbeat to keep `today` reflecting the current day
   let heartbeat = setInterval(() => {
-    const isViewingCurrentMonth = today.isSame(displayedMonth, "day");
+    const isViewingCurrentMonth = today.isSame(get(displayedMonth), "day");
     today = moment();
 
     if (isViewingCurrentMonth) {
       // if it's midnight on the last day of the month, this will
       // update the display to show the new month.
-      displayedMonth = today.clone();
+      displayedMonth.reset();
     }
   }, 1000 * 60);
 
@@ -183,14 +148,18 @@
   }
 </style>
 
+<svelte:options immutable />
 <div id="calendar-container" class="container">
   <div class="nav">
-    <h3 class="title" on:click={focusCurrentMonth}>
-      <span class="month">{displayedMonth.format('MMM')}</span>
-      <span class="year">{displayedMonth.format('YYYY')}</span>
+    <h3 class="title" on:click={displayedMonth.reset}>
+      <span class="month">{$displayedMonth.format('MMM')}</span>
+      <span class="year">{$displayedMonth.format('YYYY')}</span>
     </h3>
     <div class="right-nav">
-      <div class="arrow" on:click={decrementMonth} aria-label="Previous Month">
+      <div
+        class="arrow"
+        on:click={displayedMonth.decrement}
+        aria-label="Previous Month">
         <svg
           focusable="false"
           role="img"
@@ -199,10 +168,13 @@
             fill="currentColor"
             d="M34.52 239.03L228.87 44.69c9.37-9.37 24.57-9.37 33.94 0l22.67 22.67c9.36 9.36 9.37 24.52.04 33.9L131.49 256l154.02 154.75c9.34 9.38 9.32 24.54-.04 33.9l-22.67 22.67c-9.37 9.37-24.57 9.37-33.94 0L34.52 272.97c-9.37-9.37-9.37-24.57 0-33.94z" /></svg>
       </div>
-      <div class="reset-button" on:click={focusCurrentMonth}>
+      <div class="reset-button" on:click={displayedMonth.reset}>
         {todayDisplayStr}
       </div>
-      <div class="arrow" on:click={incrementMonth} aria-label="Next Month">
+      <div
+        class="arrow"
+        on:click={displayedMonth.increment}
+        aria-label="Next Month">
         <svg
           role="img"
           xmlns="http://www.w3.org/2000/svg"
@@ -217,8 +189,8 @@
       {#if $settings.showWeeklyNote}
         <col />
       {/if}
-      {#each month[1].days as day}
-        <col class:weekend={isWeekend(day.date)} />
+      {#each month[1].days as date}
+        <col class:weekend={isWeekend(date)} />
       {/each}
     </colgroup>
     <thead>
@@ -234,15 +206,8 @@
     <tbody>
       {#each month as week}
         <tr>
-          {#each week.days as { date, file } (file)}
-            <Day
-              {date}
-              {displayedMonth}
-              {file}
-              {onHover}
-              {openOrCreateDailyNote}
-              {source}
-              {today} />
+          {#each week.days as date (date.format())}
+            <Day {date} {onHover} {onClick} {source} {today} />
           {/each}
         </tr>
       {/each}
