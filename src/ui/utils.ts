@@ -114,7 +114,6 @@ export function getMonthData(
   let dailyNotes: IDailyNote[] = [];
   try {
     dailyNotes = getAllDailyNotes();
-    console.log("dailynotes", dailyNotes);
   } catch (err) {
     new Notice(err);
   }

@@ -7,20 +7,29 @@ import { createConfirmationDialog } from "src/ui/modal";
 
 import { getNotePath } from "./path";
 
-export function getDayOfWeekNumericalValue(dayOfWeekName: string): number {
+function getDaysOfWeek(): string[] {
   const { moment } = window;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const weekStart = (<any>moment.localeData())._week.dow;
+  let weekStart = (<any>moment.localeData())._week.dow;
   const daysOfWeek = [
+    "sunday",
     "monday",
     "tuesday",
     "wednesday",
     "thursday",
     "friday",
     "saturday",
-    "sunday",
   ];
-  return (daysOfWeek.indexOf(dayOfWeekName.toLowerCase()) + weekStart) % 7;
+
+  while (weekStart) {
+    daysOfWeek.push(daysOfWeek.shift());
+    weekStart--;
+  }
+  return daysOfWeek;
+}
+
+export function getDayOfWeekNumericalValue(dayOfWeekName: string): number {
+  return getDaysOfWeek().indexOf(dayOfWeekName.toLowerCase());
 }
 
 export async function createWeeklyNote(
@@ -77,7 +86,7 @@ export async function tryToCreateWeeklyNote(
   date: Moment,
   inNewSplit: boolean,
   settings: ISettings,
-  cb?: () => void
+  cb?: (file: TFile) => void
 ): Promise<void> {
   const { workspace } = window.app;
   const { format } = getWeeklyNoteSettings(settings);
@@ -90,7 +99,7 @@ export async function tryToCreateWeeklyNote(
       : workspace.getUnpinnedLeaf();
 
     await leaf.openFile(dailyNote);
-    cb?.();
+    cb?.(dailyNote);
   };
 
   if (settings.shouldConfirmBeforeCreate) {
