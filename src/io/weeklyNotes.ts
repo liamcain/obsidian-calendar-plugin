@@ -10,10 +10,10 @@ import { getNotePath } from "./path";
 function getDaysOfWeek(): string[] {
   const { moment } = window;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let weekStart = (<any>moment.localeData())._week.dow; // 1
+  let weekStart = (<any>moment.localeData())._week.dow;
   const daysOfWeek = [
-    "sunday", // 0
-    "monday", // 1
+    "sunday",
+    "monday",
     "tuesday",
     "wednesday",
     "thursday",
