@@ -126,9 +126,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
     const { moment } = window;
 
     const [sunday, monday] = moment.weekdays();
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const localeWeekStartNum = (<any>moment.localeData())._week.dow;
+    const localeWeekStartNum = window._bundledLocaleWeekSpec.dow;
     const localeWeekStart = moment.weekdays()[localeWeekStartNum];
 
     new Setting(this.containerEl)
