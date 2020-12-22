@@ -5,7 +5,12 @@ import { get } from "svelte/store";
 
 import { clamp, getWordCount } from "src/ui/utils";
 
-import { CalendarSource, IDayMetadata, IDot } from "./CalendarSource";
+import {
+  CalendarSource,
+  IDayMetadata,
+  IWeekMetadata,
+  IDot,
+} from "./CalendarSource";
 import { activeFile, dailyNotes, settings } from "../stores";
 
 const NUM_MAX_DOTS = 5;
@@ -97,7 +102,16 @@ export default class DailyNoteSource extends CalendarSource {
     return classes;
   }
 
-  public getMetadata(date: Moment): IDayMetadata {
+  public getDailyMetadata(date: Moment): IDayMetadata {
+    const file = getDailyNote(date, get(dailyNotes));
+    return {
+      classes: this.getClasses(file),
+      dataAttributes: getNoteTags(file),
+      dots: getDotsForDailyNote(file),
+    };
+  }
+
+  public getWeeklyMetadata(date: Moment): IWeekMetadata {
     const file = getDailyNote(date, get(dailyNotes));
     return {
       classes: this.getClasses(file),

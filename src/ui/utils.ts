@@ -71,7 +71,7 @@ export function isWeekend(date: Moment): boolean {
   return date.isoWeekday() === 6 || date.isoWeekday() === 7;
 }
 
-export function getStartOfWeek(days: Moment[], _weekNum: number): Moment {
+export function getStartOfWeek(days: Moment[]): Moment {
   return days[0].weekday(0);
 }
 

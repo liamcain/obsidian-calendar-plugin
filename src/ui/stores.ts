@@ -6,23 +6,30 @@ import { getAllDailyNotes, getDateUID } from "obsidian-daily-notes-interface";
 import { DEFAULT_WORDS_PER_DOT } from "src/constants";
 import type { ISettings } from "src/settings";
 
-import type { CalendarSource, IDayMetadata } from "./sources/CalendarSource";
+import type {
+  CalendarSource,
+  IDayMetadata,
+  IWeekMetadata,
+} from "./sources/CalendarSource";
 
 export class DailyNoteMetadataCache {
-  private cache: Record<string, IDayMetadata>;
+  private dailyCache: Record<string, IDayMetadata>;
+  private weeklyCache: Record<string, IWeekMetadata>;
+
   private source: CalendarSource;
 
   constructor() {
-    this.cache = {};
+    this.dailyCache = {};
+    this.weeklyCache = {};
   }
 
   addSource(source: CalendarSource): void {
     this.source = source;
   }
 
-  set(date: Moment, metadata: IDayMetadata): void {
+  setDaily(date: Moment, metadata: IDayMetadata): void {
     const key = getDateUID(date);
-    this.cache = Object.assign(
+    this.weeklyCache = Object.assign(
       {},
       {
         [key]: metadata,
@@ -31,19 +38,42 @@ export class DailyNoteMetadataCache {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  get(date: Moment, ..._args: any[]): IDayMetadata {
+  getDaily(date: Moment, ..._args: any[]): IDayMetadata {
     const dateStr = getDateUID(date);
-    let value = this.cache[dateStr];
+    let value = this.dailyCache[dateStr];
     if (value) {
       return value;
     }
-    value = this.source.getMetadata(date);
-    this.set(date, value);
+    value = this.source.getDailyMetadata(date);
+    this.setDaily(date, value);
+    return value;
+  }
+
+  setWeekly(date: Moment, metadata: IDayMetadata): void {
+    const key = getDateUID(date);
+    this.weeklyCache = Object.assign(
+      {},
+      {
+        [key]: metadata,
+      }
+    );
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getWeekly(date: Moment, ..._args: any[]): IDayMetadata {
+    const dateStr = getDateUID(date);
+    let value = this.weeklyCache[dateStr];
+    if (value) {
+      return value;
+    }
+    value = this.source.getWeeklyMetadata(date);
+    this.setWeekly(date, value);
     return value;
   }
 
   reset(): void {
-    this.cache = {};
+    this.dailyCache = {};
+    this.weeklyCache = {};
   }
 }
 

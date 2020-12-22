@@ -4,14 +4,22 @@
   import { get } from "svelte/store";
 
   import Day from "./Day.svelte";
-  // import WeekNum from "./WeekNum.svelte";
+  import WeekNum from "./WeekNum.svelte";
   import { activeFile, dayCache, displayedMonth, settings } from "./stores";
-  import { getMonthData, getDaysOfWeek, IMonth, isWeekend } from "./utils";
+  import {
+    getMonthData,
+    getDaysOfWeek,
+    IMonth,
+    isWeekend,
+    getStartOfWeek,
+  } from "./utils";
 
   const moment = window.moment;
 
-  export let onHover: (date: Moment, targetEl: EventTarget) => void;
-  export let onClick: (date: Moment, isMetaPressed: boolean) => void;
+  export let onHoverDay: (date: Moment, targetEl: EventTarget) => void;
+  export let onHoverWeek: (date: Moment, targetEl: EventTarget) => void;
+  export let onClickDay: (date: Moment, isMetaPressed: boolean) => void;
+  export let onClickWeek: (date: Moment, isMetaPressed: boolean) => void;
 
   // export let openOrCreateWeeklyNote: (
   //   date: Moment,
@@ -203,13 +211,20 @@
     <tbody>
       {#each month as week}
         <tr>
+          {#if $settings.showWeeklyNote}
+            <WeekNum
+              {...week}
+              onClick={onClickWeek}
+              onHover={onHoverWeek}
+              metadata={dayCache.getWeekly(getStartOfWeek(week.days), $activeFile)} />
+          {/if}
           {#each week.days as date (date.format())}
             <Day
-              {date}
-              {onClick}
-              {onHover}
               {today}
-              metadata={dayCache.get(date, $activeFile)} />
+              {date}
+              onClick={onClickDay}
+              onHover={onHoverDay}
+              metadata={dayCache.getDaily(date, $activeFile)} />
           {/each}
         </tr>
       {/each}

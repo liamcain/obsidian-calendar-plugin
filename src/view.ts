@@ -63,9 +63,10 @@ export default class CalendarView extends ItemView {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       target: (this as any).contentEl,
       props: {
-        onClick: this._openOrCreateDailyNote,
-        openOrCreateWeeklyNote: this.openOrCreateWeeklyNote,
-        onHover: this.onHover,
+        onClickDay: this._openOrCreateDailyNote,
+        onClickWeek: this.openOrCreateWeeklyNote,
+        onHoverDay: this.onHover,
+        onHoverWeek: this.onHover,
       },
     });
   }
@@ -127,11 +128,12 @@ export default class CalendarView extends ItemView {
 
   async openOrCreateWeeklyNote(
     date: Moment,
-    existingFile: TFile,
     inNewSplit: boolean
   ): Promise<void> {
     const { workspace } = this.app;
     const startOfWeek = date.clone().weekday(0);
+
+    const existingFile = getDailyNote(date, get(dailyNotes));
 
     if (!existingFile) {
       // File doesn't exist

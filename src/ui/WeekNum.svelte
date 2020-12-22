@@ -1,41 +1,22 @@
 <script lang="ts">
   import type { Moment } from "moment";
-  import type { TFile } from "obsidian";
-
-  import { getWeeklyNoteSettings, ISettings } from "src/settings";
 
   import Dot from "./Dot.svelte";
-  import type { IDayMetadata } from "./sources/CalendarSource";
+  import type { IWeekMetadata } from "./sources/CalendarSource";
   import { getStartOfWeek, isMetaPressed } from "./utils";
 
-  export let weeklyNote: TFile;
   export let weekNum: number;
   export let days: Moment[];
+  export let metadata: IWeekMetadata;
 
-  export let activeFile: string;
-  export let metadata: IDayMetadata;
-  export let settings: ISettings;
-
-  export let onHover: (
-    targetEl: EventTarget,
-    filename: string,
-    note: TFile
-  ) => void;
-  export let openOrCreateWeeklyNote: (
-    date: Moment,
-    existingFile: TFile,
-    inNewSplit: boolean
-  ) => void;
-
-  const { format } = getWeeklyNoteSettings(settings);
+  export let onHover: (date: Moment, targetEl: EventTarget) => void;
+  export let onClick: (date: Moment, isMetaPressed: boolean) => void;
 
   let startOfWeek: Moment;
-  let formattedDate: string;
   let isActive: boolean;
 
-  $: isActive = activeFile && weeklyNote?.basename === activeFile;
-  $: startOfWeek = getStartOfWeek(days, weekNum);
-  $: formattedDate = startOfWeek.format(format);
+  // $: isActive = $activeFile && weeklyNote === $activeFile;
+  $: startOfWeek = getStartOfWeek(days);
 </script>
 
 <style>
@@ -78,20 +59,20 @@
   }
 </style>
 
+<svelte:options immutable />
 <td>
   <div
     class="week-num"
     class:active={isActive}
     on:click={(e) => {
-      openOrCreateWeeklyNote(startOfWeek, weeklyNote, isMetaPressed(e));
+      onClick(startOfWeek, isMetaPressed(e));
     }}
     on:pointerover={(e) => {
       if (isMetaPressed(e)) {
-        onHover(e.target, formattedDate, weeklyNote);
+        onHover(startOfWeek, e.target);
       }
     }}>
     {weekNum}
-
     <div class="dot-container">
       {#await metadata.dots then dots}
         {#each dots as dot}
