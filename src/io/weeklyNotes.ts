@@ -70,10 +70,12 @@ export async function createWeeklyNote(
 
 export function getWeeklyNote(date: Moment, settings: ISettings): TFile {
   const { vault } = window.app;
-  const startOfWeek = date.clone().weekday(0);
-
   const { format, folder } = getWeeklyNoteSettings(settings);
-  const baseFilename = startOfWeek.format(format);
+
+  // Important: Use end of week in case week overlaps 2 years
+  // YYYY should use the NEW year.
+  const endOfWeek = date.clone().endOf("week");
+  const baseFilename = endOfWeek.format(format);
 
   const fullPath = getNotePath(folder, baseFilename);
   return vault.getAbstractFileByPath(fullPath) as TFile;
