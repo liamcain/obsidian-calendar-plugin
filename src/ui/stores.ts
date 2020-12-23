@@ -27,9 +27,9 @@ export class DailyNoteMetadataCache {
     this.source = source;
   }
 
-  setDaily(date: Moment, metadata: IDayMetadata): void {
+  setDailyMetadata(date: Moment, metadata: IDayMetadata): void {
     const key = getDateUID(date);
-    this.weeklyCache = Object.assign(
+    this.dailyCache = Object.assign(
       {},
       {
         [key]: metadata,
@@ -38,18 +38,18 @@ export class DailyNoteMetadataCache {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getDaily(date: Moment, ..._args: any[]): IDayMetadata {
+  getDailyMetadata(date: Moment, ..._args: any[]): IDayMetadata {
     const dateStr = getDateUID(date);
     let value = this.dailyCache[dateStr];
     if (value) {
       return value;
     }
     value = this.source.getDailyMetadata(date);
-    this.setDaily(date, value);
+    this.setDailyMetdata(date, value);
     return value;
   }
 
-  setWeekly(date: Moment, metadata: IDayMetadata): void {
+  setWeeklyMetadata(date: Moment, metadata: IDayMetadata): void {
     const key = getDateUID(date);
     this.weeklyCache = Object.assign(
       {},
@@ -60,14 +60,14 @@ export class DailyNoteMetadataCache {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getWeekly(date: Moment, ..._args: any[]): IDayMetadata {
+  getWeeklyMetdata(date: Moment, ..._args: any[]): IDayMetadata {
     const dateStr = getDateUID(date);
     let value = this.weeklyCache[dateStr];
     if (value) {
       return value;
     }
     value = this.source.getWeeklyMetadata(date);
-    this.setWeekly(date, value);
+    this.setWeeklyMetadata(date, value);
     return value;
   }
 

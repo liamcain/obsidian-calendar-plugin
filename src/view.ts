@@ -32,7 +32,7 @@ export default class CalendarView extends ItemView {
 
     this.registerEvent(this.app.vault.on("create", this.onFileCreated));
     this.registerEvent(this.app.vault.on("delete", this.onFileDeleted));
-    this.registerEvent(this.app.vault.on("modify", this.redraw));
+    this.registerEvent(this.app.vault.on("modify", this.onModify));
     this.registerEvent(this.app.workspace.on("file-open", this.redraw));
   }
 
@@ -78,10 +78,15 @@ export default class CalendarView extends ItemView {
   }
 
   private async onFileDeleted(_file: TFile): Promise<void> {
-    // this.dailyNotesSource.reindex();
+    dailyNotes.reindex();
     this.updateActiveFile();
-    this.redraw();
-    // dayCache.set()
+  }
+
+  private async onModify(file: TFile): Promise<void> {
+    const date = getDateFromFile(file);
+    if (date) {
+      dayCache.setDaily(date, null);
+    }
   }
 
   private onFileCreated(_file: TFile): void {
