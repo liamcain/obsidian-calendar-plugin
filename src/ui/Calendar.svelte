@@ -4,7 +4,7 @@
   import { onDestroy } from "svelte";
   import { get } from "svelte/store";
 
-  import { displayedMonth, settings } from "./stores";
+  import { displayedMonth, metadata, settings } from "./stores";
 
   export let onHoverDay: (date: Moment, targetEl: EventTarget) => void;
   export let onHoverWeek: (date: Moment, targetEl: EventTarget) => void;
@@ -33,10 +33,12 @@
 
 <svelte:options immutable />
 <Calendar
-  onHoverDay="{onHoverDay}"
-  onHoverWeek="{onHoverWeek}"
-  onClickDay="{onClickDay}"
-  onClickWeek="{onClickWeek}"
-  today="{today}"
-  $settings="{$settings}"
+  {metadata}
+  {onHoverDay}
+  {onHoverWeek}
+  {onClickDay}
+  {onClickWeek}
+  {today}
+  showWeekNums={$settings.showWeeklyNote}
+  dependencies={[settings]}
 />

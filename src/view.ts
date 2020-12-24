@@ -8,7 +8,7 @@ import { tryToCreateDailyNote } from "src/io/dailyNotes";
 import { tryToCreateWeeklyNote } from "src/io/weeklyNotes";
 import { getWeeklyNoteSettings, ISettings } from "src/settings";
 
-import { activeFile, displayedMonth, dailyNotes, dayCache } from "./ui/stores";
+import { activeFile, displayedMonth, dailyNotes, metadata } from "./ui/stores";
 import Calendar from "./ui/Calendar.svelte";
 import DailyNoteSource from "./ui/sources/DailyNoteSource";
 
@@ -57,7 +57,7 @@ export default class CalendarView extends ItemView {
 
   async onOpen(): Promise<void> {
     displayedMonth.reset();
-    dayCache.addSource(new DailyNoteSource());
+    metadata.addSource(new DailyNoteSource());
 
     this.calendar = new Calendar({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -85,7 +85,7 @@ export default class CalendarView extends ItemView {
   private async onModify(file: TFile): Promise<void> {
     const date = getDateFromFile(file);
     if (date) {
-      dayCache.setDaily(date, null);
+      metadata.setDay(date, null);
     }
   }
 
