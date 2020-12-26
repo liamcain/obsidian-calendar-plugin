@@ -2,28 +2,11 @@ import type { Moment } from "moment";
 import * as os from "os";
 
 import type { ISettings } from "src/settings";
-// import { IDailyNote } from "obsidian-daily-notes-interface";
-// import { getWeeklyNote } from "src/io/weeklyNotes";
-
-// import type { CalendarSource } from "./sources/CalendarSource";
-
-// export interface IDay {
-//   date: Moment;
-//   key: string | number;
-// }
 export interface IWeek {
-  // days: IDailyNote[];
   days: Moment[];
   weekNum: number;
-  // weeklyNote: TFile;
 }
 export type IMonth = IWeek[];
-
-// export type IActualizedCalendarSource = Record<string, IDayMetadata>;
-// export type ICalendarSource = (
-//   month: IMonth,
-//   settings: ISettings
-// ) => IActualizedCalendarSource;
 
 export function clamp(
   num: number,
@@ -96,7 +79,6 @@ export function getMonthData(
       week = {
         days: [],
         weekNum: date.week(),
-        // weeklyNote: getWeeklyNote(date, settings),
       };
       month.push(week);
     }

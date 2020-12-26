@@ -64,11 +64,11 @@ export default class CalendarPlugin extends Plugin {
       callback: () => this.view.openOrCreateWeeklyNote(window.moment(), false),
     });
 
-    this.addCommand({
-      id: "reload-calendar-view",
-      name: "Reload daily note settings",
-      callback: () => this.view.redraw(),
-    });
+    // this.addCommand({
+    //   id: "reload-calendar-view",
+    //   name: "Reload daily note settings",
+    //   callback: () => {},
+    // });
 
     this.addCommand({
       id: "reveal-active-note",

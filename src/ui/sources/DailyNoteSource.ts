@@ -10,8 +10,8 @@ import {
   IDayMetadata,
   IWeekMetadata,
   IDot,
-} from "./CalendarSource";
-import { activeFile, dailyNotes, settings } from "../stores";
+} from "obsidian-calendar-ui";
+import { dailyNotes, settings } from "../stores";
 
 const NUM_MAX_DOTS = 5;
 
@@ -81,23 +81,10 @@ export async function getDotsForDailyNote(
 }
 
 export default class DailyNoteSource extends CalendarSource {
-  constructor() {
-    super();
-    dailyNotes.reindex();
-  }
-
-  private isActive(file: TFile): boolean {
-    const currentActiveFile = get(activeFile);
-    return currentActiveFile && currentActiveFile == file;
-  }
-
   private getClasses(file: TFile): string[] {
     const classes = [];
     if (file) {
       classes.push("has-note");
-    }
-    if (this.isActive(file)) {
-      classes.push("active");
     }
     return classes;
   }

@@ -5,7 +5,6 @@ import { getAllDailyNotes } from "obsidian-daily-notes-interface";
 
 import { DEFAULT_WORDS_PER_DOT } from "src/constants";
 import type { ISettings } from "src/settings";
-import { MetadataCache } from "obsidian-calendar-ui";
 
 function createDailyNotesStore() {
   const store = writable<Record<string, TFile>>(null);
@@ -28,7 +27,6 @@ function createDisplayedMonthStore() {
 
 export const activeFile = writable<TFile>(null);
 export const displayedMonth = createDisplayedMonthStore();
-export const metadata = new MetadataCache();
 export const dailyNotes = createDailyNotesStore();
 export const settings = writable<ISettings>({
   shouldConfirmBeforeCreate: true,

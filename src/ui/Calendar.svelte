@@ -1,11 +1,15 @@
 <script lang="ts">
   import type { Moment } from "moment";
-  import Calendar from "obsidian-calendar-ui";
+  import {
+    Calendar as CalendarBase,
+    MetadataCache,
+  } from "obsidian-calendar-ui";
   import { onDestroy } from "svelte";
   import { get } from "svelte/store";
 
-  import { displayedMonth, metadata, settings } from "./stores";
+  import { activeFile, dailyNotes, displayedMonth, settings } from "./stores";
 
+  export let metadata: MetadataCache;
   export let onHoverDay: (date: Moment, targetEl: EventTarget) => void;
   export let onHoverWeek: (date: Moment, targetEl: EventTarget) => void;
   export let onClickDay: (date: Moment, isMetaPressed: boolean) => void;
@@ -32,13 +36,13 @@
 </script>
 
 <svelte:options immutable />
-<Calendar
-  {metadata}
+<CalendarBase
   {onHoverDay}
   {onHoverWeek}
   {onClickDay}
   {onClickWeek}
   {today}
+  {metadata}
+  dependencies={[activeFile, dailyNotes, settings]}
   showWeekNums={$settings.showWeeklyNote}
-  dependencies={[settings]}
 />
