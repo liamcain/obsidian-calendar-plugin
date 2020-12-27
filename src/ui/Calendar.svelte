@@ -7,7 +7,7 @@
   import { onDestroy } from "svelte";
   import { get } from "svelte/store";
 
-  import { activeFile, dailyNotes, displayedMonth, settings } from "./stores";
+  import { displayedMonth, settings } from "./stores";
 
   export let metadata: MetadataCache;
   export let onHoverDay: (date: Moment, targetEl: EventTarget) => void;
@@ -43,6 +43,5 @@
   {onClickWeek}
   {today}
   {metadata}
-  dependencies={[activeFile, dailyNotes, settings]}
   showWeekNums={$settings.showWeeklyNote}
 />

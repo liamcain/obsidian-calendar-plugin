@@ -128,7 +128,7 @@ export default class CalendarView extends ItemView {
       // Check to see if the active note is a daily-note
       let date = getDateFromFile(activeLeaf.view.file);
       if (date) {
-        this.metadata.displayedMonth.update(() => date);
+        this.metadata.displayedMonth.set(date);
         return;
       }
 
@@ -136,7 +136,7 @@ export default class CalendarView extends ItemView {
       const format = getWeeklyNoteSettings(this.settings).format;
       date = moment(activeLeaf.view.file.basename, format, true);
       if (date.isValid()) {
-        this.metadata.displayedMonth.update(() => date);
+        this.metadata.displayedMonth.set(date);
         return;
       }
     }
