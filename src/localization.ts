@@ -29,7 +29,7 @@ export async function configureMomentLocale(
 ): Promise<void> {
   const obsidianLang = localStorage.getItem("language") || "en";
   const systemLang = navigator.language?.toLowerCase();
-  const localeOverride = settings.localeOverride;
+  const localeOverride = settings.localeOverride || "system-default";
 
   let momentLocale = langToMomentLocale[obsidianLang];
 
