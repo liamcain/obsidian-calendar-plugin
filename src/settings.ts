@@ -23,7 +23,7 @@ export interface ISettings {
   weeklyNoteTemplate: string;
   weeklyNoteFolder: string;
 
-  localeOverride: string;
+  localeOverride: ILocaleOverride;
 }
 
 export function getWeeklyNoteSettings(settings: ISettings): IDailyNoteSettings {
