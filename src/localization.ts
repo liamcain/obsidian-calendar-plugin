@@ -1,3 +1,5 @@
+import type { ISettings } from "./settings";
+
 const langToMomentLocale = {
   en: "en-gb",
   zh: "zh-cn",
@@ -22,12 +24,18 @@ const langToMomentLocale = {
   ja: "ja",
 };
 
-export async function configureMomentLocale(): Promise<void> {
-  const obsidianLang = localStorage.getItem("language");
+export async function configureMomentLocale(
+  settings: ISettings
+): Promise<void> {
+  const obsidianLang = localStorage.getItem("language") || "en";
   const systemLang = navigator.language?.toLowerCase();
+  const localeOverride = settings.localeOverride || "system-default";
 
   let momentLocale = langToMomentLocale[obsidianLang];
-  if (systemLang.startsWith(obsidianLang)) {
+
+  if (localeOverride !== "system-default") {
+    momentLocale = localeOverride;
+  } else if (systemLang.startsWith(obsidianLang)) {
     momentLocale = systemLang;
   }
 

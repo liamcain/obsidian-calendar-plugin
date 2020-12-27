@@ -31,11 +31,10 @@ export default class CalendarPlugin extends Plugin {
   }
 
   async onload(): Promise<void> {
-    configureMomentLocale();
-
     this.register(
       SettingsInstance.subscribe((value) => {
         this.options = value;
+        configureMomentLocale(this.options);
       })
     );
 

@@ -10,6 +10,7 @@ import {
 } from "obsidian-daily-notes-interface";
 
 type IWeekStartOption = "sunday" | "monday" | "locale";
+type ILocaleOverride = "system-default" | string;
 
 export interface ISettings {
   wordsPerDot: number;
@@ -21,6 +22,8 @@ export interface ISettings {
   weeklyNoteFormat: string;
   weeklyNoteTemplate: string;
   weeklyNoteFolder: string;
+
+  localeOverride: ILocaleOverride;
 }
 
 export function getWeeklyNoteSettings(settings: ISettings): IDailyNoteSettings {
@@ -43,6 +46,8 @@ export const SettingsInstance = writable<ISettings>({
   weeklyNoteFormat: "",
   weeklyNoteTemplate: "",
   weeklyNoteFolder: "",
+
+  localeOverride: "system-default",
 });
 
 export function syncMomentLocaleWithSettings(settings: ISettings): void {
@@ -106,6 +111,11 @@ export class CalendarSettingsTab extends PluginSettingTab {
           "The calendar is best used in conjunction with the Daily Notes plugin. Enable it in your plugin settings for a more optimal experience.",
       });
     }
+
+    this.containerEl.createEl("h3", {
+      text: "Advanced Settings",
+    });
+    this.addLocaleOverrideSetting();
   }
 
   addDotThresholdSetting(): void {
@@ -209,6 +219,30 @@ export class CalendarSettingsTab extends PluginSettingTab {
         textfield.setValue(this.plugin.options.weeklyNoteFolder);
         textfield.onChange(async (value) => {
           this.plugin.writeOptions((old) => (old.weeklyNoteFolder = value));
+        });
+      });
+  }
+
+  addLocaleOverrideSetting(): void {
+    const { moment } = window;
+
+    const sysLocale = navigator.language?.toLowerCase();
+
+    new Setting(this.containerEl)
+      .setName("Override locale:")
+      .setDesc(
+        "Set this if you want to use a locale different from the default"
+      )
+      .addDropdown((dropdown) => {
+        dropdown.addOption("system-default", `Same as system (${sysLocale})`);
+        moment.locales().forEach((locale) => {
+          dropdown.addOption(locale, locale);
+        });
+        dropdown.setValue(this.plugin.options.localeOverride);
+        dropdown.onChange(async (value) => {
+          this.plugin.writeOptions(
+            (old) => (old.localeOverride = value as ILocaleOverride)
+          );
         });
       });
   }
