@@ -123,13 +123,13 @@ If you add the following snippet to your weekly note template, you can a seamles
 ```md
 ## Week at a Glance
 
-![[{{sunday:YYYY-MM-DD}}]]
-![[{{monday:YYYY-MM-DD}}]]
-![[{{tuesday:YYYY-MM-DD}}]]
-![[{{wednesday:YYYY-MM-DD}}]]
-![[{{thursday:YYYY-MM-DD}}]]
-![[{{friday:YYYY-MM-DD}}]]
-![[{{saturday:YYYY-MM-DD}}]]
+![[{{sunday:gggg-MM-DD}}]]
+![[{{monday:gggg-MM-DD}}]]
+![[{{tuesday:gggg-MM-DD}}]]
+![[{{wednesday:gggg-MM-DD}}]]
+![[{{thursday:gggg-MM-DD}}]]
+![[{{friday:gggg-MM-DD}}]]
+![[{{saturday:gggg-MM-DD}}]]
 ```
 
 ### Hover Preview
@@ -165,7 +165,7 @@ You can open **weekly notes** in 2 ways: searching `Calendar: open weekly note` 
 
 > Note: The path here won't autocomplete for you, you'll need to enter the full path.
 
-- **Format:** The date format for the weekly note filename. Defaults to `"YYYY-[W]ww`. If you use `DD` in the week format, this will refer to first day of the week (Sunday or Monday, depending on your settings).
+- **Format:** The date format for the weekly note filename. Defaults to `"gggg-[W]ww`. If you use `DD` in the week format, this will refer to first day of the week (Sunday or Monday, depending on your settings).
 
 #### Template Tags
 
