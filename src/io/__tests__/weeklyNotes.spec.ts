@@ -71,7 +71,7 @@ describe("createWeeklyNote", () => {
   test("replaces {{time}} and {{date}} in weekly note", async () => {
     (getTemplateContents as jest.MockedFunction<
       typeof getTemplateContents
-    >).mockResolvedValue("# {{date:YYYY-MM}}\ncontents");
+    >).mockResolvedValue("# {{date:gggg-MM}}\ncontents");
 
     await weeklyNote.createWeeklyNote(
       moment({ day: 1, month: 0, year: 2020 }),
@@ -89,7 +89,7 @@ describe("createWeeklyNote", () => {
       (getTemplateContents as jest.MockedFunction<
         typeof getTemplateContents
       >).mockResolvedValue(
-        "# {{sunday:YYYY-MM-DD}}, {{monday:YYYY-MM-DD}}, etc"
+        "# {{sunday:gggg-MM-DD}}, {{monday:gggg-MM-DD}}, etc"
       );
 
       await weeklyNote.createWeeklyNote(
@@ -109,7 +109,7 @@ describe("createWeeklyNote", () => {
       (getTemplateContents as jest.MockedFunction<
         typeof getTemplateContents
       >).mockResolvedValue(
-        "# From {{monday:YYYY-MM-DD}} to {{sunday:YYYY-MM-DD}}"
+        "# From {{monday:gggg-MM-DD}} to {{sunday:gggg-MM-DD}}"
       );
 
       await weeklyNote.createWeeklyNote(
