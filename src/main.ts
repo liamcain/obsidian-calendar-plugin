@@ -61,7 +61,8 @@ export default class CalendarPlugin extends Plugin {
     this.addCommand({
       id: "open-weekly-note",
       name: "Open Weekly Note",
-      callback: () => this.view.openOrCreateWeeklyNote(window.moment(), false),
+      callback: () =>
+        this.view.openOrCreateWeeklyNote(null, window.moment(), false),
     });
 
     // this.addCommand({

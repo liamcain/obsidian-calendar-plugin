@@ -25,7 +25,6 @@ function createDisplayedMonthStore() {
   };
 }
 
-export const activeFile = writable<TFile>(null);
 export const displayedMonth = createDisplayedMonthStore();
 export const dailyNotes = createDailyNotesStore();
 export const settings = writable<ISettings>({

@@ -1,21 +1,19 @@
 import type { Moment } from "moment";
-import { getDailyNote, getDateFromFile } from "obsidian-daily-notes-interface";
+import { getDateFromFile } from "obsidian-daily-notes-interface";
 import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
-import { MetadataCache } from "obsidian-calendar-ui";
-import { get } from "svelte/store";
+import { MetadataStore } from "obsidian-calendar-ui";
 
 import { VIEW_TYPE_CALENDAR } from "src/constants";
 import { tryToCreateDailyNote } from "src/io/dailyNotes";
 import { tryToCreateWeeklyNote } from "src/io/weeklyNotes";
 import { getWeeklyNoteSettings, ISettings } from "src/settings";
 
-import { activeFile, dailyNotes } from "./ui/stores";
 import Calendar from "./ui/Calendar.svelte";
-import DailyNoteSource from "./ui/sources/DailyNoteSource";
+import dailyNoteSource from "./ui/sources/dailyNotes";
 
 export default class CalendarView extends ItemView {
   private calendar: Calendar;
-  private metadata: MetadataCache;
+  private metadata: MetadataStore;
   private settings: ISettings;
 
   constructor(leaf: WorkspaceLeaf, settings: ISettings) {
@@ -23,7 +21,7 @@ export default class CalendarView extends ItemView {
 
     this.settings = settings;
 
-    this._openOrCreateDailyNote = this._openOrCreateDailyNote.bind(this);
+    this.openOrCreateDailyNote = this.openOrCreateDailyNote.bind(this);
     this.openOrCreateWeeklyNote = this.openOrCreateWeeklyNote.bind(this);
 
     this.onFileCreated = this.onFileCreated.bind(this);
@@ -39,34 +37,32 @@ export default class CalendarView extends ItemView {
     this.registerEvent(this.app.workspace.on("file-open", this.onFileOpen));
   }
 
-  getViewType(): string {
+  public getViewType(): string {
     return VIEW_TYPE_CALENDAR;
   }
 
-  getDisplayText(): string {
+  public getDisplayText(): string {
     return "Calendar";
   }
 
-  getIcon(): string {
+  public getIcon(): string {
     return "calendar-with-checkmark";
   }
 
-  onClose(): Promise<void> {
+  public onClose(): Promise<void> {
     if (this.calendar) {
       this.calendar.$destroy();
     }
     return Promise.resolve();
   }
 
-  async onOpen(): Promise<void> {
-    dailyNotes.reindex();
-    this.metadata = new MetadataCache(new DailyNoteSource());
-
+  public async onOpen(): Promise<void> {
+    this.metadata = new MetadataStore([dailyNoteSource]);
     this.calendar = new Calendar({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       target: (this as any).contentEl,
       props: {
-        onClickDay: this._openOrCreateDailyNote,
+        onClickDay: this.openOrCreateDailyNote,
         onClickWeek: this.openOrCreateWeeklyNote,
         onHoverDay: this.onHover,
         onHoverWeek: this.onHover,
@@ -75,16 +71,21 @@ export default class CalendarView extends ItemView {
     });
   }
 
-  onHover(date: Moment, targetEl: EventTarget): void {
-    const note = getDailyNote(date, get(dailyNotes));
-    // TODO: Fix this ""
-    this.app.workspace.trigger("link-hover", this, targetEl, "", note?.path);
+  private onHover(
+    file: TFile | null,
+    _date: Moment,
+    targetEl: EventTarget,
+    isMetaPressed: boolean
+  ): void {
+    if (isMetaPressed) {
+      this.app.workspace.trigger("link-hover", this, targetEl, "", file?.path);
+    }
   }
 
   private async onFileDeleted(file: TFile): Promise<void> {
     const date = getDateFromFile(file);
     if (date) {
-      dailyNotes.reindex();
+      this.metadata.dailyNotes.reindex();
       this.updateActiveFile();
     }
   }
@@ -92,7 +93,7 @@ export default class CalendarView extends ItemView {
   private async onFileModified(file: TFile): Promise<void> {
     const date = getDateFromFile(file);
     if (date) {
-      this.metadata.refreshDay(date);
+      // this.metadata.refreshDay(date);
     }
   }
 
@@ -100,7 +101,7 @@ export default class CalendarView extends ItemView {
     if (this.app.workspace.layoutReady) {
       const date = getDateFromFile(file);
       if (date) {
-        dailyNotes.reindex();
+        this.metadata.dailyNotes.reindex();
       }
     }
   }
@@ -111,9 +112,8 @@ export default class CalendarView extends ItemView {
     let file = null;
     if (view instanceof FileView) {
       file = view.file;
-      this.metadata.selectedDate.set(getDateFromFile(file));
     }
-    activeFile.set(file);
+    this.metadata.activeFile.set(file);
   }
 
   public onFileOpen(_file: TFile): void {
@@ -142,19 +142,18 @@ export default class CalendarView extends ItemView {
     }
   }
 
-  async openOrCreateWeeklyNote(
+  public async openOrCreateWeeklyNote(
+    existingFile: TFile,
     date: Moment,
     inNewSplit: boolean
   ): Promise<void> {
     const { workspace } = this.app;
     const startOfWeek = date.clone().weekday(0);
 
-    const existingFile = getDailyNote(date, get(dailyNotes));
-
     if (!existingFile) {
       // File doesn't exist
       tryToCreateWeeklyNote(startOfWeek, inNewSplit, this.settings, (file) => {
-        activeFile.update(() => file);
+        this.metadata.activeFile.update(() => file);
       });
       return;
     }
@@ -164,15 +163,15 @@ export default class CalendarView extends ItemView {
       : workspace.getUnpinnedLeaf();
     await leaf.openFile(existingFile);
 
-    activeFile.update(() => existingFile);
+    this.metadata.activeFile.update(() => existingFile);
   }
 
-  async _openOrCreateDailyNote(
+  private async openOrCreateDailyNote(
+    existingFile: TFile,
     date: Moment,
     inNewSplit: boolean
   ): Promise<void> {
     const { workspace } = this.app;
-    const existingFile = getDailyNote(date, get(dailyNotes));
     if (!existingFile) {
       // File doesn't exist
       tryToCreateDailyNote(
@@ -180,8 +179,7 @@ export default class CalendarView extends ItemView {
         inNewSplit,
         this.settings,
         (dailyNote: TFile) => {
-          // this.dailyNotesSource.reindex();
-          activeFile.update(() => dailyNote);
+          this.metadata.activeFile.update(() => dailyNote);
         }
       );
       return;
@@ -192,6 +190,6 @@ export default class CalendarView extends ItemView {
       : workspace.getUnpinnedLeaf();
     await leaf.openFile(existingFile);
 
-    activeFile.update(() => existingFile);
+    this.metadata.activeFile.update(() => existingFile);
   }
 }

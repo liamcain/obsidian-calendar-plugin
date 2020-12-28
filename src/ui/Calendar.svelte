@@ -2,14 +2,14 @@
   import type { Moment } from "moment";
   import {
     Calendar as CalendarBase,
-    MetadataCache,
+    MetadataStore,
   } from "obsidian-calendar-ui";
   import { onDestroy } from "svelte";
   import { get } from "svelte/store";
 
   import { displayedMonth, settings } from "./stores";
 
-  export let metadata: MetadataCache;
+  export let metadata: MetadataStore;
   export let onHoverDay: (date: Moment, targetEl: EventTarget) => void;
   export let onHoverWeek: (date: Moment, targetEl: EventTarget) => void;
   export let onClickDay: (date: Moment, isMetaPressed: boolean) => void;

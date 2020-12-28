@@ -1,17 +1,16 @@
 import type { Moment } from "moment";
 import { parseFrontMatterTags, TFile } from "obsidian";
-import { getDailyNote } from "obsidian-daily-notes-interface";
+import type {
+  ICalendarSource,
+  IDayMetadata,
+  IDot,
+  IWeekMetadata,
+} from "obsidian-calendar-ui";
 import { get } from "svelte/store";
 
 import { clamp, getWordCount } from "src/ui/utils";
 
-import {
-  CalendarSource,
-  IDayMetadata,
-  IWeekMetadata,
-  IDot,
-} from "obsidian-calendar-ui";
-import { dailyNotes, settings } from "../stores";
+import { settings } from "../stores";
 
 const NUM_MAX_DOTS = 5;
 
@@ -80,30 +79,29 @@ export async function getDotsForDailyNote(
   return dots;
 }
 
-export default class DailyNoteSource extends CalendarSource {
-  private getClasses(file: TFile): string[] {
-    const classes = [];
-    if (file) {
-      classes.push("has-note");
-    }
-    return classes;
+const getStreakClasses = (file: TFile) => {
+  const classes = [];
+  if (file) {
+    classes.push("has-note");
   }
+  return classes;
+};
 
-  public getDailyMetadata(date: Moment): IDayMetadata {
-    const file = getDailyNote(date, get(dailyNotes));
+const dailyNoteSource: ICalendarSource = {
+  getDailyMetadata: (file: TFile, _date: Moment): IDayMetadata => {
     return {
-      classes: this.getClasses(file),
+      classes: getStreakClasses(file),
       dataAttributes: getNoteTags(file),
       dots: getDotsForDailyNote(file),
     };
-  }
-
-  public getWeeklyMetadata(date: Moment): IWeekMetadata {
-    const file = getDailyNote(date, get(dailyNotes));
+  },
+  getWeeklyMetadata: (file: TFile, _date: Moment): IWeekMetadata => {
     return {
-      classes: this.getClasses(file),
+      classes: getStreakClasses(file),
       dataAttributes: getNoteTags(file),
       dots: getDotsForDailyNote(file),
     };
-  }
-}
+  },
+};
+
+export default dailyNoteSource;
