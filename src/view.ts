@@ -93,7 +93,9 @@ export default class CalendarView extends ItemView {
   private async onFileModified(file: TFile): Promise<void> {
     const date = getDateFromFile(file);
     if (date) {
-      // this.metadata.refreshDay(date);
+      // XXX: Trigger a rerender of the calendar
+      this.calendar.$set({ metadata: this.metadata });
+      console.log("this.calendar", this.calendar);
     }
   }
 
@@ -108,6 +110,7 @@ export default class CalendarView extends ItemView {
 
   private updateActiveFile(): void {
     const { view } = this.app.workspace.activeLeaf;
+    console.log("updateActiveFile");
 
     let file = null;
     if (view instanceof FileView) {
