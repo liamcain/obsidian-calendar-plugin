@@ -4,6 +4,7 @@ import { App, Plugin, WorkspaceLeaf } from "obsidian";
 import { configureMomentLocale } from "src/localization";
 
 import { VIEW_TYPE_CALENDAR } from "./constants";
+import { getWeeklyNote } from "./io/weeklyNotes";
 import {
   CalendarSettingsTab,
   SettingsInstance,
@@ -60,8 +61,11 @@ export default class CalendarPlugin extends Plugin {
     this.addCommand({
       id: "open-weekly-note",
       name: "Open Weekly Note",
-      callback: () =>
-        this.view.openOrCreateWeeklyNote(window.moment(), null, false),
+      callback: () => {
+        const date = window.moment();
+        const existingFile = getWeeklyNote(date, this.options);
+        this.view.openOrCreateWeeklyNote(date, existingFile, false);
+      },
     });
 
     this.addCommand({
