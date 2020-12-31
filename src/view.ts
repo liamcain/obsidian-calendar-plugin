@@ -1,6 +1,6 @@
 import type { Moment } from "moment";
 import { getDateFromFile } from "obsidian-daily-notes-interface";
-import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
+import { FileView, TFile, ItemView, WorkspaceLeaf, Menu } from "obsidian";
 import { MetadataStore } from "obsidian-calendar-ui";
 
 import { VIEW_TYPE_CALENDAR } from "src/constants";
@@ -23,6 +23,7 @@ export default class CalendarView extends ItemView {
 
     this.openOrCreateDailyNote = this.openOrCreateDailyNote.bind(this);
     this.openOrCreateWeeklyNote = this.openOrCreateWeeklyNote.bind(this);
+    this.showDayContextMenu = this.showDayContextMenu.bind(this);
 
     this.onFileCreated = this.onFileCreated.bind(this);
     this.onFileDeleted = this.onFileDeleted.bind(this);
@@ -64,6 +65,7 @@ export default class CalendarView extends ItemView {
       props: {
         onClickDay: this.openOrCreateDailyNote,
         onClickWeek: this.openOrCreateWeeklyNote,
+        onContextMenuDay: this.showDayContextMenu,
         onHoverDay: this.onHover,
         onHoverWeek: this.onHover,
         metadata: this.metadata,
@@ -78,7 +80,13 @@ export default class CalendarView extends ItemView {
     isMetaPressed: boolean
   ): void {
     if (isMetaPressed) {
-      this.app.workspace.trigger("link-hover", this, targetEl, "", file?.path);
+      this.app.workspace.trigger(
+        "link-hover",
+        this,
+        targetEl,
+        file?.basename || "",
+        file?.path
+      );
     }
   }
 
@@ -93,9 +101,7 @@ export default class CalendarView extends ItemView {
   private async onFileModified(file: TFile): Promise<void> {
     const date = getDateFromFile(file);
     if (date) {
-      // XXX: Trigger a rerender of the calendar
-      this.calendar.$set({ metadata: this.metadata });
-      console.log("this.calendar", this.calendar);
+      this.calendar.tick();
     }
   }
 
@@ -108,9 +114,28 @@ export default class CalendarView extends ItemView {
     }
   }
 
+  private showDayContextMenu(event: MouseEvent, file: TFile | null): void {
+    if (!file) {
+      // If no file exists for a given day, show nothing.
+      return;
+    }
+
+    const fileMenu = new Menu();
+    this.app.workspace.trigger(
+      "file-menu",
+      fileMenu,
+      file,
+      "calendar-context-menu",
+      null
+    );
+    fileMenu.showAtPosition({
+      x: event.pageX,
+      y: event.pageY,
+    });
+  }
+
   private updateActiveFile(): void {
     const { view } = this.app.workspace.activeLeaf;
-    console.log("updateActiveFile");
 
     let file = null;
     if (view instanceof FileView) {
@@ -182,7 +207,7 @@ export default class CalendarView extends ItemView {
         inNewSplit,
         this.settings,
         (dailyNote: TFile) => {
-          this.metadata.activeFile.update(() => dailyNote);
+          this.metadata.activeFile.set(dailyNote);
         }
       );
       return;

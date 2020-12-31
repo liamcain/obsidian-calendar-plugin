@@ -66,11 +66,6 @@ const mockApp: App = {
     fileToLinktext: () => "",
     trigger: () => null,
   },
-  on: () => null,
-  off: () => null,
-  offref: () => null,
-  tryTrigger: () => null,
-  trigger: () => null,
   // @ts-ignore
   internalPlugins: {
     plugins: {

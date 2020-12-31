@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Moment } from "moment";
+  import type { TFile } from "obsidian";
   import {
     Calendar as CalendarBase,
     MetadataStore,
@@ -14,14 +15,18 @@
   export let onHoverWeek: (date: Moment, targetEl: EventTarget) => void;
   export let onClickDay: (date: Moment, isMetaPressed: boolean) => void;
   export let onClickWeek: (date: Moment, isMetaPressed: boolean) => void;
+  export let onContextMenuDay: (event: MouseEvent, file: TFile) => void;
+  export let today = window.moment();
 
-  const moment = window.moment;
-  let today = moment();
+  // Clock-tick to rerender the view
+  export function tick() {
+    today = window.moment();
+  }
 
   // 1 minute heartbeat to keep `today` reflecting the current day
   let heartbeat = setInterval(() => {
     const isViewingCurrentMonth = today.isSame(get(displayedMonth), "day");
-    today = moment();
+    today = window.moment();
 
     if (isViewingCurrentMonth) {
       // if it's midnight on the last day of the month, this will
@@ -41,6 +46,7 @@
   {onHoverWeek}
   {onClickDay}
   {onClickWeek}
+  {onContextMenuDay}
   {today}
   {metadata}
   showWeekNums={$settings.showWeeklyNote}
