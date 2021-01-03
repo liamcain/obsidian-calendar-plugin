@@ -1,9 +1,9 @@
-import { ISettings, syncMomentLocaleWithSettings } from "src/settings";
+import type { ISettings } from "src/settings";
 
 export function getDefaultSettings(
   overrides: Partial<ISettings> = {}
 ): ISettings {
-  const settings = Object.assign(
+  return Object.assign(
     {},
     {
       weekStart: "sunday",
@@ -16,7 +16,4 @@ export function getDefaultSettings(
     },
     overrides
   );
-  syncMomentLocaleWithSettings(settings);
-
-  return settings;
 }

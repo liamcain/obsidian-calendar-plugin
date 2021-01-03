@@ -1,32 +1,41 @@
+<svelte:options immutable />
+
 <script lang="ts">
   import type { Moment } from "moment";
   import {
     Calendar as CalendarBase,
-    MetadataCache,
+    ICalendarSource,
   } from "obsidian-calendar-ui";
   import { onDestroy } from "svelte";
-  import { get } from "svelte/store";
 
-  import { activeFile, dailyNotes, displayedMonth, settings } from "./stores";
-
-  export let metadata: MetadataCache;
-  export let onHoverDay: (date: Moment, targetEl: EventTarget) => void;
-  export let onHoverWeek: (date: Moment, targetEl: EventTarget) => void;
-  export let onClickDay: (date: Moment, isMetaPressed: boolean) => void;
-  export let onClickWeek: (date: Moment, isMetaPressed: boolean) => void;
+  import { activeFile, settings } from "./stores";
 
   const moment = window.moment;
-  let today = moment();
+
+  let today: Moment = moment();
+
+  export let displayedMonth: Moment = today;
+  export let sources: ICalendarSource[];
+  export let onHoverDay: (date: Moment, targetEl: EventTarget) => boolean;
+  export let onHoverWeek: (date: Moment, targetEl: EventTarget) => boolean;
+  export let onClickDay: (date: Moment, isMetaPressed: boolean) => boolean;
+  export let onClickWeek: (date: Moment, isMetaPressed: boolean) => boolean;
+  export let onContextMenuDay: (date: Moment, event: MouseEvent) => boolean;
+  export let onContextMenuWeek: (date: Moment, event: MouseEvent) => boolean;
+
+  export function tick() {
+    today = moment();
+  }
 
   // 1 minute heartbeat to keep `today` reflecting the current day
   let heartbeat = setInterval(() => {
-    const isViewingCurrentMonth = today.isSame(get(displayedMonth), "day");
-    today = moment();
+    tick();
 
+    const isViewingCurrentMonth = displayedMonth.isSame(today, "day");
     if (isViewingCurrentMonth) {
       // if it's midnight on the last day of the month, this will
       // update the display to show the new month.
-      displayedMonth.reset();
+      displayedMonth = today;
     }
   }, 1000 * 60);
 
@@ -35,14 +44,18 @@
   });
 </script>
 
-<svelte:options immutable />
 <CalendarBase
+  localeOverride={$settings.localeOverride}
+  weekStart={$settings.weekStart}
+  {sources}
+  {today}
   {onHoverDay}
   {onHoverWeek}
+  {onContextMenuDay}
+  {onContextMenuWeek}
   {onClickDay}
   {onClickWeek}
-  {today}
-  {metadata}
-  dependencies={[activeFile, dailyNotes, settings]}
+  bind:displayedMonth
+  selectedId={$activeFile}
   showWeekNums={$settings.showWeeklyNote}
 />

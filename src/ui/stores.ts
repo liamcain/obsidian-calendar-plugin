@@ -1,10 +1,11 @@
-import type { Moment } from "moment";
 import type { TFile } from "obsidian";
 import { writable } from "svelte/store";
 import { getAllDailyNotes } from "obsidian-daily-notes-interface";
 
 import { DEFAULT_WORDS_PER_DOT } from "src/constants";
 import type { ISettings } from "src/settings";
+
+import { getDateUIDFromFile } from "./utils";
 
 function createDailyNotesStore() {
   const store = writable<Record<string, TFile>>(null);
@@ -14,19 +15,19 @@ function createDailyNotesStore() {
   };
 }
 
-function createDisplayedMonthStore() {
-  const store = writable<Moment>(null);
+function createSelectedFileStore() {
+  const store = writable<string>(null);
+
   return {
-    reset: () => store.set(window.moment()),
-    increment: () => store.update((month) => month.clone().add(1, "months")),
-    decrement: () =>
-      store.update((month) => month.clone().subtract(1, "months")),
+    setFile: (file: TFile) => {
+      const id = getDateUIDFromFile(file);
+      store.set(id);
+    },
     ...store,
   };
 }
 
-export const activeFile = writable<TFile>(null);
-export const displayedMonth = createDisplayedMonthStore();
+export const activeFile = createSelectedFileStore();
 export const dailyNotes = createDailyNotesStore();
 export const settings = writable<ISettings>({
   shouldConfirmBeforeCreate: true,
@@ -38,4 +39,6 @@ export const settings = writable<ISettings>({
   weeklyNoteFormat: "",
   weeklyNoteTemplate: "",
   weeklyNoteFolder: "",
+
+  localeOverride: "system-default",
 });

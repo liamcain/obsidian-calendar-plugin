@@ -1,15 +1,9 @@
 import type { Moment, WeekSpec } from "moment";
 import { App, Plugin, WorkspaceLeaf } from "obsidian";
 
-import { configureMomentLocale } from "src/localization";
-
 import { VIEW_TYPE_CALENDAR } from "./constants";
 import { settings } from "./ui/stores";
-import {
-  CalendarSettingsTab,
-  ISettings,
-  syncMomentLocaleWithSettings,
-} from "./settings";
+import { CalendarSettingsTab, ISettings } from "./settings";
 import CalendarView from "./view";
 
 declare global {
@@ -34,14 +28,13 @@ export default class CalendarPlugin extends Plugin {
     this.register(
       settings.subscribe((value) => {
         this.options = value;
-        configureMomentLocale(this.options);
+        // TODO pass new weekStart and localeOverride to Calendar
       })
     );
 
     this.registerView(
       VIEW_TYPE_CALENDAR,
-      (leaf: WorkspaceLeaf) =>
-        (this.view = new CalendarView(leaf, this.options))
+      (leaf: WorkspaceLeaf) => (this.view = new CalendarView(leaf))
     );
 
     this.addCommand({
@@ -63,12 +56,6 @@ export default class CalendarPlugin extends Plugin {
       callback: () => this.view.openOrCreateWeeklyNote(window.moment(), false),
     });
 
-    // this.addCommand({
-    //   id: "reload-calendar-view",
-    //   name: "Reload daily note settings",
-    //   callback: () => {},
-    // });
-
     this.addCommand({
       id: "reveal-active-note",
       name: "Reveal active note",
@@ -76,10 +63,6 @@ export default class CalendarPlugin extends Plugin {
     });
 
     await this.loadOptions();
-
-    // After we retrieve the settings, override window.moment to
-    // reflect 'start week on monday' setting
-    syncMomentLocaleWithSettings(this.options);
 
     this.addSettingTab(new CalendarSettingsTab(this.app, this));
 
@@ -117,7 +100,6 @@ export default class CalendarPlugin extends Plugin {
     changeOpts: (settings: ISettings) => Partial<ISettings>
   ): Promise<void> {
     settings.update((old) => ({ ...old, ...changeOpts(old) }));
-    syncMomentLocaleWithSettings(this.options);
     await this.saveData(this.options);
   }
 }
