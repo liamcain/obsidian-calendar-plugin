@@ -1,16 +1,17 @@
 import type { Moment } from "moment";
 import { parseFrontMatterTags, TFile } from "obsidian";
-import { getDailyNote } from "obsidian-daily-notes-interface";
-import { get } from "svelte/store";
-
-import { clamp, getWordCount } from "src/ui/utils";
-
-import {
-  CalendarSource,
+import type {
+  ICalendarSource,
   IDayMetadata,
   IWeekMetadata,
   IDot,
 } from "obsidian-calendar-ui";
+import { getDailyNote } from "obsidian-daily-notes-interface";
+import { get } from "svelte/store";
+
+import { getWeeklyNote } from "src/io/weeklyNotes";
+import { clamp, getWordCount } from "src/ui/utils";
+
 import { dailyNotes, settings } from "../stores";
 
 const NUM_MAX_DOTS = 5;
@@ -80,30 +81,72 @@ export async function getDotsForDailyNote(
   return dots;
 }
 
-export default class DailyNoteSource extends CalendarSource {
-  private getClasses(file: TFile): string[] {
-    const classes = [];
-    if (file) {
-      classes.push("has-note");
+const classList = (obj: Record<string, boolean>): string[] => {
+  return Object.entries(obj)
+    .filter(([_k, v]) => !!v)
+    .map(([k, _k]) => k);
+};
+
+const getStreakClasses = (file: TFile): string[] => {
+  return classList({
+    "has-note": !!file,
+  });
+};
+
+export const dailyNoteSource: ICalendarSource = {
+  getDailyMetadata: async (date: Moment): Promise<IDayMetadata> => {
+    const file = getDailyNote(date, get(dailyNotes));
+    const dots = await getDotsForDailyNote(file);
+    return {
+      classes: getStreakClasses(file),
+      dataAttributes: getNoteTags(file),
+      dots,
+    };
+  },
+
+  // LIAM you are too tired to do it now, but you can just memoize the expensive
+  // functions instead of getDailyMetdata.
+  // So in this case, just memoize getDotsForDailyNote. Then you don't need to do
+  // any merging...
+  getWeeklyMetadata: async (date: Moment): Promise<IWeekMetadata> => {
+    const file = getWeeklyNote(date, get(settings));
+    const dots = await getDotsForDailyNote(file);
+
+    return {
+      classes: getStreakClasses(file),
+      dataAttributes: getNoteTags(file),
+      dots,
+    };
+  },
+
+  // Cache keys for perf
+  getDailyCacheKey: (cacheArgs: any[], callArgs: any[]): boolean => {
+    const cacheDate = cacheArgs[0];
+    const callDate = callArgs[0];
+
+    if (callDate !== cacheDate) {
+      return false;
     }
-    return classes;
-  }
 
-  public getDailyMetadata(date: Moment): IDayMetadata {
-    const file = getDailyNote(date, get(dailyNotes));
-    return {
-      classes: this.getClasses(file),
-      dataAttributes: getNoteTags(file),
-      dots: getDotsForDailyNote(file),
-    };
-  }
+    const callFile = getDailyNote(callDate, get(dailyNotes));
+    const cacheFile = getDailyNote(cacheDate, get(dailyNotes));
+    return callFile?.stat.mtime === cacheFile?.stat.mtime;
+  },
+  getWeeklyCacheKey: (cacheArgs: any[], callArgs: any[]): boolean => {
+    const cacheDate = cacheArgs[0] as Moment;
+    const callDate = callArgs[0] as Moment;
 
-  public getWeeklyMetadata(date: Moment): IWeekMetadata {
-    const file = getDailyNote(date, get(dailyNotes));
-    return {
-      classes: this.getClasses(file),
-      dataAttributes: getNoteTags(file),
-      dots: getDotsForDailyNote(file),
-    };
-  }
-}
+    if (!callDate.isSame(cacheDate)) {
+      return false;
+    }
+
+    const callFile = getDailyNote(callDate, get(dailyNotes));
+    const cacheFile = getDailyNote(cacheDate, get(dailyNotes));
+
+    console.log(callFile, cacheFile);
+    return (
+      callFile?.basename === cacheFile?.basename &&
+      callFile?.stat.mtime === cacheFile?.stat.mtime
+    );
+  },
+};

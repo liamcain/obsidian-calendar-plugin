@@ -42,7 +42,7 @@ export default class CalendarPlugin extends Plugin {
     this.registerView(
       VIEW_TYPE_CALENDAR,
       (leaf: WorkspaceLeaf) =>
-        (this.view = new CalendarView(leaf, this.options))
+        (this.view = new CalendarView(leaf))
     );
 
     this.addCommand({

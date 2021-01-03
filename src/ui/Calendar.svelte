@@ -2,14 +2,13 @@
   import type { Moment } from "moment";
   import {
     Calendar as CalendarBase,
-    MetadataCache,
+    ICalendarSource,
   } from "obsidian-calendar-ui";
   import { onDestroy } from "svelte";
-  import { get } from "svelte/store";
 
-  import { activeFile, dailyNotes, displayedMonth, settings } from "./stores";
+  import { activeFile, displayedMonth, settings } from "./stores";
 
-  export let metadata: MetadataCache;
+  export let sources: ICalendarSource[];
   export let onHoverDay: (date: Moment, targetEl: EventTarget) => void;
   export let onHoverWeek: (date: Moment, targetEl: EventTarget) => void;
   export let onClickDay: (date: Moment, isMetaPressed: boolean) => void;
@@ -18,9 +17,13 @@
   const moment = window.moment;
   let today = moment();
 
+  export function tick() {
+    today = moment();
+  }
+
   // 1 minute heartbeat to keep `today` reflecting the current day
   let heartbeat = setInterval(() => {
-    const isViewingCurrentMonth = today.isSame(get(displayedMonth), "day");
+    const isViewingCurrentMonth = today.isSame($displayedMonth, "day");
     today = moment();
 
     if (isViewingCurrentMonth) {
@@ -41,8 +44,9 @@
   {onHoverWeek}
   {onClickDay}
   {onClickWeek}
+  {sources}
   {today}
-  {metadata}
-  dependencies={[activeFile, dailyNotes, settings]}
+  selectedId={$activeFile}
+  displayedMonth={$displayedMonth}
   showWeekNums={$settings.showWeeklyNote}
 />
