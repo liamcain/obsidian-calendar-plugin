@@ -8,14 +8,15 @@
 
   import { activeFile, displayedMonth, settings } from "./stores";
 
+  const moment = window.moment;
+
   export let sources: ICalendarSource[];
   export let onHoverDay: (date: Moment, targetEl: EventTarget) => void;
   export let onHoverWeek: (date: Moment, targetEl: EventTarget) => void;
   export let onClickDay: (date: Moment, isMetaPressed: boolean) => void;
   export let onClickWeek: (date: Moment, isMetaPressed: boolean) => void;
 
-  const moment = window.moment;
-  let today = moment();
+  let today: Moment = moment();
 
   export function tick() {
     today = moment();

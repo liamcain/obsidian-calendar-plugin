@@ -1,5 +1,9 @@
 import type { Moment } from "moment";
-import { getDailyNote, getDateFromFile } from "obsidian-daily-notes-interface";
+import {
+  getDailyNote,
+  getDailyNoteSettings,
+  getDateFromFile,
+} from "obsidian-daily-notes-interface";
 import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
 import { get } from "svelte/store";
 
@@ -8,9 +12,14 @@ import { tryToCreateDailyNote } from "src/io/dailyNotes";
 import { getWeeklyNote, tryToCreateWeeklyNote } from "src/io/weeklyNotes";
 import { getWeeklyNoteSettings, ISettings } from "src/settings";
 
-import { activeFile, dailyNotes, settings } from "./ui/stores";
 import Calendar from "./ui/Calendar.svelte";
-import { dailyNoteSource } from "./ui/sources/DailyNoteSource";
+import { activeFile, dailyNotes, settings } from "./ui/stores";
+import {
+  customTagsSource,
+  streakSource,
+  tasksSource,
+  wordCountSource,
+} from "./ui/sources";
 
 export default class CalendarView extends ItemView {
   private calendar: Calendar;
@@ -27,7 +36,8 @@ export default class CalendarView extends ItemView {
     this.onFileModified = this.onFileModified.bind(this);
     this.onFileOpen = this.onFileOpen.bind(this);
 
-    this.onHover = this.onHover.bind(this);
+    this.onHoverDay = this.onHoverDay.bind(this);
+    this.onHoverWeek = this.onHoverWeek.bind(this);
 
     this.registerEvent(this.app.vault.on("create", this.onFileCreated));
     this.registerEvent(this.app.vault.on("delete", this.onFileDeleted));
@@ -37,6 +47,11 @@ export default class CalendarView extends ItemView {
     this.settings = null;
     settings.subscribe((val) => {
       this.settings = val;
+
+      // Refresh the calendar if settings change
+      if (this.calendar) {
+        this.calendar.tick();
+      }
     });
   }
 
@@ -68,17 +83,49 @@ export default class CalendarView extends ItemView {
       props: {
         onClickDay: this._openOrCreateDailyNote,
         onClickWeek: this.openOrCreateWeeklyNote,
-        onHoverDay: this.onHover,
-        onHoverWeek: this.onHover,
-        sources: [dailyNoteSource],
+        onHoverDay: this.onHoverDay,
+        onHoverWeek: this.onHoverWeek,
+        sources: [streakSource, customTagsSource, wordCountSource, tasksSource],
       },
     });
   }
 
-  onHover(date: Moment, targetEl: EventTarget): void {
+  onHoverDay(
+    date: Moment,
+    targetEl: EventTarget,
+    isMetaPressed: boolean
+  ): void {
+    if (!isMetaPressed) {
+      return;
+    }
+    const { format } = getDailyNoteSettings();
     const note = getDailyNote(date, get(dailyNotes));
-    // TODO: Fix this ""
-    this.app.workspace.trigger("link-hover", this, targetEl, "", note?.path);
+    this.app.workspace.trigger(
+      "link-hover",
+      this,
+      targetEl,
+      date.format(format),
+      note?.path
+    );
+  }
+
+  onHoverWeek(
+    date: Moment,
+    targetEl: EventTarget,
+    isMetaPressed: boolean
+  ): void {
+    if (!isMetaPressed) {
+      return;
+    }
+    const note = getWeeklyNote(date, this.settings);
+    const { format } = getWeeklyNoteSettings(this.settings);
+    this.app.workspace.trigger(
+      "link-hover",
+      this,
+      targetEl,
+      date.format(format),
+      note?.path
+    );
   }
 
   private async onFileDeleted(file: TFile): Promise<void> {
@@ -102,9 +149,6 @@ export default class CalendarView extends ItemView {
       if (date) {
         dailyNotes.reindex();
         this.calendar.tick();
-        console.log("file created, updating today");
-      } else {
-        console.log("not a date");
       }
     }
   }

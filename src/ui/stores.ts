@@ -4,6 +4,7 @@ import { writable } from "svelte/store";
 import {
   getAllDailyNotes,
   getDateFromFile,
+  getDateUID,
 } from "obsidian-daily-notes-interface";
 
 import { DEFAULT_WORDS_PER_DOT } from "src/constants";
@@ -35,14 +36,14 @@ export function getDateUIDFromFile(file: TFile | null): string {
 
   let date = getDateFromFile(file);
   if (date) {
-    return `day-${date.startOf("day").format()}`;
+    return getDateUID(date, "day");
   }
 
   // Check to see if the active note is a weekly-note
   const format = getWeeklyNoteSettings(this.settings).format;
   date = window.moment(file.basename, format, true);
   if (date.isValid()) {
-    return `week-${date.startOf("week").format()}`;
+    return getDateUID(date, "week");
   }
   return null;
 }

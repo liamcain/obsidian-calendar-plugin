@@ -3130,11 +3130,6 @@ merge2@^1.3.0:
   resolved "https://registry.yarnpkg.com/merge2/-/merge2-1.4.1.tgz#4368892f885e907455a6fd7dc55c0c9d404990ae"
   integrity sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==
 
-micro-memoize@^4.0.9:
-  version "4.0.9"
-  resolved "https://registry.yarnpkg.com/micro-memoize/-/micro-memoize-4.0.9.tgz#b44a38c9dffbee1cefc2fd139bc8947952268b62"
-  integrity sha512-Z2uZi/IUMGQDCXASdujXRqrXXEwSY0XffUrAOllhqzQI3wpUyZbiZTiE2JuYC0HSG2G7DbCS5jZmsEKEGZuemg==
-
 micromatch@^3.1.4:
   version "3.1.10"
   resolved "https://registry.yarnpkg.com/micromatch/-/micromatch-3.1.10.tgz#70859bc95c9840952f359a068a3fc49f9ecfac23"
@@ -3343,17 +3338,16 @@ object.pick@^1.3.0:
     isobject "^3.0.1"
 
 obsidian-calendar-ui@../obsidian-calendar-ui:
-  version "0.0.3"
+  version "0.1.0"
   dependencies:
-    micro-memoize "^4.0.9"
-    obsidian-daily-notes-interface "0.4.0"
+    obsidian-daily-notes-interface "0.5.0"
     svelte "3.31.0"
     tslib "2.0.3"
 
-obsidian-daily-notes-interface@0.4.0:
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/obsidian-daily-notes-interface/-/obsidian-daily-notes-interface-0.4.0.tgz#9bbc1813146ebbff60df986fd717f90b2620d309"
-  integrity sha512-CTokiN+6UJ7umihC5equ3sMx5kO9F3X94sSrMN8nrUHjVQYfZiGX/cFhCqh7laeE7MC0g8Kzwzv6/6VLbpmV6w==
+obsidian-daily-notes-interface@0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/obsidian-daily-notes-interface/-/obsidian-daily-notes-interface-0.5.0.tgz#cc815ffe2e38c6777c3a182ddb7e83c9ba146d30"
+  integrity sha512-HkLwgDwKpVOTKxtw4NU18tvK4XuFgmP0k0zwPLao4BiFZaZNJp+5x+wcqmioWjLyThgkEYIyolK7uCkAeTSY+w==
   dependencies:
     obsidian obsidianmd/obsidian-api#master
     tslib "2.0.3"
