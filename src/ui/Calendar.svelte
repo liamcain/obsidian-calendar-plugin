@@ -11,10 +11,12 @@
   const moment = window.moment;
 
   export let sources: ICalendarSource[];
-  export let onHoverDay: (date: Moment, targetEl: EventTarget) => void;
-  export let onHoverWeek: (date: Moment, targetEl: EventTarget) => void;
-  export let onClickDay: (date: Moment, isMetaPressed: boolean) => void;
-  export let onClickWeek: (date: Moment, isMetaPressed: boolean) => void;
+  export let onHoverDay: (date: Moment, targetEl: EventTarget) => boolean;
+  export let onHoverWeek: (date: Moment, targetEl: EventTarget) => boolean;
+  export let onClickDay: (date: Moment, isMetaPressed: boolean) => boolean;
+  export let onClickWeek: (date: Moment, isMetaPressed: boolean) => boolean;
+  export let onContextMenuDay: (date: Moment, event: MouseEvent) => boolean;
+  export let onContextMenuWeek: (date: Moment, event: MouseEvent) => boolean;
 
   let today: Moment = moment();
 
@@ -43,6 +45,8 @@
 <CalendarBase
   {onHoverDay}
   {onHoverWeek}
+  {onContextMenuDay}
+  {onContextMenuWeek}
   {onClickDay}
   {onClickWeek}
   {sources}

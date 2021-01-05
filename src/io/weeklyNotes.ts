@@ -107,7 +107,7 @@ export async function tryToCreateWeeklyNote(
       cta: "Create",
       onAccept: createFile,
       text: `File ${filename} does not exist. Would you like to create it?`,
-      title: "New Daily Note",
+      title: "New Weekly Note",
     });
   } else {
     await createFile();

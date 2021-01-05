@@ -13,6 +13,7 @@ import { getWeeklyNote, tryToCreateWeeklyNote } from "src/io/weeklyNotes";
 import { getWeeklyNoteSettings, ISettings } from "src/settings";
 
 import Calendar from "./ui/Calendar.svelte";
+import { showFileMenu } from "./ui/fileMenu";
 import { activeFile, dailyNotes, settings } from "./ui/stores";
 import {
   customTagsSource,
@@ -28,7 +29,7 @@ export default class CalendarView extends ItemView {
   constructor(leaf: WorkspaceLeaf) {
     super(leaf);
 
-    this._openOrCreateDailyNote = this._openOrCreateDailyNote.bind(this);
+    this.openOrCreateDailyNote = this.openOrCreateDailyNote.bind(this);
     this.openOrCreateWeeklyNote = this.openOrCreateWeeklyNote.bind(this);
 
     this.onFileCreated = this.onFileCreated.bind(this);
@@ -38,6 +39,9 @@ export default class CalendarView extends ItemView {
 
     this.onHoverDay = this.onHoverDay.bind(this);
     this.onHoverWeek = this.onHoverWeek.bind(this);
+
+    this.onContextMenuDay = this.onContextMenuDay.bind(this);
+    this.onContextMenuWeek = this.onContextMenuWeek.bind(this);
 
     this.registerEvent(this.app.vault.on("create", this.onFileCreated));
     this.registerEvent(this.app.vault.on("delete", this.onFileDeleted));
@@ -81,10 +85,12 @@ export default class CalendarView extends ItemView {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       target: (this as any).contentEl,
       props: {
-        onClickDay: this._openOrCreateDailyNote,
+        onClickDay: this.openOrCreateDailyNote,
         onClickWeek: this.openOrCreateWeeklyNote,
         onHoverDay: this.onHoverDay,
         onHoverWeek: this.onHoverWeek,
+        onContextMenuDay: this.onContextMenuDay,
+        onContextMenuWeek: this.onContextMenuWeek,
         sources: [streakSource, customTagsSource, wordCountSource, tasksSource],
       },
     });
@@ -128,6 +134,30 @@ export default class CalendarView extends ItemView {
     );
   }
 
+  private onContextMenuDay(date: Moment, event: MouseEvent): void {
+    const note = getDailyNote(date, get(dailyNotes));
+    if (!note) {
+      // If no file exists for a given day, show nothing.
+      return;
+    }
+    showFileMenu(this.app, note, {
+      x: event.pageX,
+      y: event.pageY,
+    });
+  }
+
+  private onContextMenuWeek(date: Moment, event: MouseEvent): void {
+    const note = getWeeklyNote(date, this.settings);
+    if (!note) {
+      // If no file exists for a given day, show nothing.
+      return;
+    }
+    showFileMenu(this.app, note, {
+      x: event.pageX,
+      y: event.pageY,
+    });
+  }
+
   private async onFileDeleted(file: TFile): Promise<void> {
     const date = getDateFromFile(file);
     if (date) {
@@ -153,6 +183,12 @@ export default class CalendarView extends ItemView {
     }
   }
 
+  public onFileOpen(_file: TFile): void {
+    if (this.app.workspace.layoutReady) {
+      this.updateActiveFile();
+    }
+  }
+
   private updateActiveFile(): void {
     const { view } = this.app.workspace.activeLeaf;
 
@@ -162,12 +198,6 @@ export default class CalendarView extends ItemView {
     }
     activeFile.setFile(file);
     this.calendar.tick();
-  }
-
-  public onFileOpen(_file: TFile): void {
-    if (this.app.workspace.layoutReady) {
-      this.updateActiveFile();
-    }
   }
 
   public revealActiveNote(): void {
@@ -217,7 +247,7 @@ export default class CalendarView extends ItemView {
     activeFile.setFile(existingFile);
   }
 
-  async _openOrCreateDailyNote(
+  async openOrCreateDailyNote(
     date: Moment,
     inNewSplit: boolean
   ): Promise<void> {
