@@ -90,7 +90,6 @@ export async function tryToCreateWeeklyNote(
 ): Promise<void> {
   const { workspace } = window.app;
   const { format } = getWeeklyNoteSettings(settings);
-  console.log("date", date);
   const filename = date.format(format);
 
   const createFile = async () => {
