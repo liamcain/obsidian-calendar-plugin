@@ -72,8 +72,8 @@ export function getWeeklyNote(date: Moment, settings: ISettings): TFile {
   const { vault } = window.app;
   const { format, folder } = getWeeklyNoteSettings(settings);
 
-  const endOfWeek = date.clone().endOf("week");
-  const baseFilename = endOfWeek.format(format);
+  const startOfWeek = date.clone().startOf("week");
+  const baseFilename = startOfWeek.format(format);
 
   const fullPath = getNotePath(folder, baseFilename);
   return vault.getAbstractFileByPath(fullPath) as TFile;
@@ -90,6 +90,7 @@ export async function tryToCreateWeeklyNote(
 ): Promise<void> {
   const { workspace } = window.app;
   const { format } = getWeeklyNoteSettings(settings);
+  console.log("date", date);
   const filename = date.format(format);
 
   const createFile = async () => {

@@ -118,16 +118,14 @@ export default class CalendarView extends ItemView {
   ): Promise<void> {
     const { workspace } = this.app;
 
-    // Important: Use end of week in case week overlaps 2 years
-    // YYYY should use the NEW year.
-    const endOfWeek = date.clone().endOf("week");
+    const startOfWeek = date.clone().startOf("week");
 
     const { format } = getWeeklyNoteSettings(this.settings);
-    const baseFilename = endOfWeek.format(format);
+    const baseFilename = startOfWeek.format(format);
 
     if (!existingFile) {
       // File doesn't exist
-      tryToCreateWeeklyNote(endOfWeek, inNewSplit, this.settings, () => {
+      tryToCreateWeeklyNote(startOfWeek, inNewSplit, this.settings, () => {
         this.calendar.$set({ activeFile: baseFilename });
       });
       return;
