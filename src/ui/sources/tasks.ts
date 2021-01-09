@@ -24,16 +24,15 @@ export async function getDotsForDailyNote(
   if (!dailyNote) {
     return [];
   }
-  const numHollowDots = await getNumberOfRemainingTasks(dailyNote);
+  const numTasks = await getNumberOfRemainingTasks(dailyNote);
 
   const dots = [];
-  for (let i = 0; i < numHollowDots; i++) {
+  if (numTasks) {
     dots.push({
       color: "default",
       isFilled: false,
     });
   }
-
   return dots;
 }
 

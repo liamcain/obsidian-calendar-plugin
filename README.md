@@ -106,7 +106,7 @@ From the Settings menu, you can toggle "Start week on Monday".
 
 ### How do I include "unformatted" words in my weekly note filenames?
 
-If you want the weekly note format to include a word (e.g. "Week 21 of Year 2020") you can do so by surrounding the words with `[]` brackets. This tells [moment](https://momentjs.com/docs/#/displaying/format/) to ignore the words. So for the example above, you would set your format to `[Week] ww [of Year] YYYY`.
+If you want the weekly note format to include a word (e.g. "Week 21 of Year 2020") you can do so by surrounding the words with `[]` brackets. This tells [moment](https://momentjs.com/docs/#/displaying/format/) to ignore the words. So for the example above, you would set your format to `[Week] ww [of Year] gggg`.
 
 ### I don't like showing the week numbers but I still want to use weekly notes. Can I still use them?
 
@@ -123,13 +123,13 @@ If you add the following snippet to your weekly note template, you can a seamles
 ```md
 ## Week at a Glance
 
-![[{{sunday:YYYY-MM-DD}}]]
-![[{{monday:YYYY-MM-DD}}]]
-![[{{tuesday:YYYY-MM-DD}}]]
-![[{{wednesday:YYYY-MM-DD}}]]
-![[{{thursday:YYYY-MM-DD}}]]
-![[{{friday:YYYY-MM-DD}}]]
-![[{{saturday:YYYY-MM-DD}}]]
+![[{{sunday:gggg-MM-DD}}]]
+![[{{monday:gggg-MM-DD}}]]
+![[{{tuesday:gggg-MM-DD}}]]
+![[{{wednesday:gggg-MM-DD}}]]
+![[{{thursday:gggg-MM-DD}}]]
+![[{{friday:gggg-MM-DD}}]]
+![[{{saturday:gggg-MM-DD}}]]
 ```
 
 ### Hover Preview
@@ -165,15 +165,15 @@ You can open **weekly notes** in 2 ways: searching `Calendar: open weekly note` 
 
 > Note: The path here won't autocomplete for you, you'll need to enter the full path.
 
-- **Format:** The date format for the weekly note filename. Defaults to `"YYYY-[W]ww`. If you use `DD` in the week format, this will refer to first day of the week (Sunday or Monday, depending on your settings).
+- **Format:** The date format for the weekly note filename. Defaults to `"gggg-[W]ww`. If you use `DD` in the week format, this will refer to first day of the week (Sunday or Monday, depending on your settings).
 
 #### Template Tags
 
 | Tag                                                                                    | Description                                                                                                                                                                                                  |
 | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `sunday`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, `saturday`, `sunday` | Because weekly tags refer to main days, you can refer to individual days like this `{{sunday:YYYY-MM-DD}}` to automatically insert the date for that particular day. Note, you must specify the date format! |
+| `sunday`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, `saturday`, `sunday` | Because weekly tags refer to main days, you can refer to individual days like this `{{sunday:gggg-MM-DD}}` to automatically insert the date for that particular day. Note, you must specify the date format! |
 | `title`                                                                                | Works the same as the daily note `{{title}}`. It will insert the title of the note                                                                                                                           |
-| `date`, `time`                                                                         | Works the same as the daily note `{{date}}` and `{{time}}`. It will insert the date and time of the first day of the week. Useful for creating a heading (e.g. `# # {{date:YYYY [Week] ww}}`).               |
+| `date`, `time`                                                                         | Works the same as the daily note `{{date}}` and `{{time}}`. It will insert the date and time of the first day of the week. Useful for creating a heading (e.g. `# # {{date:gggg [Week] ww}}`).               |
 
 ## Say Thanks 🙏
 
