@@ -1,6 +1,5 @@
-import type { Moment } from "moment";
 import type { TFile } from "obsidian";
-import { writable } from "svelte/store";
+import { get, writable } from "svelte/store";
 import {
   getAllDailyNotes,
   getDateFromFile,
@@ -18,17 +17,6 @@ function createDailyNotesStore() {
   };
 }
 
-function createDisplayedMonthStore() {
-  const store = writable<Moment>(window.moment());
-  return {
-    reset: () => store.set(window.moment()),
-    increment: () => store.update((month) => month.clone().add(1, "months")),
-    decrement: () =>
-      store.update((month) => month.clone().subtract(1, "months")),
-    ...store,
-  };
-}
-
 export function getDateUIDFromFile(file: TFile | null): string {
   if (!file) {
     return null;
@@ -40,7 +28,7 @@ export function getDateUIDFromFile(file: TFile | null): string {
   }
 
   // Check to see if the active note is a weekly-note
-  const format = getWeeklyNoteSettings(this.settings).format;
+  const format = getWeeklyNoteSettings(get(settings)).format;
   date = window.moment(file.basename, format, true);
   if (date.isValid()) {
     return getDateUID(date, "week");
@@ -61,7 +49,6 @@ function createSelectedFileStore() {
 }
 
 export const activeFile = createSelectedFileStore();
-export const displayedMonth = createDisplayedMonthStore();
 export const dailyNotes = createDailyNotesStore();
 export const settings = writable<ISettings>({
   shouldConfirmBeforeCreate: true,

@@ -8,7 +8,15 @@ import {
   IDailyNoteSettings,
 } from "obsidian-daily-notes-interface";
 
-type IWeekStartOption = "sunday" | "monday" | "locale";
+type IWeekStartOption =
+  | "sunday"
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday"
+  | "locale";
 
 export interface ISettings {
   wordsPerDot: number;
@@ -21,6 +29,16 @@ export interface ISettings {
   weeklyNoteTemplate: string;
   weeklyNoteFolder: string;
 }
+
+const weekdays = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+];
 
 export function getWeeklyNoteSettings(settings: ISettings): IDailyNoteSettings {
   return {
@@ -50,7 +68,7 @@ export function syncMomentLocaleWithSettings(settings: ISettings): void {
   } else {
     moment.updateLocale(currentLocale, {
       week: {
-        dow: settings.weekStart === "monday" ? 1 : 0,
+        dow: weekdays.indexOf(settings.weekStart) || 0,
       },
     });
   }

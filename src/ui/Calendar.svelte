@@ -6,7 +6,7 @@
   } from "obsidian-calendar-ui";
   import { onDestroy } from "svelte";
 
-  import { activeFile, displayedMonth, settings } from "./stores";
+  import { activeFile, settings } from "./stores";
 
   const moment = window.moment;
 
@@ -19,6 +19,7 @@
   export let onContextMenuWeek: (date: Moment, event: MouseEvent) => boolean;
 
   let today: Moment = moment();
+  let displayedMonth: Moment = today;
 
   export function tick() {
     today = moment();
@@ -26,13 +27,13 @@
 
   // 1 minute heartbeat to keep `today` reflecting the current day
   let heartbeat = setInterval(() => {
-    const isViewingCurrentMonth = today.isSame($displayedMonth, "day");
-    today = moment();
+    tick();
 
+    const isViewingCurrentMonth = displayedMonth.isSame(today, "day");
     if (isViewingCurrentMonth) {
       // if it's midnight on the last day of the month, this will
       // update the display to show the new month.
-      displayedMonth.reset();
+      displayedMonth = today;
     }
   }, 1000 * 60);
 
@@ -51,7 +52,7 @@
   {onClickWeek}
   {sources}
   {today}
+  bind:displayedMonth
   selectedId={$activeFile}
-  displayedMonth={$displayedMonth}
   showWeekNums={$settings.showWeeklyNote}
 />
