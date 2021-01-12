@@ -7,7 +7,7 @@ import { get } from "svelte/store";
 import { getWeeklyNote } from "src/io/weeklyNotes";
 
 import { dailyNotes, settings } from "../stores";
-import { clamp, getWordCount } from "./utils";
+import { clamp, getWordCount } from "../utils";
 
 const NUM_MAX_DOTS = 5;
 
@@ -18,7 +18,9 @@ export async function getWordLengthAsDots(note: TFile): Promise<number> {
   }
   const fileContents = await window.app.vault.cachedRead(note);
 
-  const numDots = getWordCount(fileContents) / wordsPerDot;
+  const wordCount = getWordCount(fileContents);
+  console.log("wordcount", note.basename, wordCount);
+  const numDots = wordCount / wordsPerDot;
   return clamp(Math.floor(numDots), 1, NUM_MAX_DOTS);
 }
 

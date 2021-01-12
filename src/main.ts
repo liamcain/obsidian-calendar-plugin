@@ -41,8 +41,7 @@ export default class CalendarPlugin extends Plugin {
 
     this.registerView(
       VIEW_TYPE_CALENDAR,
-      (leaf: WorkspaceLeaf) =>
-        (this.view = new CalendarView(leaf))
+      (leaf: WorkspaceLeaf) => (this.view = new CalendarView(leaf))
     );
 
     this.addCommand({
@@ -63,12 +62,6 @@ export default class CalendarPlugin extends Plugin {
       name: "Open Weekly Note",
       callback: () => this.view.openOrCreateWeeklyNote(window.moment(), false),
     });
-
-    // this.addCommand({
-    //   id: "reload-calendar-view",
-    //   name: "Reload daily note settings",
-    //   callback: () => {},
-    // });
 
     this.addCommand({
       id: "reveal-active-note",

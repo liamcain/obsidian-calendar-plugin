@@ -1,13 +1,11 @@
 import type { TFile } from "obsidian";
-import { get, writable } from "svelte/store";
-import {
-  getAllDailyNotes,
-  getDateFromFile,
-  getDateUID,
-} from "obsidian-daily-notes-interface";
+import { writable } from "svelte/store";
+import { getAllDailyNotes } from "obsidian-daily-notes-interface";
 
 import { DEFAULT_WORDS_PER_DOT } from "src/constants";
-import { getWeeklyNoteSettings, ISettings } from "src/settings";
+import type { ISettings } from "src/settings";
+
+import { getDateUIDFromFile } from "./utils";
 
 function createDailyNotesStore() {
   const store = writable<Record<string, TFile>>(null);
@@ -15,25 +13,6 @@ function createDailyNotesStore() {
     reindex: () => store.set(getAllDailyNotes()),
     ...store,
   };
-}
-
-export function getDateUIDFromFile(file: TFile | null): string {
-  if (!file) {
-    return null;
-  }
-
-  let date = getDateFromFile(file);
-  if (date) {
-    return getDateUID(date, "day");
-  }
-
-  // Check to see if the active note is a weekly-note
-  const format = getWeeklyNoteSettings(get(settings)).format;
-  date = window.moment(file.basename, format, true);
-  if (date.isValid()) {
-    return getDateUID(date, "week");
-  }
-  return null;
 }
 
 function createSelectedFileStore() {
@@ -60,4 +39,6 @@ export const settings = writable<ISettings>({
   weeklyNoteFormat: "",
   weeklyNoteTemplate: "",
   weeklyNoteFolder: "",
+
+  localeOverride: "system-default",
 });

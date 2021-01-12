@@ -7,7 +7,7 @@ import { get } from "svelte/store";
 import { getWeeklyNote } from "src/io/weeklyNotes";
 
 import { dailyNotes, settings } from "../stores";
-import { classList } from "./utils";
+import { classList } from "../utils";
 
 const getStreakClasses = (file: TFile): string[] => {
   return classList({
