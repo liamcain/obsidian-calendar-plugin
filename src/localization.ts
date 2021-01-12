@@ -1,6 +1,4 @@
-import { get } from "svelte/store";
-
-import { settings } from "./ui/stores";
+import type { ISettings } from "./settings";
 
 const langToMomentLocale = {
   en: "en-gb",
@@ -26,10 +24,12 @@ const langToMomentLocale = {
   ja: "ja",
 };
 
-export async function configureMomentLocale(): Promise<void> {
+export async function configureMomentLocale(
+  settings: ISettings
+): Promise<void> {
   const obsidianLang = localStorage.getItem("language") || "en";
   const systemLang = navigator.language?.toLowerCase();
-  const localeOverride = get(settings).localeOverride || "system-default";
+  const localeOverride = settings.localeOverride || "system-default";
 
   let momentLocale = langToMomentLocale[obsidianLang];
 

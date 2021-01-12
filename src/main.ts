@@ -31,11 +31,12 @@ export default class CalendarPlugin extends Plugin {
   }
 
   async onload(): Promise<void> {
-    configureMomentLocale();
-
     this.register(
       settings.subscribe((value) => {
         this.options = value;
+
+        configureMomentLocale(this.options);
+        syncMomentLocaleWithSettings(this.options);
       })
     );
 
@@ -111,7 +112,6 @@ export default class CalendarPlugin extends Plugin {
     changeOpts: (settings: ISettings) => Partial<ISettings>
   ): Promise<void> {
     settings.update((old) => ({ ...old, ...changeOpts(old) }));
-    syncMomentLocaleWithSettings(this.options);
     await this.saveData(this.options);
   }
 }
