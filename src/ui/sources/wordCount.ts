@@ -19,7 +19,6 @@ export async function getWordLengthAsDots(note: TFile): Promise<number> {
   const fileContents = await window.app.vault.cachedRead(note);
 
   const wordCount = getWordCount(fileContents);
-  console.log("wordcount", note.basename, wordCount);
   const numDots = wordCount / wordsPerDot;
   return clamp(Math.floor(numDots), 1, NUM_MAX_DOTS);
 }
