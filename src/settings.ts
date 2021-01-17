@@ -56,7 +56,7 @@ export function getWeeklyNoteSettings(settings: ISettings): IDailyNoteSettings {
 
 export const defaultSettings = Object.freeze({
   shouldConfirmBeforeCreate: true,
-  weekStart: "locale",
+  weekStart: "locale" as IWeekStartOption,
 
   wordsPerDot: DEFAULT_WORDS_PER_DOT,
 
