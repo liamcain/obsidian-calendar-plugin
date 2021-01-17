@@ -68,30 +68,6 @@ export const SettingsInstance = writable<ISettings>({
   localeOverride: "system-default",
 });
 
-export function syncMomentLocaleWithSettings(settings: ISettings): void {
-  const { moment } = window;
-  const currentLocale = moment.locale();
-
-  // Save the initial locale weekspec so that we can restore
-  // it when toggling between the different options in settings.
-  if (!window._bundledLocaleWeekSpec) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    window._bundledLocaleWeekSpec = (<any>moment.localeData())._week;
-  }
-
-  if (settings.weekStart === "locale") {
-    moment.updateLocale(currentLocale, {
-      week: window._bundledLocaleWeekSpec,
-    });
-  } else {
-    moment.updateLocale(currentLocale, {
-      week: {
-        dow: weekdays.indexOf(settings.weekStart) || 0,
-      },
-    });
-  }
-}
-
 export class CalendarSettingsTab extends PluginSettingTab {
   private plugin: CalendarPlugin;
 

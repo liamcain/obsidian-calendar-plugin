@@ -1,15 +1,9 @@
 import type { Moment, WeekSpec } from "moment";
 import { App, Plugin, WorkspaceLeaf } from "obsidian";
 
-import { configureMomentLocale } from "src/localization";
-
 import { VIEW_TYPE_CALENDAR } from "./constants";
 import { settings } from "./ui/stores";
-import {
-  CalendarSettingsTab,
-  ISettings,
-  syncMomentLocaleWithSettings,
-} from "./settings";
+import { CalendarSettingsTab, ISettings } from "./settings";
 import CalendarView from "./view";
 
 declare global {
@@ -34,9 +28,7 @@ export default class CalendarPlugin extends Plugin {
     this.register(
       settings.subscribe((value) => {
         this.options = value;
-
-        configureMomentLocale(this.options);
-        syncMomentLocaleWithSettings(this.options);
+        // TODO pass new weekStart and localeOverride to Calendar
       })
     );
 
@@ -71,10 +63,6 @@ export default class CalendarPlugin extends Plugin {
     });
 
     await this.loadOptions();
-
-    // After we retrieve the settings, override window.moment to
-    // reflect 'start week on monday' setting
-    syncMomentLocaleWithSettings(this.options);
 
     this.addSettingTab(new CalendarSettingsTab(this.app, this));
 

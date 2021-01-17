@@ -1,3 +1,5 @@
+<svelte:options immutable />
+
 <script lang="ts">
   import type { Moment } from "moment";
   import {
@@ -42,16 +44,17 @@
   });
 </script>
 
-<svelte:options immutable />
 <CalendarBase
+  localeOverride={$settings.localeOverride}
+  weekStart={$settings.weekStart}
+  {sources}
+  {today}
   {onHoverDay}
   {onHoverWeek}
   {onContextMenuDay}
   {onContextMenuWeek}
   {onClickDay}
   {onClickWeek}
-  {sources}
-  {today}
   bind:displayedMonth
   selectedId={$activeFile}
   showWeekNums={$settings.showWeeklyNote}
