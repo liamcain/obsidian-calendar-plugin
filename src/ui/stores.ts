@@ -2,8 +2,7 @@ import type { TFile } from "obsidian";
 import { writable } from "svelte/store";
 import { getAllDailyNotes } from "obsidian-daily-notes-interface";
 
-import { DEFAULT_WORDS_PER_DOT } from "src/constants";
-import type { ISettings } from "src/settings";
+import { defaultSettings, ISettings } from "src/settings";
 
 import { getDateUIDFromFile } from "./utils";
 
@@ -29,16 +28,4 @@ function createSelectedFileStore() {
 
 export const activeFile = createSelectedFileStore();
 export const dailyNotes = createDailyNotesStore();
-export const settings = writable<ISettings>({
-  shouldConfirmBeforeCreate: true,
-  weekStart: "locale",
-
-  wordsPerDot: DEFAULT_WORDS_PER_DOT,
-
-  showWeeklyNote: false,
-  weeklyNoteFormat: "",
-  weeklyNoteTemplate: "",
-  weeklyNoteFolder: "",
-
-  localeOverride: "system-default",
-});
+export const settings = writable<ISettings>(defaultSettings);

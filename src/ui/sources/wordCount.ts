@@ -4,6 +4,7 @@ import type { ICalendarSource, IDayMetadata, IDot } from "obsidian-calendar-ui";
 import { getDailyNote } from "obsidian-daily-notes-interface";
 import { get } from "svelte/store";
 
+import { DEFAULT_WORDS_PER_DOT } from "src/constants";
 import { getWeeklyNote } from "src/io/weeklyNotes";
 
 import { dailyNotes, settings } from "../stores";
@@ -12,7 +13,7 @@ import { clamp, getWordCount } from "../utils";
 const NUM_MAX_DOTS = 5;
 
 export async function getWordLengthAsDots(note: TFile): Promise<number> {
-  const { wordsPerDot } = get(settings);
+  const { wordsPerDot = DEFAULT_WORDS_PER_DOT } = get(settings);
   if (!note || wordsPerDot <= 0) {
     return 0;
   }
