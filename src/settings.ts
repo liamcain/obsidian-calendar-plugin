@@ -1,24 +1,13 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import { writable } from "svelte/store";
-
-import { DEFAULT_WEEK_FORMAT, DEFAULT_WORDS_PER_DOT } from "src/constants";
-
-import type CalendarPlugin from "./main";
 import {
   appHasDailyNotesPluginLoaded,
   IDailyNoteSettings,
 } from "obsidian-daily-notes-interface";
+import type { ILocaleOverride, IWeekStartOption } from "obsidian-calendar-ui";
 
-type ILocaleOverride = "system-default" | string;
-type IWeekStartOption =
-  | "sunday"
-  | "monday"
-  | "tuesday"
-  | "wednesday"
-  | "thursday"
-  | "friday"
-  | "saturday"
-  | "locale";
+import { DEFAULT_WEEK_FORMAT, DEFAULT_WORDS_PER_DOT } from "src/constants";
+
+import type CalendarPlugin from "./main";
 
 export interface ISettings {
   wordsPerDot: number;
@@ -67,8 +56,6 @@ export const defaultSettings = Object.freeze({
 
   localeOverride: "system-default",
 });
-
-export const SettingsInstance = writable<ISettings>(defaultSettings);
 
 export class CalendarSettingsTab extends PluginSettingTab {
   private plugin: CalendarPlugin;
