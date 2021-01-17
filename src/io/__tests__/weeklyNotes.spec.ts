@@ -17,33 +17,31 @@ describe("getDayOfWeekNumericalValue", () => {
   });
 
   describe("start week on Sunday", () => {
+    beforeEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (<any>moment.localeData())._week.dow = 0;
+    });
+
     test("returns 0 for sunday", () => {
-      getDefaultSettings({
-        weekStart: "sunday",
-      });
       expect(weeklyNote.getDayOfWeekNumericalValue("sunday")).toEqual(0);
     });
 
     test("returns 1 for monday", () => {
-      getDefaultSettings({
-        weekStart: "sunday",
-      });
       expect(weeklyNote.getDayOfWeekNumericalValue("monday")).toEqual(1);
     });
   });
 
   describe("start week on Monday", () => {
+    beforeEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (<any>moment.localeData())._week.dow = 1;
+    });
+
     test("returns 0 for sunday", () => {
-      getDefaultSettings({
-        weekStart: "monday",
-      });
       expect(weeklyNote.getDayOfWeekNumericalValue("sunday")).toEqual(6);
     });
 
     test("returns 1 for monday", () => {
-      getDefaultSettings({
-        weekStart: "monday",
-      });
       expect(weeklyNote.getDayOfWeekNumericalValue("monday")).toEqual(0);
     });
   });
@@ -85,6 +83,11 @@ describe("createWeeklyNote", () => {
   });
 
   describe("start week on Sunday", () => {
+    beforeEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (<any>moment.localeData())._week.dow = 0;
+    });
+
     test("replaces {{sunday}} and {{monday}} in weekly note", async () => {
       (getTemplateContents as jest.MockedFunction<
         typeof getTemplateContents
@@ -105,6 +108,11 @@ describe("createWeeklyNote", () => {
   });
 
   describe("start week on Monday", () => {
+    beforeEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (<any>moment.localeData())._week.dow = 1;
+    });
+
     test("replaces {{sunday}} and {{monday}} in weekly note", async () => {
       (getTemplateContents as jest.MockedFunction<
         typeof getTemplateContents
