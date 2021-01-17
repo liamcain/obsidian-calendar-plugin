@@ -232,28 +232,4 @@ export class CalendarSettingsTab extends PluginSettingTab {
         });
       });
   }
-
-  addLocaleOverrideSetting(): void {
-    const { moment } = window;
-
-    const sysLocale = navigator.language?.toLowerCase();
-
-    new Setting(this.containerEl)
-      .setName("Override locale:")
-      .setDesc(
-        "Set this if you want to use a locale different from the default"
-      )
-      .addDropdown((dropdown) => {
-        dropdown.addOption("system-default", `Same as system (${sysLocale})`);
-        moment.locales().forEach((locale) => {
-          dropdown.addOption(locale, locale);
-        });
-        dropdown.setValue(this.plugin.options.localeOverride);
-        dropdown.onChange(async (value) => {
-          this.plugin.writeOptions(
-            (old) => (old.localeOverride = value as ILocaleOverride)
-          );
-        });
-      });
-  }
 }
