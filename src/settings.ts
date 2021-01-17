@@ -54,7 +54,7 @@ export function getWeeklyNoteSettings(settings: ISettings): IDailyNoteSettings {
   };
 }
 
-export const SettingsInstance = writable<ISettings>({
+export const defaultSettings = Object.freeze({
   shouldConfirmBeforeCreate: true,
   weekStart: "locale",
 
@@ -67,6 +67,8 @@ export const SettingsInstance = writable<ISettings>({
 
   localeOverride: "system-default",
 });
+
+export const SettingsInstance = writable<ISettings>(defaultSettings);
 
 export class CalendarSettingsTab extends PluginSettingTab {
   private plugin: CalendarPlugin;
@@ -121,7 +123,9 @@ export class CalendarSettingsTab extends PluginSettingTab {
         textfield.inputEl.type = "number";
         textfield.setValue(String(this.plugin.options.wordsPerDot));
         textfield.onChange(async (value) => {
-          this.plugin.writeOptions(() => ({ wordsPerDot: Number(value) }));
+          this.plugin.writeOptions(() => ({
+            wordsPerDot: value !== "" ? Number(value) : undefined,
+          }));
         });
       });
   }
