@@ -1,6 +1,6 @@
 {
   "name": "calendar",
-  "version": "1.4.12",
+  "version": "1.4.13",
   "description": "Calendar view of your daily notes",
   "author": "liamcain",
   "main": "main.js",
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "obsidian": "obsidianmd/obsidian-api#master",
-    "obsidian-calendar-ui": "0.2.0",
+    "obsidian-calendar-ui": "0.2.1",
     "obsidian-daily-notes-interface": "0.5.1",
     "svelte": "3.31.0",
     "tslib": "2.0.3"

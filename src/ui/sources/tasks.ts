@@ -29,6 +29,7 @@ export async function getDotsForDailyNote(
   const dots = [];
   if (numTasks) {
     dots.push({
+      className: "task",
       color: "default",
       isFilled: false,
     });

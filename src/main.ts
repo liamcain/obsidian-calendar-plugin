@@ -28,7 +28,6 @@ export default class CalendarPlugin extends Plugin {
     this.register(
       settings.subscribe((value) => {
         this.options = value;
-        // TODO pass new weekStart and localeOverride to Calendar
       })
     );
 
