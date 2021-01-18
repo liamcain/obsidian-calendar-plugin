@@ -1,5 +1,5 @@
 import type { TFile } from "obsidian";
-import { writable } from "svelte/store";
+import { get, writable } from "svelte/store";
 import { getAllDailyNotes } from "obsidian-daily-notes-interface";
 
 import { defaultSettings, ISettings } from "src/settings";
@@ -14,12 +14,15 @@ function createDailyNotesStore() {
   };
 }
 
+export const settings = writable<ISettings>(defaultSettings);
+export const dailyNotes = createDailyNotesStore();
+
 function createSelectedFileStore() {
   const store = writable<string>(null);
 
   return {
     setFile: (file: TFile) => {
-      const id = getDateUIDFromFile(file);
+      const id = getDateUIDFromFile(file, get(settings));
       store.set(id);
     },
     ...store,
@@ -27,5 +30,3 @@ function createSelectedFileStore() {
 }
 
 export const activeFile = createSelectedFileStore();
-export const dailyNotes = createDailyNotesStore();
-export const settings = writable<ISettings>(defaultSettings);
