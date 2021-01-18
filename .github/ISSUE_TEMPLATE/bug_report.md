@@ -30,12 +30,12 @@ _If applicable, add screenshots to help explain your problem._
 
 #### OS
 
-[e.g. macOS]
+[Windows/macOS/Linux]
 
 #### Obsidian Version (e.g. v0.10.6)
 
 `(Settings → About → Current Version)`
 
-### Additional context
+### Theme (if applicable):
 
-_Add any other context about the problem here._
+_If the bug is visual, please provide the name of the Community Theme you're using._

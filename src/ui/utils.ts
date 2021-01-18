@@ -1,10 +1,9 @@
 import type { TFile } from "obsidian";
-import { get } from "svelte/store";
 import { getDateFromFile, getDateUID } from "obsidian-daily-notes-interface";
 
 import { getWeeklyNoteSettings } from "src/settings";
 
-import { settings } from "./stores";
+import type { ISettings } from "../settings";
 
 export const classList = (obj: Record<string, boolean>): string[] => {
   return Object.entries(obj)
@@ -20,13 +19,34 @@ export function clamp(
   return Math.min(Math.max(lowerBound, num), upperBound);
 }
 
+export function partition(
+  arr: string[],
+  predicate: (elem: string) => boolean
+): [string[], string[]] {
+  const pass = [];
+  const fail = [];
+
+  arr.forEach((elem) => {
+    if (predicate(elem)) {
+      pass.push(elem);
+    } else {
+      fail.push(elem);
+    }
+  });
+
+  return [pass, fail];
+}
+
 /**
  * Lookup the dateUID for a given file. It compares the filename
  * to the daily and weekly note formats to find a match.
  *
  * @param file
  */
-export function getDateUIDFromFile(file: TFile | null): string {
+export function getDateUIDFromFile(
+  file: TFile | null,
+  settings: ISettings
+): string {
   if (!file) {
     return null;
   }
@@ -38,7 +58,7 @@ export function getDateUIDFromFile(file: TFile | null): string {
   }
 
   // Check to see if the active note is a weekly-note
-  const format = getWeeklyNoteSettings(get(settings)).format;
+  const format = getWeeklyNoteSettings(settings).format;
   date = window.moment(file.basename, format, true);
   if (date.isValid()) {
     return getDateUID(date, "week");
