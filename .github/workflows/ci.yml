@@ -7,9 +7,8 @@ on:
     branches: [$default-branch]
 
 jobs:
-  build:
+  lint-and-test:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
 
@@ -17,7 +16,7 @@ jobs:
         run: yarn
 
       - name: Lint
-        run: yarn lint
+        run: yarn run lint
 
       - name: Run tests
-        run: yarn test
+        run: yarn run test
