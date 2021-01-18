@@ -1,16 +1,9 @@
 import type { Moment, WeekSpec } from "moment";
 import { App, Plugin, WorkspaceLeaf } from "obsidian";
 
-import { configureMomentLocale } from "src/localization";
-
 import { VIEW_TYPE_CALENDAR } from "./constants";
-import { getWeeklyNote } from "./io/weeklyNotes";
-import {
-  CalendarSettingsTab,
-  SettingsInstance,
-  ISettings,
-  syncMomentLocaleWithSettings,
-} from "./settings";
+import { settings } from "./ui/stores";
+import { CalendarSettingsTab, ISettings } from "./settings";
 import CalendarView from "./view";
 
 declare global {
@@ -33,16 +26,14 @@ export default class CalendarPlugin extends Plugin {
 
   async onload(): Promise<void> {
     this.register(
-      SettingsInstance.subscribe((value) => {
+      settings.subscribe((value) => {
         this.options = value;
-        configureMomentLocale(this.options);
       })
     );
 
     this.registerView(
       VIEW_TYPE_CALENDAR,
-      (leaf: WorkspaceLeaf) =>
-        (this.view = new CalendarView(leaf, this.options))
+      (leaf: WorkspaceLeaf) => (this.view = new CalendarView(leaf))
     );
 
     this.addCommand({
@@ -61,17 +52,7 @@ export default class CalendarPlugin extends Plugin {
     this.addCommand({
       id: "open-weekly-note",
       name: "Open Weekly Note",
-      callback: () => {
-        const date = window.moment();
-        const existingFile = getWeeklyNote(date, this.options);
-        this.view.openOrCreateWeeklyNote(date, existingFile, false);
-      },
-    });
-
-    this.addCommand({
-      id: "reload-calendar-view",
-      name: "Reload daily note settings",
-      callback: () => this.view.redraw(),
+      callback: () => this.view.openOrCreateWeeklyNote(window.moment(), false),
     });
 
     this.addCommand({
@@ -81,10 +62,6 @@ export default class CalendarPlugin extends Plugin {
     });
 
     await this.loadOptions();
-
-    // After we retrieve the settings, override window.moment to
-    // reflect 'start week on monday' setting
-    syncMomentLocaleWithSettings(this.options);
 
     this.addSettingTab(new CalendarSettingsTab(this.app, this));
 
@@ -108,7 +85,7 @@ export default class CalendarPlugin extends Plugin {
 
   async loadOptions(): Promise<void> {
     const options = await this.loadData();
-    SettingsInstance.update((old) => {
+    settings.update((old) => {
       return {
         ...old,
         ...(options || {}),
@@ -118,12 +95,10 @@ export default class CalendarPlugin extends Plugin {
     await this.saveData(this.options);
   }
 
-  async writeOptions(changeOpts: (settings: ISettings) => void): Promise<void> {
-    SettingsInstance.update((old) => {
-      changeOpts(old);
-      return old;
-    });
-    syncMomentLocaleWithSettings(this.options);
+  async writeOptions(
+    changeOpts: (settings: ISettings) => Partial<ISettings>
+  ): Promise<void> {
+    settings.update((old) => ({ ...old, ...changeOpts(old) }));
     await this.saveData(this.options);
   }
 }

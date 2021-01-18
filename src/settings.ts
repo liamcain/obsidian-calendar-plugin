@@ -1,16 +1,13 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import { writable } from "svelte/store";
-
-import { DEFAULT_WEEK_FORMAT, DEFAULT_WORDS_PER_DOT } from "src/constants";
-
-import type CalendarPlugin from "./main";
 import {
   appHasDailyNotesPluginLoaded,
   IDailyNoteSettings,
 } from "obsidian-daily-notes-interface";
+import type { ILocaleOverride, IWeekStartOption } from "obsidian-calendar-ui";
 
-type IWeekStartOption = "sunday" | "monday" | "locale";
-type ILocaleOverride = "system-default" | string;
+import { DEFAULT_WEEK_FORMAT, DEFAULT_WORDS_PER_DOT } from "src/constants";
+
+import type CalendarPlugin from "./main";
 
 export interface ISettings {
   wordsPerDot: number;
@@ -26,6 +23,16 @@ export interface ISettings {
   localeOverride: ILocaleOverride;
 }
 
+const weekdays = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+];
+
 export function getWeeklyNoteSettings(settings: ISettings): IDailyNoteSettings {
   return {
     format: settings.weeklyNoteFormat || DEFAULT_WEEK_FORMAT,
@@ -36,9 +43,9 @@ export function getWeeklyNoteSettings(settings: ISettings): IDailyNoteSettings {
   };
 }
 
-export const SettingsInstance = writable<ISettings>({
+export const defaultSettings = Object.freeze({
   shouldConfirmBeforeCreate: true,
-  weekStart: "locale",
+  weekStart: "locale" as IWeekStartOption,
 
   wordsPerDot: DEFAULT_WORDS_PER_DOT,
 
@@ -49,30 +56,6 @@ export const SettingsInstance = writable<ISettings>({
 
   localeOverride: "system-default",
 });
-
-export function syncMomentLocaleWithSettings(settings: ISettings): void {
-  const { moment } = window;
-  const currentLocale = moment.locale();
-
-  // Save the initial locale weekspec so that we can restore
-  // it when toggling between the different options in settings.
-  if (!window._bundledLocaleWeekSpec) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    window._bundledLocaleWeekSpec = (<any>moment.localeData())._week;
-  }
-
-  if (settings.weekStart === "locale") {
-    moment.updateLocale(currentLocale, {
-      week: window._bundledLocaleWeekSpec,
-    });
-  } else {
-    moment.updateLocale(currentLocale, {
-      week: {
-        dow: settings.weekStart === "monday" ? 1 : 0,
-      },
-    });
-  }
-}
 
 export class CalendarSettingsTab extends PluginSettingTab {
   private plugin: CalendarPlugin;
@@ -89,7 +72,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
       text: "General Settings",
     });
     this.addDotThresholdSetting();
-    this.addStartWeekOnMondaySetting();
+    this.addWeekStartSetting();
     this.addConfirmCreateSetting();
     this.addShowWeeklyNoteSetting();
 
@@ -127,15 +110,17 @@ export class CalendarSettingsTab extends PluginSettingTab {
         textfield.inputEl.type = "number";
         textfield.setValue(String(this.plugin.options.wordsPerDot));
         textfield.onChange(async (value) => {
-          this.plugin.writeOptions((old) => (old.wordsPerDot = Number(value)));
+          this.plugin.writeOptions(() => ({
+            wordsPerDot: value !== "" ? Number(value) : undefined,
+          }));
         });
       });
   }
 
-  addStartWeekOnMondaySetting(): void {
+  addWeekStartSetting(): void {
     const { moment } = window;
 
-    const [sunday, monday] = moment.weekdays();
+    const localizedWeekdays = moment.weekdays();
     const localeWeekStartNum = window._bundledLocaleWeekSpec.dow;
     const localeWeekStart = moment.weekdays()[localeWeekStartNum];
 
@@ -146,13 +131,14 @@ export class CalendarSettingsTab extends PluginSettingTab {
       )
       .addDropdown((dropdown) => {
         dropdown.addOption("locale", `Locale default (${localeWeekStart})`);
-        dropdown.addOption("sunday", sunday);
-        dropdown.addOption("monday", monday);
+        localizedWeekdays.forEach((day, i) => {
+          dropdown.addOption(weekdays[i], day);
+        });
         dropdown.setValue(this.plugin.options.weekStart);
         dropdown.onChange(async (value) => {
-          this.plugin.writeOptions(
-            (old) => (old.weekStart = value as IWeekStartOption)
-          );
+          this.plugin.writeOptions(() => ({
+            weekStart: value as IWeekStartOption,
+          }));
         });
       });
   }
@@ -164,9 +150,9 @@ export class CalendarSettingsTab extends PluginSettingTab {
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.options.shouldConfirmBeforeCreate);
         toggle.onChange(async (value) => {
-          this.plugin.writeOptions(
-            (old) => (old.shouldConfirmBeforeCreate = value)
-          );
+          this.plugin.writeOptions(() => ({
+            shouldConfirmBeforeCreate: value,
+          }));
         });
       });
   }
@@ -178,7 +164,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.options.showWeeklyNote);
         toggle.onChange(async (value) => {
-          this.plugin.writeOptions((old) => (old.showWeeklyNote = value));
+          this.plugin.writeOptions(() => ({ showWeeklyNote: value }));
           this.display(); // show/hide weekly settings
         });
       });
@@ -192,7 +178,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
         textfield.setValue(this.plugin.options.weeklyNoteFormat);
         textfield.setPlaceholder(DEFAULT_WEEK_FORMAT);
         textfield.onChange(async (value) => {
-          this.plugin.writeOptions((old) => (old.weeklyNoteFormat = value));
+          this.plugin.writeOptions(() => ({ weeklyNoteFormat: value }));
         });
       });
   }
@@ -206,7 +192,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
       .addText((textfield) => {
         textfield.setValue(this.plugin.options.weeklyNoteTemplate);
         textfield.onChange(async (value) => {
-          this.plugin.writeOptions((old) => (old.weeklyNoteTemplate = value));
+          this.plugin.writeOptions(() => ({ weeklyNoteTemplate: value }));
         });
       });
   }
@@ -218,7 +204,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
       .addText((textfield) => {
         textfield.setValue(this.plugin.options.weeklyNoteFolder);
         textfield.onChange(async (value) => {
-          this.plugin.writeOptions((old) => (old.weeklyNoteFolder = value));
+          this.plugin.writeOptions(() => ({ weeklyNoteFolder: value }));
         });
       });
   }
@@ -240,9 +226,9 @@ export class CalendarSettingsTab extends PluginSettingTab {
         });
         dropdown.setValue(this.plugin.options.localeOverride);
         dropdown.onChange(async (value) => {
-          this.plugin.writeOptions(
-            (old) => (old.localeOverride = value as ILocaleOverride)
-          );
+          this.plugin.writeOptions(() => ({
+            localeOverride: value as ILocaleOverride,
+          }));
         });
       });
   }
