@@ -3314,10 +3314,10 @@ object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-obsidian-calendar-ui@0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/obsidian-calendar-ui/-/obsidian-calendar-ui-0.2.1.tgz#f0645add7e6ef71f3a589a375e411a67ab6b8b3d"
-  integrity sha512-2ZVbJW50VT1cXnQvIIZCIs17uKPaSWCUIlLOCi2e7Ylh8fPyAU90TkCVJuDOi5wVFRS8YzIseBV2osXo92h6sQ==
+obsidian-calendar-ui@0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/obsidian-calendar-ui/-/obsidian-calendar-ui-0.2.2.tgz#3b9bc8b81790c674fce292e01a785fd2511d3145"
+  integrity sha512-T5za9xsS7XiUBhkfVTcrVzAFbdSQhCdo55fa3O22Og0jN2RlYhC5RzwcI9gbxOYcVBcdL6jwzdmhYypnXm/u3A==
   dependencies:
     obsidian-daily-notes-interface "0.5.1"
     svelte "3.31.0"
