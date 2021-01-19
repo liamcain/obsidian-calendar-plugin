@@ -7,7 +7,7 @@ import {
 import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
 import { get } from "svelte/store";
 
-import { VIEW_TYPE_CALENDAR } from "src/constants";
+import { TRIGGER_ON_OPEN, VIEW_TYPE_CALENDAR } from "src/constants";
 import { tryToCreateDailyNote } from "src/io/dailyNotes";
 import { getWeeklyNote, tryToCreateWeeklyNote } from "src/io/weeklyNotes";
 import { getWeeklyNoteSettings, ISettings } from "src/settings";
@@ -15,12 +15,7 @@ import { getWeeklyNoteSettings, ISettings } from "src/settings";
 import Calendar from "./ui/Calendar.svelte";
 import { showFileMenu } from "./ui/fileMenu";
 import { activeFile, dailyNotes, settings } from "./ui/stores";
-import {
-  customTagsSource,
-  streakSource,
-  tasksSource,
-  wordCountSource,
-} from "./ui/sources";
+import { customTagsSource, tasksSource, wordCountSource } from "./ui/sources";
 
 export default class CalendarView extends ItemView {
   private calendar: Calendar;
@@ -79,6 +74,11 @@ export default class CalendarView extends ItemView {
   }
 
   async onOpen(): Promise<void> {
+    // Integration point: external plugins can listen for `calendar:open`
+    // to feed in additional sources.
+    const sources = [customTagsSource, wordCountSource, tasksSource];
+    this.app.workspace.trigger(TRIGGER_ON_OPEN, sources);
+
     dailyNotes.reindex();
 
     this.calendar = new Calendar({
@@ -91,7 +91,7 @@ export default class CalendarView extends ItemView {
         onHoverWeek: this.onHoverWeek,
         onContextMenuDay: this.onContextMenuDay,
         onContextMenuWeek: this.onContextMenuWeek,
-        sources: [streakSource, customTagsSource, wordCountSource, tasksSource],
+        sources,
       },
     });
   }
