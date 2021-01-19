@@ -15,7 +15,12 @@ import { getWeeklyNoteSettings, ISettings } from "src/settings";
 import Calendar from "./ui/Calendar.svelte";
 import { showFileMenu } from "./ui/fileMenu";
 import { activeFile, dailyNotes, settings } from "./ui/stores";
-import { customTagsSource, tasksSource, wordCountSource } from "./ui/sources";
+import {
+  customTagsSource,
+  streakSource,
+  tasksSource,
+  wordCountSource,
+} from "./ui/sources";
 
 export default class CalendarView extends ItemView {
   private calendar: Calendar;
@@ -76,7 +81,12 @@ export default class CalendarView extends ItemView {
   async onOpen(): Promise<void> {
     // Integration point: external plugins can listen for `calendar:open`
     // to feed in additional sources.
-    const sources = [customTagsSource, wordCountSource, tasksSource];
+    const sources = [
+      customTagsSource,
+      streakSource,
+      wordCountSource,
+      tasksSource,
+    ];
     this.app.workspace.trigger(TRIGGER_ON_OPEN, sources);
 
     dailyNotes.reindex();
