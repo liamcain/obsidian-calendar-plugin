@@ -68,6 +68,16 @@ export class CalendarSettingsTab extends PluginSettingTab {
   display(): void {
     this.containerEl.empty();
 
+    if (!appHasDailyNotesPluginLoaded()) {
+      this.containerEl.createEl("h3", {
+        text: "⚠️ Daily Notes plugin not enabled",
+      });
+      this.containerEl.createEl("p", {
+        text:
+          "The calendar is best used in conjunction with the Daily Notes plugin. Enable it in your plugin settings for a more optimal experience.",
+      });
+    }
+
     this.containerEl.createEl("h3", {
       text: "General Settings",
     });
@@ -83,16 +93,6 @@ export class CalendarSettingsTab extends PluginSettingTab {
       this.addWeeklyNoteFormatSetting();
       this.addWeeklyNoteTemplateSetting();
       this.addWeeklyNoteFolderSetting();
-    }
-
-    if (!appHasDailyNotesPluginLoaded()) {
-      this.containerEl.createEl("h3", {
-        text: "⚠️ Daily Notes plugin not enabled",
-      });
-      this.containerEl.createEl("p", {
-        text:
-          "The calendar is best used in conjunction with the Daily Notes plugin. Enable it in your plugin settings for a more optimal experience.",
-      });
     }
 
     this.containerEl.createEl("h3", {
