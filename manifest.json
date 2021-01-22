@@ -2,7 +2,7 @@
   "id": "calendar",
   "name": "Calendar",
   "description": "Calendar view of your daily notes",
-  "version": "1.4.16",
+  "version": "1.4.17",
   "author": "Liam Cain",
   "authorUrl": "https://github.com/liamcain/",
   "isDesktopOnly": false,

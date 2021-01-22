@@ -1,15 +1,30 @@
-import type { TFile } from "obsidian";
-import { get, writable } from "svelte/store";
+import { Notice, TFile } from "obsidian";
 import { getAllDailyNotes } from "obsidian-daily-notes-interface";
+import { get, writable } from "svelte/store";
 
 import { defaultSettings, ISettings } from "src/settings";
 
 import { getDateUIDFromFile } from "./utils";
 
 function createDailyNotesStore() {
+  let hasError = false;
   const store = writable<Record<string, TFile>>(null);
   return {
-    reindex: () => store.set(getAllDailyNotes()),
+    reindex: () => {
+      try {
+        const dailyNotes = getAllDailyNotes();
+        store.set(dailyNotes);
+        hasError = false;
+      } catch (err) {
+        if (!hasError) {
+          // Avoid error being shown multiple times
+          new Notice("Failed to find your Daily Note folder");
+          console.log("[Calendar] Failed to find daily notes folder", err);
+        }
+        store.set({});
+        hasError = true;
+      }
+    },
     ...store,
   };
 }

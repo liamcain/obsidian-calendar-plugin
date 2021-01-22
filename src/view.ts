@@ -178,7 +178,7 @@ export default class CalendarView extends ItemView {
 
   private async onFileModified(file: TFile): Promise<void> {
     const date = getDateFromFile(file);
-    if (date) {
+    if (date && this.calendar) {
       this.calendar.tick();
     }
   }
@@ -186,7 +186,7 @@ export default class CalendarView extends ItemView {
   private onFileCreated(file: TFile): void {
     if (this.app.workspace.layoutReady) {
       const date = getDateFromFile(file);
-      if (date) {
+      if (date && this.calendar) {
         dailyNotes.reindex();
         this.calendar.tick();
       }
@@ -207,7 +207,10 @@ export default class CalendarView extends ItemView {
       file = view.file;
     }
     activeFile.setFile(file);
-    this.calendar.tick();
+
+    if (this.calendar) {
+      this.calendar.tick();
+    }
   }
 
   public revealActiveNote(): void {
