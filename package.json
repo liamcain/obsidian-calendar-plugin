@@ -1,6 +1,6 @@
 {
   "name": "calendar",
-  "version": "1.4.18",
+  "version": "1.4.19",
   "description": "Calendar view of your daily notes",
   "author": "liamcain",
   "main": "main.js",
