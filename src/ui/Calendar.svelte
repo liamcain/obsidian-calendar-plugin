@@ -5,14 +5,16 @@
   import {
     Calendar as CalendarBase,
     ICalendarSource,
+    configureGlobalMomentLocale,
   } from "obsidian-calendar-ui";
   import { onDestroy } from "svelte";
 
-  import { activeFile, settings } from "./stores";
+  import type { ISettings } from "src/settings";
+  import { activeFile, dailyNotes, settings } from "./stores";
 
-  const moment = window.moment;
+  let today: Moment;
 
-  let today: Moment = moment();
+  $: today = getToday($settings);
 
   export let displayedMonth: Moment = today;
   export let sources: ICalendarSource[];
@@ -24,7 +26,13 @@
   export let onContextMenuWeek: (date: Moment, event: MouseEvent) => boolean;
 
   export function tick() {
-    today = moment();
+    today = window.moment();
+  }
+
+  function getToday(settings: ISettings) {
+    configureGlobalMomentLocale(settings.localeOverride, settings.weekStart);
+    dailyNotes.reindex();
+    return window.moment();
   }
 
   // 1 minute heartbeat to keep `today` reflecting the current day
@@ -45,8 +53,6 @@
 </script>
 
 <CalendarBase
-  localeOverride={$settings.localeOverride}
-  weekStart={$settings.weekStart}
   {sources}
   {today}
   {onHoverDay}
@@ -56,6 +62,7 @@
   {onClickDay}
   {onClickWeek}
   bind:displayedMonth
+  localeData={today.localeData()}
   selectedId={$activeFile}
   showWeekNums={$settings.showWeeklyNote}
 />
