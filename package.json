@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "obsidian": "obsidianmd/obsidian-api#master",
-    "obsidian-calendar-ui": "0.2.4",
+    "obsidian-calendar-ui": "0.3.0",
     "obsidian-daily-notes-interface": "0.5.1",
     "svelte": "3.31.0",
     "tslib": "2.0.3"
