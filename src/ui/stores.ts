@@ -1,6 +1,9 @@
 import { Notice, TFile } from "obsidian";
-import { getAllDailyNotes } from "obsidian-daily-notes-interface";
-import { get, writable } from "svelte/store";
+import {
+  getAllDailyNotes,
+  getAllWeeklyNotes,
+} from "obsidian-daily-notes-interface";
+import { writable } from "svelte/store";
 
 import { defaultSettings, ISettings } from "src/settings";
 
@@ -29,15 +32,39 @@ function createDailyNotesStore() {
   };
 }
 
+function createWeeklyNotesStore() {
+  let hasError = false;
+  const store = writable<Record<string, TFile>>(null);
+  return {
+    reindex: () => {
+      try {
+        const weeklyNotes = getAllWeeklyNotes();
+        store.set(weeklyNotes);
+        hasError = false;
+      } catch (err) {
+        if (!hasError) {
+          // Avoid error being shown multiple times
+          new Notice("Failed to find your Weekly Note folder");
+          console.log("[Calendar] Failed to find weekly notes folder", err);
+        }
+        store.set({});
+        hasError = true;
+      }
+    },
+    ...store,
+  };
+}
+
 export const settings = writable<ISettings>(defaultSettings);
 export const dailyNotes = createDailyNotesStore();
+export const weeklyNotes = createWeeklyNotesStore();
 
 function createSelectedFileStore() {
   const store = writable<string>(null);
 
   return {
     setFile: (file: TFile) => {
-      const id = getDateUIDFromFile(file, get(settings));
+      const id = getDateUIDFromFile(file);
       store.set(id);
     },
     ...store,

@@ -1,8 +1,5 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import {
-  appHasDailyNotesPluginLoaded,
-  IDailyNoteSettings,
-} from "obsidian-daily-notes-interface";
+import { appHasDailyNotesPluginLoaded } from "obsidian-daily-notes-interface";
 import type { ILocaleOverride, IWeekStartOption } from "obsidian-calendar-ui";
 
 import { DEFAULT_WEEK_FORMAT, DEFAULT_WORDS_PER_DOT } from "src/constants";
@@ -32,16 +29,6 @@ const weekdays = [
   "friday",
   "saturday",
 ];
-
-export function getWeeklyNoteSettings(settings: ISettings): IDailyNoteSettings {
-  return {
-    format: settings.weeklyNoteFormat || DEFAULT_WEEK_FORMAT,
-    folder: settings.weeklyNoteFolder ? settings.weeklyNoteFolder.trim() : "",
-    template: settings.weeklyNoteTemplate
-      ? settings.weeklyNoteTemplate.trim()
-      : "",
-  };
-}
 
 export const defaultSettings = Object.freeze({
   shouldConfirmBeforeCreate: true,

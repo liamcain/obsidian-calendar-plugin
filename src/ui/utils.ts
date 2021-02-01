@@ -1,9 +1,9 @@
 import type { TFile } from "obsidian";
-import { getDateFromFile, getDateUID } from "obsidian-daily-notes-interface";
-
-import { getWeeklyNoteSettings } from "src/settings";
-
-import type { ISettings } from "../settings";
+import {
+  getDateFromFile,
+  getDateUID,
+  getWeeklyNoteSettings,
+} from "obsidian-daily-notes-interface";
 
 export const classList = (obj: Record<string, boolean>): string[] => {
   return Object.entries(obj)
@@ -43,22 +43,19 @@ export function partition(
  *
  * @param file
  */
-export function getDateUIDFromFile(
-  file: TFile | null,
-  settings: ISettings
-): string {
+export function getDateUIDFromFile(file: TFile | null): string {
   if (!file) {
     return null;
   }
 
   // TODO: I'm not checking the path!
-  let date = getDateFromFile(file);
+  let date = getDateFromFile(file, "day");
   if (date) {
     return getDateUID(date, "day");
   }
 
   // Check to see if the active note is a weekly-note
-  const format = getWeeklyNoteSettings(settings).format;
+  const { format } = getWeeklyNoteSettings();
   date = window.moment(file.basename, format, true);
   if (date.isValid()) {
     return getDateUID(date, "week");

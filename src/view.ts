@@ -3,18 +3,20 @@ import {
   getDailyNote,
   getDailyNoteSettings,
   getDateFromFile,
+  getWeeklyNote,
+  getWeeklyNoteSettings,
 } from "obsidian-daily-notes-interface";
 import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
 import { get } from "svelte/store";
 
 import { TRIGGER_ON_OPEN, VIEW_TYPE_CALENDAR } from "src/constants";
 import { tryToCreateDailyNote } from "src/io/dailyNotes";
-import { getWeeklyNote, tryToCreateWeeklyNote } from "src/io/weeklyNotes";
-import { getWeeklyNoteSettings, ISettings } from "src/settings";
+import { tryToCreateWeeklyNote } from "src/io/weeklyNotes";
+import type { ISettings } from "src/settings";
 
 import Calendar from "./ui/Calendar.svelte";
 import { showFileMenu } from "./ui/fileMenu";
-import { activeFile, dailyNotes, settings } from "./ui/stores";
+import { activeFile, dailyNotes, weeklyNotes, settings } from "./ui/stores";
 import {
   customTagsSource,
   streakSource,
@@ -131,8 +133,8 @@ export default class CalendarView extends ItemView {
     if (!isMetaPressed) {
       return;
     }
-    const note = getWeeklyNote(date, this.settings);
-    const { format } = getWeeklyNoteSettings(this.settings);
+    const note = getWeeklyNote(date, get(weeklyNotes));
+    const { format } = getWeeklyNoteSettings();
     this.app.workspace.trigger(
       "link-hover",
       this,
@@ -155,7 +157,7 @@ export default class CalendarView extends ItemView {
   }
 
   private onContextMenuWeek(date: Moment, event: MouseEvent): void {
-    const note = getWeeklyNote(date, this.settings);
+    const note = getWeeklyNote(date, get(weeklyNotes));
     if (!note) {
       // If no file exists for a given day, show nothing.
       return;
@@ -167,25 +169,29 @@ export default class CalendarView extends ItemView {
   }
 
   private async onFileDeleted(file: TFile): Promise<void> {
-    const date = getDateFromFile(file);
+    const date = getDateFromFile(file, "day") || getDateFromFile(file, "week");
     if (date) {
       dailyNotes.reindex();
+      weeklyNotes.reindex();
       this.updateActiveFile();
     }
   }
 
   private async onFileModified(file: TFile): Promise<void> {
-    const date = getDateFromFile(file);
+    const date = getDateFromFile(file, "day") || getDateFromFile(file, "week");
     if (date && this.calendar) {
       this.calendar.tick();
     }
   }
 
   private onFileCreated(file: TFile): void {
-    if (this.app.workspace.layoutReady) {
-      const date = getDateFromFile(file);
-      if (date && this.calendar) {
+    if (this.app.workspace.layoutReady && this.calendar) {
+      if (getDateFromFile(file, "day")) {
         dailyNotes.reindex();
+        this.calendar.tick();
+      }
+      if (getDateFromFile(file, "week")) {
+        weeklyNotes.reindex();
         this.calendar.tick();
       }
     }
@@ -217,14 +223,14 @@ export default class CalendarView extends ItemView {
 
     if (activeLeaf.view instanceof FileView) {
       // Check to see if the active note is a daily-note
-      let date = getDateFromFile(activeLeaf.view.file);
+      let date = getDateFromFile(activeLeaf.view.file, "day");
       if (date) {
         this.calendar.$set({ displayedMonth: date });
         return;
       }
 
       // Check to see if the active note is a weekly-note
-      const format = getWeeklyNoteSettings(this.settings).format;
+      const { format } = getWeeklyNoteSettings();
       date = moment(activeLeaf.view.file.basename, format, true);
       if (date.isValid()) {
         this.calendar.$set({ displayedMonth: date });
@@ -241,7 +247,7 @@ export default class CalendarView extends ItemView {
 
     const startOfWeek = date.clone().startOf("week");
 
-    const existingFile = getWeeklyNote(date, this.settings);
+    const existingFile = getWeeklyNote(date, get(weeklyNotes));
 
     if (!existingFile) {
       // File doesn't exist

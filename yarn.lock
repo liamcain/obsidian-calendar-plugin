@@ -3314,19 +3314,22 @@ object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-obsidian-calendar-ui@0.3.0:
+obsidian-calendar-ui@../obsidian-calendar-ui:
   version "0.3.0"
-  resolved "https://registry.yarnpkg.com/obsidian-calendar-ui/-/obsidian-calendar-ui-0.3.0.tgz#3c3af76a6995d2b17e7185d19b1fdf180e9106ce"
-  integrity sha512-C07BIq04m+jKF0foZOB6dzxRXHRDFJs2vDYEH97qV2iKC00TOYHwwFg8PgRNQARs+TZGRGI3Tn05xIzy9c7Jdg==
   dependencies:
-    obsidian-daily-notes-interface "0.5.1"
+    obsidian-daily-notes-interface liamcain/obsidian-daily-notes-interface#31516dec868968b3e8e0eee45a3e9404deeccbb9
     svelte "3.31.0"
     tslib "2.0.3"
 
-obsidian-daily-notes-interface@0.5.1:
+obsidian-daily-notes-interface@../obsidian-daily-notes-interface:
   version "0.5.1"
-  resolved "https://registry.yarnpkg.com/obsidian-daily-notes-interface/-/obsidian-daily-notes-interface-0.5.1.tgz#8fe28eab46e7fb789c8fc935dd3c74232b6e15f9"
-  integrity sha512-QwSAN7ob6r05e+IFhIY1Knn1H2zM4p3MCmUdbtNOFxPe0MQWsLAK5fjt0ST1usm7z0rVuTbNHJAzXxNRQaDlzg==
+  dependencies:
+    obsidian obsidianmd/obsidian-api#master
+    tslib "2.0.3"
+
+obsidian-daily-notes-interface@liamcain/obsidian-daily-notes-interface#31516dec868968b3e8e0eee45a3e9404deeccbb9:
+  version "0.5.1"
+  resolved "https://codeload.github.com/liamcain/obsidian-daily-notes-interface/tar.gz/31516dec868968b3e8e0eee45a3e9404deeccbb9"
   dependencies:
     obsidian obsidianmd/obsidian-api#master
     tslib "2.0.3"
