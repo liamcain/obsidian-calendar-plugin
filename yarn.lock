@@ -3314,8 +3314,10 @@ object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-obsidian-calendar-ui@../obsidian-calendar-ui:
+obsidian-calendar-ui@0.3.1:
   version "0.3.1"
+  resolved "https://registry.yarnpkg.com/obsidian-calendar-ui/-/obsidian-calendar-ui-0.3.1.tgz#cb9b6a88bb07a02e677c65296417a56cca706830"
+  integrity sha512-vQiFQDNC5wfYFnOIaZl1cbcKtS8FrVfClyV4/UPwUrk59Fr6t7oE1L3bAm2T3ipo51/nsXpkX47xeb7YSDCSMA==
   dependencies:
     obsidian-daily-notes-interface "0.7.0"
     svelte "3.31.0"
@@ -3328,12 +3330,6 @@ obsidian-daily-notes-interface@0.7.0:
   dependencies:
     obsidian obsidianmd/obsidian-api#master
     tslib "2.0.3"
-
-"obsidian@github:obsidianmd/obsidian-api#master":
-  version "0.10.12"
-  resolved "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/9b69506127863102e1102cdeb4d14f523d08583e"
-  dependencies:
-    "@types/codemirror" "0.0.98"
 
 obsidian@obsidianmd/obsidian-api#master:
   version "0.10.6"
