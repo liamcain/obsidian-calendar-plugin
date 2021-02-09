@@ -169,9 +169,11 @@ export default class CalendarView extends ItemView {
   }
 
   private async onFileDeleted(file: TFile): Promise<void> {
-    const date = getDateFromFile(file, "day") || getDateFromFile(file, "week");
-    if (date) {
+    if (getDateFromFile(file, "day")) {
       dailyNotes.reindex();
+      this.updateActiveFile();
+    }
+    if (getDateFromFile(file, "week")) {
       weeklyNotes.reindex();
       this.updateActiveFile();
     }

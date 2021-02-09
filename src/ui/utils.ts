@@ -1,9 +1,5 @@
 import type { TFile } from "obsidian";
-import {
-  getDateFromFile,
-  getDateUID,
-  getWeeklyNoteSettings,
-} from "obsidian-daily-notes-interface";
+import { getDateFromFile, getDateUID } from "obsidian-daily-notes-interface";
 
 export const classList = (obj: Record<string, boolean>): string[] => {
   return Object.entries(obj)
@@ -54,10 +50,8 @@ export function getDateUIDFromFile(file: TFile | null): string {
     return getDateUID(date, "day");
   }
 
-  // Check to see if the active note is a weekly-note
-  const { format } = getWeeklyNoteSettings();
-  date = window.moment(file.basename, format, true);
-  if (date.isValid()) {
+  date = getDateFromFile(file, "week");
+  if (date) {
     return getDateUID(date, "week");
   }
   return null;
