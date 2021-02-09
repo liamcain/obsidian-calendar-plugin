@@ -34,6 +34,7 @@ export default class CalendarView extends ItemView {
     this.openOrCreateDailyNote = this.openOrCreateDailyNote.bind(this);
     this.openOrCreateWeeklyNote = this.openOrCreateWeeklyNote.bind(this);
 
+    this.onNoteSettingsUpdate = this.onNoteSettingsUpdate.bind(this);
     this.onFileCreated = this.onFileCreated.bind(this);
     this.onFileDeleted = this.onFileDeleted.bind(this);
     this.onFileModified = this.onFileModified.bind(this);
@@ -45,6 +46,13 @@ export default class CalendarView extends ItemView {
     this.onContextMenuDay = this.onContextMenuDay.bind(this);
     this.onContextMenuWeek = this.onContextMenuWeek.bind(this);
 
+    this.registerEvent(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (<any>this.app.workspace).on(
+        "periodic-notes:settings-updated",
+        this.onNoteSettingsUpdate
+      )
+    );
     this.registerEvent(this.app.vault.on("create", this.onFileCreated));
     this.registerEvent(this.app.vault.on("delete", this.onFileDeleted));
     this.registerEvent(this.app.vault.on("modify", this.onFileModified));
@@ -166,6 +174,12 @@ export default class CalendarView extends ItemView {
       x: event.pageX,
       y: event.pageY,
     });
+  }
+
+  private onNoteSettingsUpdate(): void {
+    dailyNotes.reindex();
+    weeklyNotes.reindex();
+    this.updateActiveFile();
   }
 
   private async onFileDeleted(file: TFile): Promise<void> {
