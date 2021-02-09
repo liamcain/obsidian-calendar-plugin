@@ -1,8 +1,5 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import {
-  appHasDailyNotesPluginLoaded,
-  IDailyNoteSettings,
-} from "obsidian-daily-notes-interface";
+import { appHasDailyNotesPluginLoaded } from "obsidian-daily-notes-interface";
 import type { ILocaleOverride, IWeekStartOption } from "obsidian-calendar-ui";
 
 import { DEFAULT_WEEK_FORMAT, DEFAULT_WORDS_PER_DOT } from "src/constants";
@@ -33,16 +30,6 @@ const weekdays = [
   "saturday",
 ];
 
-export function getWeeklyNoteSettings(settings: ISettings): IDailyNoteSettings {
-  return {
-    format: settings.weeklyNoteFormat || DEFAULT_WEEK_FORMAT,
-    folder: settings.weeklyNoteFolder ? settings.weeklyNoteFolder.trim() : "",
-    template: settings.weeklyNoteTemplate
-      ? settings.weeklyNoteTemplate.trim()
-      : "",
-  };
-}
-
 export const defaultSettings = Object.freeze({
   shouldConfirmBeforeCreate: true,
   weekStart: "locale" as IWeekStartOption,
@@ -57,6 +44,12 @@ export const defaultSettings = Object.freeze({
   localeOverride: "system-default",
 });
 
+function appHasPeriodicNotesPluginLoaded() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const periodicNotes = (<any>window.app).plugins.getPlugin("periodic-notes");
+  return periodicNotes && periodicNotes.settings?.weekly?.enabled;
+}
+
 export class CalendarSettingsTab extends PluginSettingTab {
   private plugin: CalendarPlugin;
 
@@ -69,12 +62,15 @@ export class CalendarSettingsTab extends PluginSettingTab {
     this.containerEl.empty();
 
     if (!appHasDailyNotesPluginLoaded()) {
-      this.containerEl.createEl("h3", {
-        text: "⚠️ Daily Notes plugin not enabled",
-      });
-      this.containerEl.createEl("p", {
-        text:
-          "The calendar is best used in conjunction with the Daily Notes plugin. Enable it in your plugin settings for a more optimal experience.",
+      this.containerEl.createDiv("settings-banner", (banner) => {
+        banner.createEl("h3", {
+          text: "⚠️ Daily Notes plugin not enabled",
+        });
+        banner.createEl("p", {
+          cls: "setting-item-description",
+          text:
+            "The calendar is best used in conjunction with either the Daily Notes plugin or the Periodic Notes plugin (available in the Community Plugins catalog).",
+        });
       });
     }
 
@@ -86,9 +82,17 @@ export class CalendarSettingsTab extends PluginSettingTab {
     this.addConfirmCreateSetting();
     this.addShowWeeklyNoteSetting();
 
-    if (this.plugin.options.showWeeklyNote) {
+    if (
+      this.plugin.options.showWeeklyNote &&
+      !appHasPeriodicNotesPluginLoaded()
+    ) {
       this.containerEl.createEl("h3", {
         text: "Weekly Note Settings",
+      });
+      this.containerEl.createEl("p", {
+        cls: "setting-item-description",
+        text:
+          "Note: Weekly Note settings are moving. You are encouraged to install the 'Periodic Notes' plugin to keep the functionality in the future.",
       });
       this.addWeeklyNoteFormatSetting();
       this.addWeeklyNoteTemplateSetting();

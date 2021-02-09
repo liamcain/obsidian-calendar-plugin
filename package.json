@@ -1,6 +1,6 @@
 {
   "name": "calendar",
-  "version": "1.4.19",
+  "version": "1.5.0",
   "description": "Calendar view of your daily notes",
   "author": "liamcain",
   "main": "main.js",
@@ -8,13 +8,13 @@
   "scripts": {
     "lint": "svelte-check && eslint . --ext .ts",
     "build": "npm run lint && rollup -c",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "test:watch": "yarn test -- --watch"
   },
   "dependencies": {
     "obsidian": "obsidianmd/obsidian-api#master",
-    "obsidian-calendar-ui": "0.3.0",
-    "obsidian-daily-notes-interface": "0.5.1",
+    "obsidian-calendar-ui": "0.3.1",
+    "obsidian-daily-notes-interface": "0.7.0",
     "svelte": "3.31.0",
     "tslib": "2.0.3"
   },

@@ -1,13 +1,12 @@
 import type { Moment } from "moment";
 import type { TFile } from "obsidian";
 import type { ICalendarSource, IDayMetadata, IDot } from "obsidian-calendar-ui";
-import { getDailyNote } from "obsidian-daily-notes-interface";
+import { getDailyNote, getWeeklyNote } from "obsidian-daily-notes-interface";
 import { get } from "svelte/store";
 
 import { DEFAULT_WORDS_PER_DOT } from "src/constants";
-import { getWeeklyNote } from "src/io/weeklyNotes";
 
-import { dailyNotes, settings } from "../stores";
+import { dailyNotes, settings, weeklyNotes } from "../stores";
 import { clamp, getWordCount } from "../utils";
 
 const NUM_MAX_DOTS = 5;
@@ -52,7 +51,7 @@ export const wordCountSource: ICalendarSource = {
   },
 
   getWeeklyMetadata: async (date: Moment): Promise<IDayMetadata> => {
-    const file = getWeeklyNote(date, get(settings));
+    const file = getWeeklyNote(date, get(weeklyNotes));
     const dots = await getDotsForDailyNote(file);
 
     return {
