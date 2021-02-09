@@ -44,6 +44,12 @@ export const defaultSettings = Object.freeze({
   localeOverride: "system-default",
 });
 
+function appHasPeriodicNotesPluginLoaded() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const periodicNotes = (<any>window.app).plugins.getPlugin("periodic-notes");
+  return periodicNotes && periodicNotes.settings?.weekly?.enabled;
+}
+
 export class CalendarSettingsTab extends PluginSettingTab {
   private plugin: CalendarPlugin;
 
@@ -76,7 +82,10 @@ export class CalendarSettingsTab extends PluginSettingTab {
     this.addConfirmCreateSetting();
     this.addShowWeeklyNoteSetting();
 
-    if (this.plugin.options.showWeeklyNote) {
+    if (
+      this.plugin.options.showWeeklyNote &&
+      !appHasPeriodicNotesPluginLoaded()
+    ) {
       this.containerEl.createEl("h3", {
         text: "Weekly Note Settings",
       });

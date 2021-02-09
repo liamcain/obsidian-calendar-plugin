@@ -21,7 +21,7 @@ function createDailyNotesStore() {
       } catch (err) {
         if (!hasError) {
           // Avoid error being shown multiple times
-          new Notice("Failed to find your Daily Note folder");
+          new Notice("Failed to find your daily note folder");
           console.log("[Calendar] Failed to find daily notes folder", err);
         }
         store.set({});
@@ -44,7 +44,7 @@ function createWeeklyNotesStore() {
       } catch (err) {
         if (!hasError) {
           // Avoid error being shown multiple times
-          new Notice("Failed to find your Weekly Note folder");
+          new Notice("Failed to find your weekly note folder");
           console.log("[Calendar] Failed to find weekly notes folder", err);
         }
         store.set({});
