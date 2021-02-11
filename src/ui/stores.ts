@@ -1,4 +1,4 @@
-import { Notice, TFile } from "obsidian";
+import type { TFile } from "obsidian";
 import {
   getAllDailyNotes,
   getAllWeeklyNotes,
