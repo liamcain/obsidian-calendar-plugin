@@ -21,7 +21,6 @@ function createDailyNotesStore() {
       } catch (err) {
         if (!hasError) {
           // Avoid error being shown multiple times
-          new Notice("Failed to find your daily note folder");
           console.log("[Calendar] Failed to find daily notes folder", err);
         }
         store.set({});
@@ -39,13 +38,11 @@ function createWeeklyNotesStore() {
     reindex: () => {
       try {
         const weeklyNotes = getAllWeeklyNotes();
-        console.log("weeklyNotes", weeklyNotes);
         store.set(weeklyNotes);
         hasError = false;
       } catch (err) {
         if (!hasError) {
           // Avoid error being shown multiple times
-          new Notice("Failed to find your weekly note folder");
           console.log("[Calendar] Failed to find weekly notes folder", err);
         }
         store.set({});
