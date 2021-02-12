@@ -3325,6 +3325,20 @@ obsidian-daily-notes-interface@0.7.1:
     obsidian obsidianmd/obsidian-api#master
     tslib "2.0.3"
 
+obsidian-daily-notes-interface@0.7.2:
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/obsidian-daily-notes-interface/-/obsidian-daily-notes-interface-0.7.2.tgz#02f732707abe7f68269fd8fed816ea60320b2ed1"
+  integrity sha512-NKnC5lIB8qnf6otXTcXSPt6aJQxydstvJXntQyKNcqoQtta9bJDG++VyJ1ijORUFeK2QZzG9hHCDTnb7Om47Tg==
+  dependencies:
+    obsidian obsidianmd/obsidian-api#master
+    tslib "2.0.3"
+
+"obsidian@github:obsidianmd/obsidian-api#master":
+  version "0.11.0"
+  resolved "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/81ab85ade4552c9116c1e10d009127e62019c923"
+  dependencies:
+    "@types/codemirror" "0.0.98"
+
 obsidian@obsidianmd/obsidian-api#master:
   version "0.10.6"
   resolved "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/a0e0c245561215ced9468859091e01d015f5cda9"
