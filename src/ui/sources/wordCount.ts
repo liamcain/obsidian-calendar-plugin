@@ -1,15 +1,27 @@
 import type { Moment } from "moment";
 import type { TFile } from "obsidian";
 import type { ICalendarSource, IDayMetadata, IDot } from "obsidian-calendar-ui";
-import { getDailyNote, getWeeklyNote } from "obsidian-daily-notes-interface";
+import {
+  getDailyNote,
+  getMonthlyNote,
+  getWeeklyNote,
+} from "obsidian-daily-notes-interface";
 import { get } from "svelte/store";
 
 import { DEFAULT_WORDS_PER_DOT } from "src/constants";
 
-import { dailyNotes, settings, weeklyNotes } from "../stores";
+import { dailyNotes, monthlyNotes, settings, weeklyNotes } from "../stores";
 import { clamp, getWordCount } from "../utils";
 
 const NUM_MAX_DOTS = 5;
+
+export async function getFileWordCount(note: TFile): Promise<number> {
+  if (!note) {
+    return 0;
+  }
+  const fileContents = await window.app.vault.cachedRead(note);
+  return getWordCount(fileContents);
+}
 
 export async function getWordLengthAsDots(note: TFile): Promise<number> {
   const { wordsPerDot = DEFAULT_WORDS_PER_DOT } = get(settings);
@@ -41,21 +53,33 @@ export async function getDotsForDailyNote(
   return dots;
 }
 
+async function getMetadata(file: TFile): Promise<IDayMetadata> {
+  const wordCount = await getFileWordCount(file);
+
+  return {
+    color: "#7FA1C0",
+    isShowcased: true,
+    minDots: 0,
+    maxDots: 6,
+    name: "Words",
+    value: wordCount,
+    valueToDotRadio: 1 / 250,
+  };
+}
+
 export const wordCountSource: ICalendarSource = {
   getDailyMetadata: async (date: Moment): Promise<IDayMetadata> => {
     const file = getDailyNote(date, get(dailyNotes));
-    const dots = await getDotsForDailyNote(file);
-    return {
-      dots,
-    };
+    return getMetadata(file);
   },
 
   getWeeklyMetadata: async (date: Moment): Promise<IDayMetadata> => {
     const file = getWeeklyNote(date, get(weeklyNotes));
-    const dots = await getDotsForDailyNote(file);
+    return getMetadata(file);
+  },
 
-    return {
-      dots,
-    };
+  getMonthlyMetadata: async (date: Moment): Promise<IDayMetadata> => {
+    const file = getMonthlyNote(date, get(monthlyNotes));
+    return getMetadata(file);
   },
 };

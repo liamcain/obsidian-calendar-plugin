@@ -3,6 +3,7 @@ import {
   getDailyNote,
   getDailyNoteSettings,
   getDateFromFile,
+  getMonthlyNote,
   getWeeklyNote,
   getWeeklyNoteSettings,
 } from "obsidian-daily-notes-interface";
@@ -16,12 +17,21 @@ import type { ISettings } from "src/settings";
 
 import Calendar from "./ui/Calendar.svelte";
 import { showFileMenu } from "./ui/fileMenu";
-import { activeFile, dailyNotes, weeklyNotes, settings } from "./ui/stores";
 import {
-  customTagsSource,
-  streakSource,
-  tasksSource,
+  activeFile,
+  dailyNotes,
+  weeklyNotes,
+  settings,
+  monthlyNotes,
+} from "./ui/stores";
+import {
+  // customTagsSource,
+  // streakSource,
   wordCountSource,
+  tasksSource,
+  linksSource,
+  backlinksSource,
+  zettelsSource,
 } from "./ui/sources";
 
 export default class CalendarView extends ItemView {
@@ -33,11 +43,13 @@ export default class CalendarView extends ItemView {
 
     this.openOrCreateDailyNote = this.openOrCreateDailyNote.bind(this);
     this.openOrCreateWeeklyNote = this.openOrCreateWeeklyNote.bind(this);
+    this.openOrCreateMonthlyNote = this.openOrCreateMonthlyNote.bind(this);
 
     this.onNoteSettingsUpdate = this.onNoteSettingsUpdate.bind(this);
     this.onFileCreated = this.onFileCreated.bind(this);
     this.onFileDeleted = this.onFileDeleted.bind(this);
     this.onFileModified = this.onFileModified.bind(this);
+    this.onFileRenamed = this.onFileRenamed.bind(this);
     this.onFileOpen = this.onFileOpen.bind(this);
 
     this.onHoverDay = this.onHoverDay.bind(this);
@@ -56,6 +68,7 @@ export default class CalendarView extends ItemView {
     this.registerEvent(this.app.vault.on("create", this.onFileCreated));
     this.registerEvent(this.app.vault.on("delete", this.onFileDeleted));
     this.registerEvent(this.app.vault.on("modify", this.onFileModified));
+    this.registerEvent(this.app.vault.on("rename", this.onFileRenamed));
     this.registerEvent(this.app.workspace.on("file-open", this.onFileOpen));
 
     this.settings = null;
@@ -92,10 +105,13 @@ export default class CalendarView extends ItemView {
     // Integration point: external plugins can listen for `calendar:open`
     // to feed in additional sources.
     const sources = [
-      customTagsSource,
-      streakSource,
+      // customTagsSource,
+      // streakSource,
       wordCountSource,
       tasksSource,
+      linksSource,
+      backlinksSource,
+      zettelsSource,
     ];
     this.app.workspace.trigger(TRIGGER_ON_OPEN, sources);
 
@@ -105,6 +121,7 @@ export default class CalendarView extends ItemView {
       props: {
         onClickDay: this.openOrCreateDailyNote,
         onClickWeek: this.openOrCreateWeeklyNote,
+        onClickMonth: this.openOrCreateMonthlyNote,
         onHoverDay: this.onHoverDay,
         onHoverWeek: this.onHoverWeek,
         onContextMenuDay: this.onContextMenuDay,
@@ -213,6 +230,19 @@ export default class CalendarView extends ItemView {
     }
   }
 
+  private onFileRenamed(file: TFile): void {
+    if (this.app.workspace.layoutReady && this.calendar) {
+      if (getDateFromFile(file, "day")) {
+        dailyNotes.reindex();
+        this.calendar.tick();
+      }
+      if (getDateFromFile(file, "week")) {
+        weeklyNotes.reindex();
+        this.calendar.tick();
+      }
+    }
+  }
+
   public onFileOpen(_file: TFile): void {
     if (this.app.workspace.layoutReady) {
       this.updateActiveFile();
@@ -255,6 +285,33 @@ export default class CalendarView extends ItemView {
     }
   }
 
+  async openOrCreateDailyNote(
+    date: Moment,
+    inNewSplit: boolean
+  ): Promise<void> {
+    const { workspace } = this.app;
+    const existingFile = getDailyNote(date, get(dailyNotes));
+    if (!existingFile) {
+      // File doesn't exist
+      tryToCreateDailyNote(
+        date,
+        inNewSplit,
+        this.settings,
+        (dailyNote: TFile) => {
+          activeFile.setFile(dailyNote);
+        }
+      );
+      return;
+    }
+
+    const leaf = inNewSplit
+      ? workspace.splitActiveLeaf()
+      : workspace.getUnpinnedLeaf();
+    await leaf.openFile(existingFile);
+
+    activeFile.setFile(existingFile);
+  }
+
   async openOrCreateWeeklyNote(
     date: Moment,
     inNewSplit: boolean
@@ -281,22 +338,21 @@ export default class CalendarView extends ItemView {
     activeFile.setFile(existingFile);
   }
 
-  async openOrCreateDailyNote(
+  async openOrCreateMonthlyNote(
     date: Moment,
     inNewSplit: boolean
   ): Promise<void> {
     const { workspace } = this.app;
-    const existingFile = getDailyNote(date, get(dailyNotes));
+
+    const startOfMonth = date.clone().startOf("month");
+
+    const existingFile = getMonthlyNote(date, get(monthlyNotes));
+
     if (!existingFile) {
       // File doesn't exist
-      tryToCreateDailyNote(
-        date,
-        inNewSplit,
-        this.settings,
-        (dailyNote: TFile) => {
-          activeFile.setFile(dailyNote);
-        }
-      );
+      tryToCreateWeeklyNote(startOfMonth, inNewSplit, this.settings, (file) => {
+        activeFile.setFile(file);
+      });
       return;
     }
 

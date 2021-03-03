@@ -10,7 +10,13 @@
   import { onDestroy } from "svelte";
 
   import type { ISettings } from "src/settings";
-  import { activeFile, dailyNotes, settings, weeklyNotes } from "./stores";
+  import {
+    activeFile,
+    dailyNotes,
+    monthlyNotes,
+    settings,
+    weeklyNotes,
+  } from "./stores";
 
   let today: Moment;
 
@@ -18,12 +24,18 @@
 
   export let displayedMonth: Moment = today;
   export let sources: ICalendarSource[];
+
   export let onHoverDay: (date: Moment, targetEl: EventTarget) => boolean;
   export let onHoverWeek: (date: Moment, targetEl: EventTarget) => boolean;
+  export let onHoverMonth: (date: Moment, targetEl: EventTarget) => boolean;
+
   export let onClickDay: (date: Moment, isMetaPressed: boolean) => boolean;
   export let onClickWeek: (date: Moment, isMetaPressed: boolean) => boolean;
+  export let onClickMonth: (date: Moment, isMetaPressed: boolean) => boolean;
+
   export let onContextMenuDay: (date: Moment, event: MouseEvent) => boolean;
   export let onContextMenuWeek: (date: Moment, event: MouseEvent) => boolean;
+  export let onContextMenuMonth: (date: Moment, event: MouseEvent) => boolean;
 
   export function tick() {
     today = window.moment();
@@ -33,6 +45,7 @@
     configureGlobalMomentLocale(settings.localeOverride, settings.weekStart);
     dailyNotes.reindex();
     weeklyNotes.reindex();
+    monthlyNotes.reindex();
     return window.moment();
   }
 
@@ -58,10 +71,13 @@
   {today}
   {onHoverDay}
   {onHoverWeek}
+  {onHoverMonth}
   {onContextMenuDay}
   {onContextMenuWeek}
+  {onContextMenuMonth}
   {onClickDay}
   {onClickWeek}
+  {onClickMonth}
   bind:displayedMonth
   localeData={today.localeData()}
   selectedId={$activeFile}

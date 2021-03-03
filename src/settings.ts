@@ -4,7 +4,7 @@ import type { ILocaleOverride, IWeekStartOption } from "obsidian-calendar-ui";
 
 import { DEFAULT_WEEK_FORMAT, DEFAULT_WORDS_PER_DOT } from "src/constants";
 
-import type CalendarPlugin from "./main";
+import type CalendarPlugin from "./index";
 
 export interface ISettings {
   wordsPerDot: number;
@@ -44,7 +44,7 @@ export const defaultSettings = Object.freeze({
   localeOverride: "system-default",
 });
 
-export function appHasPeriodicNotesPluginLoaded() {
+export function appHasPeriodicNotesPluginLoaded(): boolean {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const periodicNotes = (<any>window.app).plugins.getPlugin("periodic-notes");
   return periodicNotes && periodicNotes.settings?.weekly?.enabled;
