@@ -1,6 +1,6 @@
 import type { Moment } from "moment";
-import type { TFile } from "obsidian";
-import type { ICalendarSource, IDayMetadata, IDot } from "obsidian-calendar-ui";
+import { Setting, TFile } from "obsidian";
+import type { ICalendarSource, IDayMetadata } from "obsidian-calendar-ui";
 import {
   getDailyNote,
   getMonthlyNote,
@@ -35,39 +35,35 @@ export async function getWordLengthAsDots(note: TFile): Promise<number> {
   return clamp(Math.floor(numDots), 1, NUM_MAX_DOTS);
 }
 
-export async function getDotsForDailyNote(
-  dailyNote: TFile | null
-): Promise<IDot[]> {
-  if (!dailyNote) {
-    return [];
-  }
-  const numSolidDots = await getWordLengthAsDots(dailyNote);
-
-  const dots = [];
-  for (let i = 0; i < numSolidDots; i++) {
-    dots.push({
-      color: "default",
-      isFilled: true,
-    });
-  }
-  return dots;
-}
-
 async function getMetadata(file: TFile): Promise<IDayMetadata> {
   const wordCount = await getFileWordCount(file);
+  const color = "#7FA1C0";
+  const numDots = Math.floor(wordCount / 250);
 
   return {
-    color: "#7FA1C0",
-    isShowcased: true,
-    minDots: 0,
-    maxDots: 6,
+    color,
     name: "Words",
     value: wordCount,
-    valueToDotRadio: 1 / 250,
+    isShowcased: true,
+    toDots: () => {
+      return [...Array(numDots).keys()].map(() => ({
+        color,
+        isFilled: true,
+      }));
+    },
   };
 }
 
 export const wordCountSource: ICalendarSource = {
+  registerSettings: (
+    containerEl: HTMLElement,
+    sourceSettings: Record<string, any>
+  ) => {
+    console.log("registering...");
+    new Setting(containerEl).addText((textfield) => {
+      textfield.setValue(sourceSettings.wordsPerDot);
+    });
+  },
   getDailyMetadata: async (date: Moment): Promise<IDayMetadata> => {
     const file = getDailyNote(date, get(dailyNotes));
     return getMetadata(file);

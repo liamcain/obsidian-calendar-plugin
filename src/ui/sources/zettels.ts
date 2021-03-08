@@ -23,11 +23,8 @@ async function getMetadata(file: TFile): Promise<IDayMetadata> {
   return {
     color: "#7FA1C0",
     isShowcased: false,
-    minDots: 0,
-    maxDots: 1,
     name: "Zettels",
     value: numZettels,
-    valueToDotRadio: 0,
   };
 }
 

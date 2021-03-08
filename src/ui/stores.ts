@@ -9,6 +9,7 @@ import { writable } from "svelte/store";
 import { defaultSettings, ISettings } from "src/settings";
 
 import { getDateUIDFromFile } from "./utils";
+import { ICalendarSource } from "obsidian-calendar-ui";
 
 function createDailyNotesStore() {
   let hasError = false;
@@ -93,3 +94,17 @@ function createSelectedFileStore() {
 }
 
 export const activeFile = createSelectedFileStore();
+
+function createSourcesStore() {
+  const store = writable<ICalendarSource[]>([]);
+
+  return {
+    registerSource: (source: ICalendarSource) => {
+      store.update((val: ICalendarSource[]) => {
+        val.push(source);
+        return val;
+      });
+    },
+  };
+}
+export const sources = createSourcesStore();

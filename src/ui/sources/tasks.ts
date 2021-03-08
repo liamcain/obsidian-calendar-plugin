@@ -23,16 +23,25 @@ export async function getNumberOfTasks(note: TFile): Promise<[number, number]> {
 async function getMetadata(file: TFile): Promise<IDayMetadata> {
   const [numRemainingTasks, numCompletedTasks] = await getNumberOfTasks(file);
   const totalTasks = numRemainingTasks + numCompletedTasks;
+  const color = "#BF616A";
 
   return {
-    color: "#BF616A",
-    goal: totalTasks,
-    isShowcased: true,
-    minDots: 0,
-    maxDots: 1,
+    color,
     name: "Tasks",
     value: numCompletedTasks,
-    valueToDotRadio: 1,
+    goal: totalTasks,
+    isShowcased: true,
+    toDots: () => {
+      if (numRemainingTasks) {
+        return [
+          {
+            color,
+            isFilled: false,
+          },
+        ];
+      }
+      return [];
+    },
   };
 }
 

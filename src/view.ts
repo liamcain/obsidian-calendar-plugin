@@ -104,7 +104,7 @@ export default class CalendarView extends ItemView {
   async onOpen(): Promise<void> {
     // Integration point: external plugins can listen for `calendar:open`
     // to feed in additional sources.
-    const sources = [
+    const baseSources = [
       // customTagsSource,
       // streakSource,
       wordCountSource,
@@ -113,7 +113,9 @@ export default class CalendarView extends ItemView {
       backlinksSource,
       zettelsSource,
     ];
-    this.app.workspace.trigger(TRIGGER_ON_OPEN, sources);
+    // TODO move this into a writable. subscribe the settings component
+    // to the writable
+    this.app.workspace.trigger(TRIGGER_ON_OPEN, baseSources);
 
     this.calendar = new Calendar({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

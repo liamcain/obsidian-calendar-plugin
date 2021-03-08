@@ -14,20 +14,17 @@ export function getNumLinks(note: TFile): number {
   if (!note) {
     return 0;
   }
-  return window.app.metadataCache.getCache(note.path).links?.length || 0;
+  return window.app.metadataCache.getCache(note.path)?.links?.length || 0;
 }
 
 async function getMetadata(file: TFile): Promise<IDayMetadata> {
   const wordCount = getNumLinks(file);
 
   return {
-    color: "#7FA1C0",
-    isShowcased: false,
-    minDots: 0,
-    maxDots: 1,
     name: "Links",
     value: wordCount,
-    valueToDotRadio: 1,
+    color: "#7FA1C0",
+    isShowcased: false,
   };
 }
 
