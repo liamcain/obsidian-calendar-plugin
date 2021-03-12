@@ -29,6 +29,9 @@ async function getMetadata(file: TFile): Promise<IDayMetadata> {
 }
 
 export const linksSource: ICalendarSource = {
+  id: "links",
+  name: "Links",
+
   getDailyMetadata: async (date: Moment): Promise<IDayMetadata> => {
     const file = getDailyNote(date, get(dailyNotes));
     return getMetadata(file);

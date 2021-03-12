@@ -1,6 +1,10 @@
 import type { Moment } from "moment";
 import { Setting, TFile } from "obsidian";
-import type { ICalendarSource, IDayMetadata } from "obsidian-calendar-ui";
+import type {
+  ISourceSettings,
+  ICalendarSource,
+  IDayMetadata,
+} from "obsidian-calendar-ui";
 import {
   getDailyNote,
   getMonthlyNote,
@@ -14,6 +18,10 @@ import { dailyNotes, monthlyNotes, settings, weeklyNotes } from "../stores";
 import { clamp, getWordCount } from "../utils";
 
 const NUM_MAX_DOTS = 5;
+
+interface IWordCountSettings extends ISourceSettings {
+  wordsPerDot: number;
+}
 
 export async function getFileWordCount(note: TFile): Promise<number> {
   if (!note) {
@@ -55,14 +63,23 @@ async function getMetadata(file: TFile): Promise<IDayMetadata> {
 }
 
 export const wordCountSource: ICalendarSource = {
+  id: "wordCount",
+  name: "Word Count",
   registerSettings: (
     containerEl: HTMLElement,
-    sourceSettings: Record<string, any>
+    sourceSettings: IWordCountSettings,
+    saveSettings: (settings: Partial<IWordCountSettings>) => void
   ) => {
-    console.log("registering...");
-    new Setting(containerEl).addText((textfield) => {
-      textfield.setValue(sourceSettings.wordsPerDot);
-    });
+    new Setting(containerEl)
+      .setName("Words per dot")
+      .setDesc("How many words should be represented by a single dot?")
+      .addText((textfield) => {
+        textfield.inputEl.type = "number";
+        textfield.setValue(String(sourceSettings.wordsPerDot));
+        textfield.onChange((val) => {
+          saveSettings({ wordsPerDot: Number(val) });
+        });
+      });
   },
   getDailyMetadata: async (date: Moment): Promise<IDayMetadata> => {
     const file = getDailyNote(date, get(dailyNotes));

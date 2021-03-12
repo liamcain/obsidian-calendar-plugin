@@ -4,7 +4,6 @@
   import type { Moment } from "moment";
   import {
     Calendar as CalendarBase,
-    ICalendarSource,
     configureGlobalMomentLocale,
   } from "obsidian-calendar-ui";
   import { onDestroy } from "svelte";
@@ -15,6 +14,7 @@
     dailyNotes,
     monthlyNotes,
     settings,
+    sources,
     weeklyNotes,
   } from "./stores";
 
@@ -23,7 +23,6 @@
   $: today = getToday($settings);
 
   export let displayedMonth: Moment = today;
-  export let sources: ICalendarSource[];
 
   export let onHoverDay: (date: Moment, targetEl: EventTarget) => boolean;
   export let onHoverWeek: (date: Moment, targetEl: EventTarget) => boolean;
@@ -67,7 +66,7 @@
 </script>
 
 <CalendarBase
-  {sources}
+  sources={$sources}
   {today}
   {onHoverDay}
   {onHoverWeek}

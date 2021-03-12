@@ -1,11 +1,16 @@
 import { App, PluginSettingTab } from "obsidian";
-import type { ILocaleOverride, IWeekStartOption } from "obsidian-calendar-ui";
+import type {
+  IRealizedSource,
+  ILocaleOverride,
+  ISourceSettings,
+  IWeekStartOption,
+} from "obsidian-calendar-ui";
+import type { SvelteComponent } from "svelte";
 
 import { DEFAULT_WORDS_PER_DOT } from "src/constants";
 
 import SettingsTab from "./ui/settings/SettingsTab.svelte";
 import type CalendarPlugin from "./index";
-import type { SvelteComponent } from "svelte";
 
 export interface ISettings {
   wordsPerDot: number;
@@ -20,7 +25,7 @@ export interface ISettings {
 
   localeOverride: ILocaleOverride;
 
-  sourceSettings: Record<string, unknown>;
+  sourceSettings: Record<string, ISourceSettings>;
 }
 
 export const defaultSettings = Object.freeze({
@@ -35,6 +40,8 @@ export const defaultSettings = Object.freeze({
   weeklyNoteFolder: "",
 
   localeOverride: "system-default",
+
+  sourceSettings: {},
 });
 
 export function appHasPeriodicNotesPluginLoaded(): boolean {
@@ -45,15 +52,38 @@ export function appHasPeriodicNotesPluginLoaded(): boolean {
 
 export class CalendarSettingsTab extends PluginSettingTab {
   public plugin: CalendarPlugin;
+
   private view: SvelteComponent;
 
   constructor(app: App, plugin: CalendarPlugin) {
     super(app, plugin);
     this.plugin = plugin;
+
+    this.saveAllSourceSettings = this.saveAllSourceSettings.bind(this);
   }
 
   close(): void {
+    super.close();
     this.view?.$destroy();
+  }
+
+  async saveAllSourceSettings(sources: IRealizedSource[]): Promise<void> {
+    const sourceSettings = sources.reduce((acc, source, i) => {
+      acc[source.id] = {
+        ...source,
+        order: i,
+      };
+      return acc;
+    }, {});
+
+    // settings.update((oldSettings: ISettings) => ({
+    //   ...oldSettings,
+    //   sourceSettings,
+    // }));
+
+    return this.plugin.writeOptions(() => ({
+      sourceSettings,
+    }));
   }
 
   display(): void {
@@ -61,7 +91,10 @@ export class CalendarSettingsTab extends PluginSettingTab {
 
     this.view = new SettingsTab({
       target: this.containerEl,
-      props: {},
+      props: {
+        saveSourceSettings: this.saveAllSourceSettings,
+        writeOptions: this.plugin.writeOptions,
+      },
     });
   }
 }

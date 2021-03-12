@@ -2,14 +2,55 @@
   import { dndzone, SOURCES } from "svelte-dnd-action";
   import { flip } from "svelte/animate";
 
-  import Toggle from "./controls/Toggle.svelte";
-  import SettingItem from "./SettingItem.svelte";
+  import { settings, sources } from "../stores";
 
-  export let items = [];
+  export let saveAllSourceSettings;
+  export let writeOptions;
 
   const flipDurationMs = 200;
   let dragDisabled = true;
   let activeItemId;
+  let sourceSettingsEl;
+  let items;
+
+  // let allSettings = {
+  //   settings: {
+  //     wordCount: {
+  //       color: "#7FA1C0",
+  //       display: "menu-and-calendar",
+  //       order: 0,
+  //       wordsPerDot: 250,
+  //     },
+  //     tasks: {
+  //       color: "#BF616A",
+  //       display: "menu-and-calendar",
+  //       order: 1,
+  //       showAllTaskDots: false,
+  //     },
+  //     zettels: {
+  //       color: "#ebcb8b",
+  //       display: "menu",
+  //       order: 2,
+  //     },
+  //     links: {
+  //       color: "#b48ead",
+  //       display: "none",
+  //       order: 4,
+  //     },
+  //     backlinks: {
+  //       color: "#5e81ac",
+  //       display: "menu",
+  //       order: 3,
+  //     },
+  //   },
+  // };
+
+  $: items = $sources
+    .map((source) => ({
+      ...source,
+      ...($settings.sourceSettings[source.id] || {}),
+    }))
+    .sort((a, b) => a.order - b.order);
 
   function handleConsider(event) {
     const {
@@ -35,6 +76,8 @@
     if (source === SOURCES.POINTER) {
       dragDisabled = true;
     }
+
+    saveAllSourceSettings(items);
   }
 
   function startDrag(e) {
@@ -51,6 +94,29 @@
 
   function setActiveItem(item) {
     activeItemId = item.id;
+    sourceSettingsEl.empty();
+    sourceSettingsEl.createEl("h4", {
+      text: item.name,
+    });
+
+    const source = $sources.find((s) => s.id === item.id);
+    const saveSource = (sourceSettings) =>
+      writeOptions((existingSettings) => {
+        const newSettings = {
+          ...existingSettings,
+          sourceSettings: {
+            ...existingSettings.sourceSettings,
+            [item.id]: {
+              ...existingSettings.sourceSettings[item.id],
+              ...sourceSettings,
+            },
+          },
+        };
+        settings.set(newSettings);
+        return newSettings;
+      });
+
+    source.registerSettings?.(sourceSettingsEl, item, saveSource);
   }
 </script>
 
@@ -61,7 +127,7 @@
     on:consider={handleConsider}
     on:finalize={handleFinalize}
   >
-    {#each items as item (item.id)}
+    {#each items as item (item)}
       <div
         animate:flip={{ duration: flipDurationMs }}
         class="calendar-source"
@@ -92,23 +158,28 @@
           </svg>
         </div>
         {item.name}
-        <input class="color-picker" type="color" bind:value={item.color} />
+        <input
+          class="color-picker"
+          type="color"
+          bind:value={item.color}
+          on:input={() => saveAllSourceSettings(items)}
+        />
       </div>
     {/each}
   </section>
-  <section>
-    <h4>Word Count</h4>
-    <SettingItem name="Display">
-      <Toggle slot="control" />
-    </SettingItem>
+  <section bind:this={sourceSettingsEl}>
+    <div class="calendar-source-empty-state" />
   </section>
 </div>
 
 <style>
   .container {
+    border-top: 1px solid var(--background-modifier-border);
     display: grid;
-    gap: 24px;
+    gap: 32px;
     grid-template-columns: 1fr 1fr;
+    margin-top: 8px;
+    padding-top: 8px;
   }
 
   .layout-grid {
@@ -118,19 +189,21 @@
   }
 
   .calendar-source {
+    transition: border-color 0.1s ease-in-out;
     cursor: pointer;
     align-items: center;
     background-color: var(--background-secondary);
     border-radius: 8px;
     border: 1px solid var(--background-modifier-border);
     display: flex;
+    font-size: 14px;
     margin: 6px 0;
-    padding: 12px;
+    padding: 8px;
     width: 100%;
   }
 
   .calendar-source:hover {
-    border: 1px solid var(--dark2);
+    border: 1px solid var(--text-faint);
   }
 
   .calendar-source.active {

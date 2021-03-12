@@ -1,36 +1,17 @@
-<script>
+<script lang="ts">
+  import type { ICalendarSource } from "obsidian-calendar-ui";
+
+  import type { ISettings } from "src/settings";
+
   import SettingItem from "./SettingItem.svelte";
   import Sources from "./Sources.svelte";
   import Dropdown from "./controls/Dropdown.svelte";
   import Toggle from "./controls/Toggle.svelte";
 
-  let items = [
-    {
-      id: 1,
-      color: "#7FA1C0",
-      name: "Word Count",
-    },
-    {
-      id: 2,
-      color: "#BF616A",
-      name: "Tasks",
-    },
-    {
-      id: 3,
-      color: "#ebcb8b",
-      name: "Zettels",
-    },
-    {
-      id: 4,
-      color: "#b48ead",
-      name: "Links",
-    },
-    {
-      id: 5,
-      color: "#5e81ac",
-      name: "Backlinks",
-    },
-  ];
+  export let saveAllSourceSettings: (sources: ICalendarSource[]) => void;
+  export let writeOptions: (
+    changeOpts: (settings: ISettings) => Partial<ISettings>
+  ) => Promise<void>;
 </script>
 
 <div>
@@ -47,7 +28,7 @@
     Configure what appears on the calendar and what shows in the hover menu.
     Drag to reorder.
   </div>
-  <Sources {items} />
+  <Sources {saveAllSourceSettings} {writeOptions} />
 
   <h3>Localization</h3>
   <SettingItem

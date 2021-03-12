@@ -29,6 +29,8 @@ export default class CalendarPlugin extends Plugin {
   }
 
   async onload(): Promise<void> {
+    this.writeOptions = this.writeOptions.bind(this);
+
     this.register(
       settings.subscribe((value) => {
         this.options = value;
@@ -71,9 +73,9 @@ export default class CalendarPlugin extends Plugin {
     });
 
     await this.loadOptions();
-
     this.addSettingTab(new CalendarSettingsTab(this.app, this));
 
+    // TODO use new onLayoutReady
     if (this.app.workspace.layoutReady) {
       this.initLeaf();
     } else {
@@ -92,6 +94,7 @@ export default class CalendarPlugin extends Plugin {
     });
   }
 
+  // TODO: rename this to loadSettings
   async loadOptions(): Promise<void> {
     const options = await this.loadData();
     settings.update((old) => {

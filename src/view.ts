@@ -23,6 +23,7 @@ import {
   weeklyNotes,
   settings,
   monthlyNotes,
+  sources,
 } from "./ui/stores";
 import {
   // customTagsSource,
@@ -116,6 +117,7 @@ export default class CalendarView extends ItemView {
     // TODO move this into a writable. subscribe the settings component
     // to the writable
     this.app.workspace.trigger(TRIGGER_ON_OPEN, baseSources);
+    baseSources.forEach(sources.registerSource);
 
     this.calendar = new Calendar({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -128,7 +130,6 @@ export default class CalendarView extends ItemView {
         onHoverWeek: this.onHoverWeek,
         onContextMenuDay: this.onContextMenuDay,
         onContextMenuWeek: this.onContextMenuWeek,
-        sources,
       },
     });
   }

@@ -1,10 +1,18 @@
 import type { Moment } from "moment";
-import type { TFile } from "obsidian";
-import type { ICalendarSource, IDayMetadata } from "obsidian-calendar-ui";
+import { Setting, TFile } from "obsidian";
+import type {
+  ICalendarSource,
+  IDayMetadata,
+  ISourceSettings,
+} from "obsidian-calendar-ui";
 import { getDailyNote, getWeeklyNote } from "obsidian-daily-notes-interface";
 import { get } from "svelte/store";
 
 import { dailyNotes, weeklyNotes } from "../stores";
+
+interface ITasksSettings extends ISourceSettings {
+  maxIncompleteTaskDots: number;
+}
 
 export async function getNumberOfTasks(note: TFile): Promise<[number, number]> {
   if (!note) {
@@ -46,6 +54,9 @@ async function getMetadata(file: TFile): Promise<IDayMetadata> {
 }
 
 export const tasksSource: ICalendarSource = {
+  id: "tasks",
+  name: "Tasks",
+
   getDailyMetadata: async (date: Moment): Promise<IDayMetadata> => {
     const file = getDailyNote(date, get(dailyNotes));
     return getMetadata(file);
@@ -54,5 +65,24 @@ export const tasksSource: ICalendarSource = {
   getWeeklyMetadata: async (date: Moment): Promise<IDayMetadata> => {
     const file = getWeeklyNote(date, get(weeklyNotes));
     return getMetadata(file);
+  },
+
+  registerSettings: (
+    containerEl: HTMLElement,
+    sourceSettings: ITasksSettings,
+    saveSettings: (settings: Partial<ITasksSettings>) => void
+  ) => {
+    new Setting(containerEl)
+      .setName("Max incomplete tasks shown")
+      .setDesc("Limit the number of dots shown for incomplete tasks")
+      .addSlider((slider) =>
+        slider
+          .setLimits(1, 6, 1)
+          .setDynamicTooltip()
+          .setValue(sourceSettings.maxIncompleteTaskDots || 1)
+          .onChange((maxIncompleteTaskDots) => {
+            saveSettings({ maxIncompleteTaskDots });
+          })
+      );
   },
 };
