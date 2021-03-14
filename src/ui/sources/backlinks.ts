@@ -1,6 +1,6 @@
 import type { Moment } from "moment";
 import type { TFile } from "obsidian";
-import type { ICalendarSource, IDayMetadata } from "obsidian-calendar-ui";
+import type { ICalendarSource, IEvaluatedMetadata } from "obsidian-calendar-ui";
 import {
   getDailyNote,
   getMonthlyNote,
@@ -21,14 +21,12 @@ export function getNumBacklinks(note: TFile): number {
   );
 }
 
-async function getMetadata(file: TFile): Promise<IDayMetadata> {
+async function getMetadata(file: TFile): Promise<IEvaluatedMetadata> {
   const numBacklinks = getNumBacklinks(file);
 
   return {
-    color: "#7FA1C0",
-    name: "Backlinks",
+    dots: [],
     value: numBacklinks,
-    isShowcased: false,
   };
 }
 
@@ -36,18 +34,23 @@ export const backlinksSource: ICalendarSource = {
   id: "backlinks",
   name: "Backlinks",
 
-  getDailyMetadata: async (date: Moment): Promise<IDayMetadata> => {
+  getDailyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
     const file = getDailyNote(date, get(dailyNotes));
     return getMetadata(file);
   },
 
-  getWeeklyMetadata: async (date: Moment): Promise<IDayMetadata> => {
+  getWeeklyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
     const file = getWeeklyNote(date, get(weeklyNotes));
     return getMetadata(file);
   },
 
-  getMonthlyMetadata: async (date: Moment): Promise<IDayMetadata> => {
+  getMonthlyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
     const file = getMonthlyNote(date, get(monthlyNotes));
     return getMetadata(file);
   },
+
+  defaultSettings: Object.freeze({
+    color: "#5e81ac",
+    display: "menu",
+  }),
 };

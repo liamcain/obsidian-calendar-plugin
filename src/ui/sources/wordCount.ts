@@ -3,7 +3,7 @@ import { Setting, TFile } from "obsidian";
 import type {
   ISourceSettings,
   ICalendarSource,
-  IDayMetadata,
+  IEvaluatedMetadata,
 } from "obsidian-calendar-ui";
 import {
   getDailyNote,
@@ -16,6 +16,7 @@ import { DEFAULT_WORDS_PER_DOT } from "src/constants";
 
 import { dailyNotes, monthlyNotes, settings, weeklyNotes } from "../stores";
 import { clamp, getWordCount } from "../utils";
+import { filledDot } from "./utils";
 
 const NUM_MAX_DOTS = 5;
 
@@ -43,28 +44,40 @@ export async function getWordLengthAsDots(note: TFile): Promise<number> {
   return clamp(Math.floor(numDots), 1, NUM_MAX_DOTS);
 }
 
-async function getMetadata(file: TFile): Promise<IDayMetadata> {
+async function getMetadata(file: TFile): Promise<IEvaluatedMetadata> {
   const wordCount = await getFileWordCount(file);
-  const color = "#7FA1C0";
   const numDots = Math.floor(wordCount / 250);
 
   return {
-    color,
-    name: "Words",
     value: wordCount,
-    isShowcased: true,
-    toDots: () => {
-      return [...Array(numDots).keys()].map(() => ({
-        color,
-        isFilled: true,
-      }));
-    },
+    dots: [...Array(numDots).keys()].map(filledDot),
   };
 }
 
 export const wordCountSource: ICalendarSource = {
   id: "wordCount",
-  name: "Word Count",
+  name: "Words",
+
+  getDailyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
+    const file = getDailyNote(date, get(dailyNotes));
+    return getMetadata(file);
+  },
+
+  getWeeklyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
+    const file = getWeeklyNote(date, get(weeklyNotes));
+    return getMetadata(file);
+  },
+
+  getMonthlyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
+    const file = getMonthlyNote(date, get(monthlyNotes));
+    return getMetadata(file);
+  },
+
+  defaultSettings: Object.freeze({
+    color: "#ebcb8b",
+    display: "calendar-and-menu",
+    wordsPerDot: 250,
+  }),
   registerSettings: (
     containerEl: HTMLElement,
     sourceSettings: IWordCountSettings,
@@ -80,19 +93,5 @@ export const wordCountSource: ICalendarSource = {
           saveSettings({ wordsPerDot: Number(val) });
         });
       });
-  },
-  getDailyMetadata: async (date: Moment): Promise<IDayMetadata> => {
-    const file = getDailyNote(date, get(dailyNotes));
-    return getMetadata(file);
-  },
-
-  getWeeklyMetadata: async (date: Moment): Promise<IDayMetadata> => {
-    const file = getWeeklyNote(date, get(weeklyNotes));
-    return getMetadata(file);
-  },
-
-  getMonthlyMetadata: async (date: Moment): Promise<IDayMetadata> => {
-    const file = getMonthlyNote(date, get(monthlyNotes));
-    return getMetadata(file);
   },
 };

@@ -1,6 +1,6 @@
 import type { Moment } from "moment";
 import type { TFile } from "obsidian";
-import type { ICalendarSource, IDayMetadata } from "obsidian-calendar-ui";
+import type { ICalendarSource, IEvaluatedMetadata } from "obsidian-calendar-ui";
 import { getDailyNote, getDateFromFile } from "obsidian-daily-notes-interface";
 import { get } from "svelte/store";
 
@@ -17,13 +17,11 @@ export function getNumZettels(note: TFile): number {
     .filter((file) => file.name.startsWith(zettelPrefix)).length;
 }
 
-async function getMetadata(file: TFile): Promise<IDayMetadata> {
+async function getMetadata(file: TFile): Promise<IEvaluatedMetadata> {
   const numZettels = getNumZettels(file);
 
   return {
-    color: "#7FA1C0",
-    isShowcased: false,
-    name: "Zettels",
+    dots: [],
     value: numZettels,
   };
 }
@@ -32,8 +30,13 @@ export const zettelsSource: ICalendarSource = {
   id: "zettels",
   name: "Zettels",
 
-  getDailyMetadata: async (date: Moment): Promise<IDayMetadata> => {
+  getDailyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
     const file = getDailyNote(date, get(dailyNotes));
     return getMetadata(file);
   },
+
+  defaultSettings: Object.freeze({
+    color: "#b48ead",
+    display: "calendar-and-menu",
+  }),
 };

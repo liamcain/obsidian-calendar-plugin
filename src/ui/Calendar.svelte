@@ -5,10 +5,12 @@
   import {
     Calendar as CalendarBase,
     configureGlobalMomentLocale,
+    ISourceSettings,
   } from "obsidian-calendar-ui";
   import { onDestroy } from "svelte";
 
   import type { ISettings } from "src/settings";
+
   import {
     activeFile,
     dailyNotes,
@@ -48,6 +50,15 @@
     return window.moment();
   }
 
+  function getSourceSettings(sourceId: string): ISourceSettings {
+    const source = $sources.find((source) => source.id === sourceId);
+
+    return {
+      ...(source.defaultSettings || {}),
+      ...$settings.sourceSettings[sourceId],
+    };
+  }
+
   // 1 minute heartbeat to keep `today` reflecting the current day
   let heartbeat = setInterval(() => {
     tick();
@@ -67,6 +78,7 @@
 
 <CalendarBase
   sources={$sources}
+  {getSourceSettings}
   {today}
   {onHoverDay}
   {onHoverWeek}

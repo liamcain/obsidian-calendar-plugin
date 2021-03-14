@@ -1,6 +1,6 @@
 import { App, PluginSettingTab } from "obsidian";
 import type {
-  IRealizedSource,
+  IDayMetadata,
   ILocaleOverride,
   ISourceSettings,
   IWeekStartOption,
@@ -67,7 +67,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
     this.view?.$destroy();
   }
 
-  async saveAllSourceSettings(sources: IRealizedSource[]): Promise<void> {
+  async saveAllSourceSettings(sources: IDayMetadata[]): Promise<void> {
     const sourceSettings = sources.reduce((acc, source, i) => {
       acc[source.id] = {
         ...source,
@@ -92,7 +92,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
     this.view = new SettingsTab({
       target: this.containerEl,
       props: {
-        saveSourceSettings: this.saveAllSourceSettings,
+        saveAllSourceSettings: this.saveAllSourceSettings,
         writeOptions: this.plugin.writeOptions,
       },
     });

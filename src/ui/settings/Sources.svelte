@@ -1,5 +1,8 @@
 <script>
-  import { dndzone, SOURCES } from "svelte-dnd-action";
+  import { debounce, Setting } from "obsidian";
+
+  import { writable } from "svelte/store";
+  import { dndzone } from "svelte-dnd-action";
   import { flip } from "svelte/animate";
 
   import { settings, sources } from "../stores";
@@ -7,89 +10,36 @@
   export let saveAllSourceSettings;
   export let writeOptions;
 
-  const flipDurationMs = 200;
-  let dragDisabled = true;
+  const flipDurationMs = 100;
+
   let activeItemId;
   let sourceSettingsEl;
-  let items;
+  let items = writable([]);
+  let saveSettings = debounce(() => saveAllSourceSettings($items), 200, false);
 
-  // let allSettings = {
-  //   settings: {
-  //     wordCount: {
-  //       color: "#7FA1C0",
-  //       display: "menu-and-calendar",
-  //       order: 0,
-  //       wordsPerDot: 250,
-  //     },
-  //     tasks: {
-  //       color: "#BF616A",
-  //       display: "menu-and-calendar",
-  //       order: 1,
-  //       showAllTaskDots: false,
-  //     },
-  //     zettels: {
-  //       color: "#ebcb8b",
-  //       display: "menu",
-  //       order: 2,
-  //     },
-  //     links: {
-  //       color: "#b48ead",
-  //       display: "none",
-  //       order: 4,
-  //     },
-  //     backlinks: {
-  //       color: "#5e81ac",
-  //       display: "menu",
-  //       order: 3,
-  //     },
-  //   },
-  // };
+  $: {
+    items.set(
+      $sources.map(getSourceSettings).sort((a, b) => a.order - b.order)
+    );
+  }
 
-  $: items = $sources
-    .map((source) => ({
+  function getSourceSettings(source) {
+    return {
       ...source,
-      ...($settings.sourceSettings[source.id] || {}),
-    }))
-    .sort((a, b) => a.order - b.order);
+      ...(source.defaultSettings || {}),
+      ...$settings.sourceSettings[source.id],
+    };
+  }
 
   function handleConsider(event) {
-    const {
-      items: newItems,
-      info: { source, trigger },
-    } = event.detail;
-
-    items = newItems;
-    // Ensure dragging is stopped on drag finish via keyboard
-    if (source === SOURCES.KEYBOARD && trigger === TRIGGERS.DRAG_STOPPED) {
-      dragDisabled = true;
-    }
+    console.log("considering", event);
+    items.set(event.detail.items);
   }
 
   function handleFinalize(event) {
-    const {
-      items: newItems,
-      info: { source },
-    } = event.detail;
-
-    items = newItems;
-    // Ensure dragging is stopped on drag finish via pointer (mouse, touch)
-    if (source === SOURCES.POINTER) {
-      dragDisabled = true;
-    }
-
-    saveAllSourceSettings(items);
-  }
-
-  function startDrag(e) {
-    // preventing default to prevent lag on touch devices (because of the browser checking for screen scrolling)
-    e.preventDefault();
-    dragDisabled = false;
-  }
-
-  function stopDrag(e) {
-    // preventing default to prevent lag on touch devices (because of the browser checking for screen scrolling)
-    e.preventDefault();
-    dragDisabled = true;
+    console.log("finalizing", event);
+    items.set(event.detail.items);
+    saveAllSourceSettings($items);
   }
 
   function setActiveItem(item) {
@@ -112,60 +62,72 @@
             },
           },
         };
+
+        // mutate `item` so display refreshes
+        item.display = sourceSettings.display;
+        items.update((val) => val);
         settings.set(newSettings);
         return newSettings;
       });
+
+    const displayValue = $settings.sourceSettings[activeItemId]?.display;
+    new Setting(sourceSettingsEl).setName("Display").addDropdown((dropdown) => {
+      dropdown
+        .addOption("calendar-and-menu", "On Calendar")
+        .addOption("menu", "In Menu")
+        .addOption("none", "Hidden")
+        .onChange((display) => {
+          saveSource({ display });
+        })
+        .setValue(displayValue);
+    });
 
     source.registerSettings?.(sourceSettingsEl, item, saveSource);
   }
 </script>
 
 <div class="container">
-  <section
-    class="layout-grid"
-    use:dndzone={{ items, flipDurationMs, dragDisabled }}
-    on:consider={handleConsider}
-    on:finalize={handleFinalize}
-  >
-    {#each items as item (item)}
-      <div
-        animate:flip={{ duration: flipDurationMs }}
-        class="calendar-source"
-        class:active={item.id === activeItemId}
-        on:click={() => setActiveItem(item)}
-      >
+  <section>
+    <div
+      class="layout-grid"
+      use:dndzone={{ items: $items, flipDurationMs }}
+      on:consider={handleConsider}
+      on:finalize={handleFinalize}
+    >
+      {#each $items as item (item.id)}
         <div
-          aria-label="drag-handle"
-          class="handle"
-          style={dragDisabled ? "cursor: grab" : "cursor: grabbing"}
-          tabindex={dragDisabled ? 0 : -1}
-          on:mousedown={startDrag}
-          on:mouseup={stopDrag}
+          animate:flip={{ duration: flipDurationMs }}
+          class="calendar-source"
+          class:active={item.id === activeItemId}
+          on:click|stopPropagation={() => setActiveItem(item)}
         >
-          <svg
-            fill="none"
-            height="32"
-            viewBox="0 0 17 32"
-            width="17"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle cx="3.13232" cy="3.64536" r="3" fill="currentColor" />
-            <circle cx="13.167" cy="3.64536" r="3" fill="currentColor" />
-            <circle cx="3.13232" cy="15.8953" r="3" fill="currentColor" />
-            <circle cx="13.167" cy="15.8953" r="3" fill="currentColor" />
-            <circle cx="3.13232" cy="28.1452" r="3" fill="currentColor" />
-            <circle cx="13.167" cy="28.1452" r="3" fill="currentColor" />
-          </svg>
+          <div aria-label="Drag to rearrange" class="handle">
+            <svg
+              fill="none"
+              height="32"
+              viewBox="0 0 17 32"
+              width="17"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="3.13232" cy="3.64536" r="3" fill="currentColor" />
+              <circle cx="13.167" cy="3.64536" r="3" fill="currentColor" />
+              <circle cx="3.13232" cy="15.8953" r="3" fill="currentColor" />
+              <circle cx="13.167" cy="15.8953" r="3" fill="currentColor" />
+              <circle cx="3.13232" cy="28.1452" r="3" fill="currentColor" />
+              <circle cx="13.167" cy="28.1452" r="3" fill="currentColor" />
+            </svg>
+          </div>
+          {item.name}
+          <input
+            class="color-picker"
+            class:highlighted={item.display === "calendar-and-menu"}
+            type="color"
+            bind:value={item.color}
+            on:input={saveSettings}
+          />
         </div>
-        {item.name}
-        <input
-          class="color-picker"
-          type="color"
-          bind:value={item.color}
-          on:input={() => saveAllSourceSettings(items)}
-        />
-      </div>
-    {/each}
+      {/each}
+    </div>
   </section>
   <section bind:this={sourceSettingsEl}>
     <div class="calendar-source-empty-state" />
@@ -190,7 +152,6 @@
 
   .calendar-source {
     transition: border-color 0.1s ease-in-out;
-    cursor: pointer;
     align-items: center;
     background-color: var(--background-secondary);
     border-radius: 8px;
@@ -198,6 +159,7 @@
     display: flex;
     font-size: 14px;
     margin: 6px 0;
+    min-width: 160px;
     padding: 8px;
     width: 100%;
   }
@@ -232,6 +194,26 @@
   }
 
   .color-picker {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: 50%;
+    margin: 4px;
     margin-left: auto;
+    padding: 0;
+  }
+
+  .color-picker::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+
+  .color-picker::-webkit-color-swatch {
+    border: none;
+    height: 24px;
+  }
+
+  .highlighted {
+    box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.15);
   }
 </style>

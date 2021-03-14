@@ -2,13 +2,16 @@ import type { Moment } from "moment";
 import { Setting, TFile } from "obsidian";
 import type {
   ICalendarSource,
-  IDayMetadata,
+  IEvaluatedMetadata,
   ISourceSettings,
 } from "obsidian-calendar-ui";
 import { getDailyNote, getWeeklyNote } from "obsidian-daily-notes-interface";
 import { get } from "svelte/store";
 
-import { dailyNotes, weeklyNotes } from "../stores";
+import { dailyNotes, settings, weeklyNotes } from "../stores";
+import { emptyDot } from "./utils";
+
+const TASK_SOURCE_ID = "tasks";
 
 interface ITasksSettings extends ISourceSettings {
   maxIncompleteTaskDots: number;
@@ -28,45 +31,43 @@ export async function getNumberOfTasks(note: TFile): Promise<[number, number]> {
   ];
 }
 
-async function getMetadata(file: TFile): Promise<IDayMetadata> {
+async function getMetadata(file: TFile): Promise<IEvaluatedMetadata> {
   const [numRemainingTasks, numCompletedTasks] = await getNumberOfTasks(file);
   const totalTasks = numRemainingTasks + numCompletedTasks;
-  const color = "#BF616A";
+
+  const sourceSettings = get(settings).sourceSettings[
+    TASK_SOURCE_ID
+  ] as ITasksSettings;
+  const maxDots = sourceSettings?.maxIncompleteTaskDots || 1;
+  const numDots = Math.min(numRemainingTasks, maxDots);
+  const dots = [...Array(numDots).keys()].map(emptyDot);
 
   return {
-    color,
-    name: "Tasks",
+    dots,
     value: numCompletedTasks,
     goal: totalTasks,
-    isShowcased: true,
-    toDots: () => {
-      if (numRemainingTasks) {
-        return [
-          {
-            color,
-            isFilled: false,
-          },
-        ];
-      }
-      return [];
-    },
   };
 }
 
 export const tasksSource: ICalendarSource = {
-  id: "tasks",
+  id: TASK_SOURCE_ID,
   name: "Tasks",
 
-  getDailyMetadata: async (date: Moment): Promise<IDayMetadata> => {
+  getDailyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
     const file = getDailyNote(date, get(dailyNotes));
     return getMetadata(file);
   },
 
-  getWeeklyMetadata: async (date: Moment): Promise<IDayMetadata> => {
+  getWeeklyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
     const file = getWeeklyNote(date, get(weeklyNotes));
     return getMetadata(file);
   },
 
+  defaultSettings: Object.freeze({
+    color: "#d08770",
+    display: "calendar-and-menu",
+    maxIncompleteTaskDots: 1,
+  }),
   registerSettings: (
     containerEl: HTMLElement,
     sourceSettings: ITasksSettings,
@@ -79,7 +80,7 @@ export const tasksSource: ICalendarSource = {
         slider
           .setLimits(1, 6, 1)
           .setDynamicTooltip()
-          .setValue(sourceSettings.maxIncompleteTaskDots || 1)
+          .setValue(sourceSettings?.maxIncompleteTaskDots || 1)
           .onChange((maxIncompleteTaskDots) => {
             saveSettings({ maxIncompleteTaskDots });
           })
