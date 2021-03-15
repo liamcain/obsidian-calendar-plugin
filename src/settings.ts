@@ -44,7 +44,7 @@ export const defaultSettings = Object.freeze({
   localeOverride: "system-default",
 });
 
-export function appHasPeriodicNotesPluginLoaded() {
+export function appHasPeriodicNotesPluginLoaded(): boolean {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const periodicNotes = (<any>window.app).plugins.getPlugin("periodic-notes");
   return periodicNotes && periodicNotes.settings?.weekly?.enabled;
