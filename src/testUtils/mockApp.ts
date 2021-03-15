@@ -65,6 +65,8 @@ const mockApp: App = {
     tryTrigger: () => null,
     fileToLinktext: () => "",
     trigger: () => null,
+    resolvedLinks: null,
+    unresolvedLinks: null,
   },
   // @ts-ignore
   internalPlugins: {
