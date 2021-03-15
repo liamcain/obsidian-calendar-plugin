@@ -38,7 +38,6 @@ function createWeeklyNotesStore() {
     reindex: () => {
       try {
         const weeklyNotes = getAllWeeklyNotes();
-        console.log("weekly", weeklyNotes);
         store.set(weeklyNotes);
         hasError = false;
       } catch (err) {
