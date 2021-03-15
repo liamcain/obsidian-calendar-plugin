@@ -3308,32 +3308,26 @@ object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-obsidian-calendar-ui@0.3.5:
-  version "0.3.5"
-  resolved "https://registry.yarnpkg.com/obsidian-calendar-ui/-/obsidian-calendar-ui-0.3.5.tgz#d4a9090d828e7f8f05189567bfc4a942fea4e288"
-  integrity sha512-+zO7cqr2qA0f7vfIL680YexztVbERQLv3axRJ+HsjdveaelJVQDNXH0sJcfQrMfOZuGZgHpN48fFEr9R2reeQg==
+obsidian-calendar-ui@0.3.6:
+  version "0.3.6"
+  resolved "https://registry.yarnpkg.com/obsidian-calendar-ui/-/obsidian-calendar-ui-0.3.6.tgz#c52932be198beb56a887dd1a0ca127c00e5751c8"
+  integrity sha512-1TdigvCdAbqkfsteGE7N//9DqxEai1xh6ZifL4aVvionv573USFGlvYhxrC9dVOkGahG3zoXDPwcmD48iUFoYw==
   dependencies:
-    obsidian-daily-notes-interface "0.7.6"
+    obsidian-daily-notes-interface "0.7.7"
     svelte "3.35.0"
     tslib "2.1.0"
 
-obsidian-daily-notes-interface@0.7.6:
-  version "0.7.6"
-  resolved "https://registry.yarnpkg.com/obsidian-daily-notes-interface/-/obsidian-daily-notes-interface-0.7.6.tgz#2161cff49ddcdcf14aafce5fc660c4efe1d73b4a"
-  integrity sha512-b9MITVljqYZlbvTbhFZ3td/Nmmg9sFaGCn7QGNRj0XPrPhOUUt6iPKJqjfPPstNtqRgc1ufUZdRXxlsJu0grWQ==
+obsidian-daily-notes-interface@0.7.7:
+  version "0.7.7"
+  resolved "https://registry.yarnpkg.com/obsidian-daily-notes-interface/-/obsidian-daily-notes-interface-0.7.7.tgz#55057284d1258fc38143fd3adc16203839e3e8a7"
+  integrity sha512-RAK4Z47qCY6JEWUieseMKc8KOpBxPBSxyRweptxJlTWNrh7iF8ROy+yj/R+c54t7ol8YtkW/CZGf7lr4dtakNQ==
   dependencies:
     obsidian obsidianmd/obsidian-api#master
     tslib "2.1.0"
 
-"obsidian@github:obsidianmd/obsidian-api#master":
+obsidian@obsidianmd/obsidian-api#master:
   version "0.11.0"
   resolved "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/81ab85ade4552c9116c1e10d009127e62019c923"
-  dependencies:
-    "@types/codemirror" "0.0.98"
-
-obsidian@obsidianmd/obsidian-api#master:
-  version "0.10.6"
-  resolved "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/a0e0c245561215ced9468859091e01d015f5cda9"
   dependencies:
     "@types/codemirror" "0.0.98"
 
