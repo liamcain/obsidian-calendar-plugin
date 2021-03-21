@@ -18,6 +18,24 @@ declare global {
   }
 }
 
+function monkeyPatchConsole(plugin: Plugin) {
+  const logFile = `${plugin.manifest.dir}/logs.txt`;
+  const logs = [];
+  const logMessages = (prefix: string) => (...messages: unkown[]) => {
+    logs.push(`\n[${prefix}]`);
+    for (const message of messages) {
+      logs.push(String(message));
+    }
+    plugin.app.vault.adapter.write(logFile, logs.join(" "));
+  };
+
+  console.debug = logMessages("debug");
+  console.error = logMessages("error");
+  console.info = logMessages("info");
+  console.log = logMessages("log");
+  console.warn = logMessages("warn");
+}
+
 export default class CalendarPlugin extends Plugin {
   public options: ISettings;
   private view: CalendarView;
@@ -29,6 +47,7 @@ export default class CalendarPlugin extends Plugin {
   }
 
   async onload(): Promise<void> {
+    monkeyPatchConsole(this);
     this.register(
       settings.subscribe((value) => {
         this.options = value;

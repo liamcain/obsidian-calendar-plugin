@@ -19,8 +19,6 @@ const mockApp: App = {
       remove: () => Promise.resolve(),
       rename: () => Promise.resolve(),
       copy: () => Promise.resolve(),
-      setCtime: () => Promise.resolve(),
-      setMtime: () => Promise.resolve(),
     },
     getName: () => "",
     getAbstractFileByPath: () => null,
