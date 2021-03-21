@@ -1,7 +1,7 @@
 import { App, Menu, Point, TFile } from "obsidian";
 
 export function showFileMenu(app: App, file: TFile, position: Point): void {
-  const fileMenu = new Menu();
+  const fileMenu = new Menu(app);
   fileMenu.addItem((item) =>
     item
       .setTitle("Delete")
