@@ -16,19 +16,22 @@ export class ConfirmationModal extends Modal {
 
     this.contentEl.createEl("h2", { text: title });
     this.contentEl.createEl("p", { text });
-    this.contentEl
-      .createEl("button", { text: "Never mind" })
-      .addEventListener("click", () => this.close());
 
-    this.contentEl
-      .createEl("button", {
-        cls: "mod-cta",
-        text: cta,
-      })
-      .addEventListener("click", async (e) => {
-        await onAccept(e);
-        this.close();
-      });
+    this.contentEl.createDiv("modal-button-container", (buttonsEl) => {
+      buttonsEl
+        .createEl("button", { text: "Never mind" })
+        .addEventListener("click", () => this.close());
+
+      buttonsEl
+        .createEl("button", {
+          cls: "mod-cta",
+          text: cta,
+        })
+        .addEventListener("click", async (e) => {
+          await onAccept(e);
+          this.close();
+        });
+    });
   }
 }
 
