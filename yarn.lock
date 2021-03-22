@@ -3319,24 +3319,24 @@ object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-obsidian-calendar-ui@0.3.8:
-  version "0.3.8"
-  resolved "https://registry.yarnpkg.com/obsidian-calendar-ui/-/obsidian-calendar-ui-0.3.8.tgz#fa5f8e90f91156f6ea4d8bbbe53dee78e51bde1f"
-  integrity sha512-ZiF7GS3vaY2vk4h1FR8yJMuop0hJyT/ClkojW/n0egS1kZPA5wyqeb596gFnMdpvi6MEc4k83nRXy0CN1pIOcA==
+obsidian-calendar-ui@0.3.10:
+  version "0.3.10"
+  resolved "https://registry.yarnpkg.com/obsidian-calendar-ui/-/obsidian-calendar-ui-0.3.10.tgz#95a2ef56c88be2ba094f04bce44186df0b40c3bd"
+  integrity sha512-533grPPG131ZB7/ns99+zYhXyP02l/5LzZ6Xi9Eh80ohCXqy6KO8Lj7RR7HNGI7dGgAAOHw9i8xFLsfT1fWZXg==
   dependencies:
-    obsidian-daily-notes-interface "0.7.8"
+    obsidian-daily-notes-interface "0.7.10"
     svelte "3.35.0"
     tslib "2.1.0"
 
-obsidian-daily-notes-interface@0.7.8:
-  version "0.7.8"
-  resolved "https://registry.yarnpkg.com/obsidian-daily-notes-interface/-/obsidian-daily-notes-interface-0.7.8.tgz#6bb301ec097cd498fdae07138c892e69930e7994"
-  integrity sha512-9zHeT3q6jLbAd8/x+Bq9Zp6KfVUIKayjRiIYJ98DGYTI29BDf/5jmZgtyyNkxS1kWraiLFSlaG120oXlfWEqWg==
+obsidian-daily-notes-interface@0.7.10:
+  version "0.7.10"
+  resolved "https://registry.yarnpkg.com/obsidian-daily-notes-interface/-/obsidian-daily-notes-interface-0.7.10.tgz#38b65845408bd2a597227f991e8e8a46833d1922"
+  integrity sha512-9FzyAmWAki0rWS4dWHbwXatcVbWcZWT/vJEoat56Ozf3WN0xY6Pe+xdy3jwjwN8QyxK9Xxb0MJ/ARN/rN4ZNZg==
   dependencies:
     obsidian obsidianmd/obsidian-api#master
     tslib "2.1.0"
 
-obsidian@obsidianmd/obsidian-api#master:
+"obsidian@github:obsidianmd/obsidian-api#master", obsidian@obsidianmd/obsidian-api#master:
   version "0.11.7"
   resolved "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/55946e5a6259a28c416d2d6e600a7964a86a01dd"
   dependencies:
