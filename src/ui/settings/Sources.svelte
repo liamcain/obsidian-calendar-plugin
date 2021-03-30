@@ -8,7 +8,7 @@
   import { settings, sources } from "../stores";
 
   export let saveAllSourceSettings;
-  export let writeOptions;
+  export let writeSettingsToDisk;
 
   const flipDurationMs = 100;
 
@@ -32,12 +32,10 @@
   }
 
   function handleConsider(event) {
-    console.log("considering", event);
     items.set(event.detail.items);
   }
 
   function handleFinalize(event) {
-    console.log("finalizing", event);
     items.set(event.detail.items);
     saveAllSourceSettings($items);
   }
@@ -49,9 +47,16 @@
       text: item.name,
     });
 
+    if (item.description) {
+      sourceSettingsEl.createEl("div", {
+        cls: "setting-item-description",
+        text: item.description,
+      });
+    }
+
     const source = $sources.find((s) => s.id === item.id);
     const saveSource = (sourceSettings) =>
-      writeOptions((existingSettings) => {
+      writeSettingsToDisk((existingSettings) => {
         const newSettings = {
           ...existingSettings,
           sourceSettings: {

@@ -4,7 +4,7 @@ import {
   getAllMonthlyNotes,
   getAllWeeklyNotes,
 } from "obsidian-daily-notes-interface";
-import { writable } from "svelte/store";
+import { get, writable } from "svelte/store";
 
 import { defaultSettings, ISettings } from "src/settings";
 
@@ -76,7 +76,16 @@ function createMonthlyNotesStore() {
     ...store,
   };
 }
-export const settings = writable<ISettings>(defaultSettings);
+
+function createSettingsStore() {
+  const store = writable<ISettings>(defaultSettings);
+  return {
+    getSourceSettings: <T>(sourceId: string): T =>
+      ((get(store).sourceSettings[sourceId] || {}) as unknown) as T,
+    ...store,
+  };
+}
+export const settings = createSettingsStore();
 export const dailyNotes = createDailyNotesStore();
 export const weeklyNotes = createWeeklyNotesStore();
 export const monthlyNotes = createMonthlyNotesStore();

@@ -12,13 +12,13 @@ import {
 } from "obsidian-daily-notes-interface";
 import { get } from "svelte/store";
 
-import { DEFAULT_WORDS_PER_DOT } from "src/constants";
+// import { DEFAULT_WORDS_PER_DOT } from "src/constants";
 
 import { dailyNotes, monthlyNotes, settings, weeklyNotes } from "../stores";
-import { clamp, getWordCount } from "../utils";
-import { filledDot } from "./utils";
+import { getWordCount } from "../utils";
+import { emptyDot, filledDots } from "./utils";
 
-const NUM_MAX_DOTS = 5;
+// const NUM_MAX_DOTS = 5;
 
 interface IWordCountSettings extends ISourceSettings {
   wordsPerDot: number;
@@ -32,31 +32,41 @@ export async function getFileWordCount(note: TFile): Promise<number> {
   return getWordCount(fileContents);
 }
 
-export async function getWordLengthAsDots(note: TFile): Promise<number> {
-  const { wordsPerDot = DEFAULT_WORDS_PER_DOT } = get(settings);
-  if (!note || wordsPerDot <= 0) {
-    return 0;
-  }
-  const fileContents = await window.app.vault.cachedRead(note);
+// export async function getWordLengthAsDots(note: TFile): Promise<number> {
+//   const { wordsPerDot = DEFAULT_WORDS_PER_DOT } = get(settings);
+//   if (!note || wordsPerDot <= 0) {
+//     return 0;
+//   }
+//   const fileContents = await window.app.vault.cachedRead(note);
 
-  const wordCount = getWordCount(fileContents);
-  const numDots = wordCount / wordsPerDot;
-  return clamp(Math.floor(numDots), 1, NUM_MAX_DOTS);
-}
+//   const wordCount = getWordCount(fileContents);
+//   const numDots = wordCount / wordsPerDot;
+//   return clamp(Math.floor(numDots), 1, NUM_MAX_DOTS);
+// }
 
 async function getMetadata(file: TFile): Promise<IEvaluatedMetadata> {
+  const wordsPerDot = settings.getSourceSettings<IWordCountSettings>(
+    "wordCount"
+  ).wordsPerDot;
   const wordCount = await getFileWordCount(file);
-  const numDots = Math.floor(wordCount / 250);
+  const numDots = Math.floor(wordCount / wordsPerDot);
+
+  const dots = filledDots(numDots);
+  if (file && !numDots) {
+    dots.push(emptyDot());
+  }
 
   return {
+    dots,
     value: wordCount,
-    dots: [...Array(numDots).keys()].map(filledDot),
   };
 }
 
 export const wordCountSource: ICalendarSource = {
   id: "wordCount",
   name: "Words",
+  description:
+    "Visualize the word count of your daily note. Customize the words per dot to help track your daily writing habits.",
 
   getDailyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
     const file = getDailyNote(date, get(dailyNotes));

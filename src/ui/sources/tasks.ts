@@ -9,7 +9,7 @@ import { getDailyNote, getWeeklyNote } from "obsidian-daily-notes-interface";
 import { get } from "svelte/store";
 
 import { dailyNotes, settings, weeklyNotes } from "../stores";
-import { emptyDot } from "./utils";
+import { emptyDots } from "./utils";
 
 const TASK_SOURCE_ID = "tasks";
 
@@ -40,10 +40,9 @@ async function getMetadata(file: TFile): Promise<IEvaluatedMetadata> {
   ] as ITasksSettings;
   const maxDots = sourceSettings?.maxIncompleteTaskDots || 1;
   const numDots = Math.min(numRemainingTasks, maxDots);
-  const dots = [...Array(numDots).keys()].map(emptyDot);
 
   return {
-    dots,
+    dots: emptyDots(numDots),
     value: numCompletedTasks,
     goal: totalTasks,
   };
@@ -52,6 +51,7 @@ async function getMetadata(file: TFile): Promise<IEvaluatedMetadata> {
 export const tasksSource: ICalendarSource = {
   id: TASK_SOURCE_ID,
   name: "Tasks",
+  description: "Track your pending tasks for any given day",
 
   getDailyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
     const file = getDailyNote(date, get(dailyNotes));

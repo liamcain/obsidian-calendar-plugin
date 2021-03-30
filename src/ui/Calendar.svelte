@@ -1,5 +1,3 @@
-<svelte:options immutable />
-
 <script lang="ts">
   import type { Moment } from "moment";
   import {
@@ -55,7 +53,7 @@
 
     return {
       ...(source.defaultSettings || {}),
-      ...$settings.sourceSettings[sourceId],
+      ...settings.getSourceSettings(sourceId),
     };
   }
 

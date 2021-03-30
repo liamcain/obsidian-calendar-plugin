@@ -44,12 +44,6 @@ export const defaultSettings = Object.freeze({
   sourceSettings: {},
 });
 
-export function appHasPeriodicNotesPluginLoaded(): boolean {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const periodicNotes = (<any>window.app).plugins.getPlugin("periodic-notes");
-  return periodicNotes && periodicNotes.settings?.weekly?.enabled;
-}
-
 export class CalendarSettingsTab extends PluginSettingTab {
   public plugin: CalendarPlugin;
 
@@ -81,7 +75,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
     //   sourceSettings,
     // }));
 
-    return this.plugin.writeOptions(() => ({
+    return this.plugin.writeSettingsToDisk(() => ({
       sourceSettings,
     }));
   }
@@ -93,7 +87,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
       target: this.containerEl,
       props: {
         saveAllSourceSettings: this.saveAllSourceSettings,
-        writeOptions: this.plugin.writeOptions,
+        writeSettingsToDisk: this.plugin.writeSettingsToDisk,
       },
     });
   }

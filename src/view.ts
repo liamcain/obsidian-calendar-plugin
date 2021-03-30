@@ -4,6 +4,7 @@ import {
   getDailyNoteSettings,
   getDateFromFile,
   getMonthlyNote,
+  getMonthlyNoteSettings,
   getWeeklyNote,
   getWeeklyNoteSettings,
 } from "obsidian-daily-notes-interface";
@@ -13,6 +14,7 @@ import { get } from "svelte/store";
 import { TRIGGER_ON_OPEN, VIEW_TYPE_CALENDAR } from "src/constants";
 import { tryToCreateDailyNote } from "src/io/dailyNotes";
 import { tryToCreateWeeklyNote } from "src/io/weeklyNotes";
+import { tryToCreateMonthlyNote } from "src/io/monthlyNotes";
 import type { ISettings } from "src/settings";
 
 import Calendar from "./ui/Calendar.svelte";
@@ -55,6 +57,7 @@ export default class CalendarView extends ItemView {
 
     this.onHoverDay = this.onHoverDay.bind(this);
     this.onHoverWeek = this.onHoverWeek.bind(this);
+    this.onHoverMonth = this.onHoverMonth.bind(this);
 
     this.onContextMenuDay = this.onContextMenuDay.bind(this);
     this.onContextMenuWeek = this.onContextMenuWeek.bind(this);
@@ -75,11 +78,6 @@ export default class CalendarView extends ItemView {
     this.settings = null;
     settings.subscribe((val) => {
       this.settings = val;
-
-      // Refresh the calendar if settings change
-      if (this.calendar) {
-        this.calendar.tick();
-      }
     });
   }
 
@@ -128,6 +126,7 @@ export default class CalendarView extends ItemView {
         onClickMonth: this.openOrCreateMonthlyNote,
         onHoverDay: this.onHoverDay,
         onHoverWeek: this.onHoverWeek,
+        onHoverMonth: this.onHoverMonth,
         onContextMenuDay: this.onContextMenuDay,
         onContextMenuWeek: this.onContextMenuWeek,
       },
@@ -163,6 +162,25 @@ export default class CalendarView extends ItemView {
     }
     const note = getWeeklyNote(date, get(weeklyNotes));
     const { format } = getWeeklyNoteSettings();
+    this.app.workspace.trigger(
+      "link-hover",
+      this,
+      targetEl,
+      date.format(format),
+      note?.path
+    );
+  }
+
+  onHoverMonth(
+    date: Moment,
+    targetEl: EventTarget,
+    isMetaPressed: boolean
+  ): void {
+    if (!isMetaPressed) {
+      return;
+    }
+    const note = getMonthlyNote(date, get(weeklyNotes));
+    const { format } = getMonthlyNoteSettings();
     this.app.workspace.trigger(
       "link-hover",
       this,
@@ -353,9 +371,14 @@ export default class CalendarView extends ItemView {
 
     if (!existingFile) {
       // File doesn't exist
-      tryToCreateWeeklyNote(startOfMonth, inNewSplit, this.settings, (file) => {
-        activeFile.setFile(file);
-      });
+      tryToCreateMonthlyNote(
+        startOfMonth,
+        inNewSplit,
+        this.settings,
+        (file) => {
+          activeFile.setFile(file);
+        }
+      );
       return;
     }
 

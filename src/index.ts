@@ -3,11 +3,7 @@ import { App, Plugin, WorkspaceLeaf } from "obsidian";
 
 import { VIEW_TYPE_CALENDAR } from "./constants";
 import { settings } from "./ui/stores";
-import {
-  appHasPeriodicNotesPluginLoaded,
-  CalendarSettingsTab,
-  ISettings,
-} from "./settings";
+import { CalendarSettingsTab, ISettings } from "./settings";
 import CalendarView from "./view";
 
 declare global {
@@ -18,26 +14,26 @@ declare global {
   }
 }
 
-function monkeyPatchConsole(plugin: Plugin) {
-  const logFile = `${plugin.manifest.dir}/logs.txt`;
-  const logs = [];
-  const logMessages = (prefix: string) => (...messages: unkown[]) => {
-    logs.push(`\n[${prefix}]`);
-    for (const message of messages) {
-      logs.push(String(message));
-    }
-    plugin.app.vault.adapter.write(logFile, logs.join(" "));
-  };
+// function monkeyPatchConsole(plugin: Plugin) {
+//   const logFile = `${plugin.manifest.dir}/logs.txt`;
+//   const logs = [];
+//   const logMessages = (prefix: string) => (...messages: unknown[]) => {
+//     logs.push(`\n[${prefix}]`);
+//     for (const message of messages) {
+//       logs.push(String(message));
+//     }
+//     plugin.app.vault.adapter.write(logFile, logs.join(" "));
+//   };
 
-  console.debug = logMessages("debug");
-  console.error = logMessages("error");
-  console.info = logMessages("info");
-  console.log = logMessages("log");
-  console.warn = logMessages("warn");
-}
+//   console.debug = logMessages("debug");
+//   console.error = logMessages("error");
+//   console.info = logMessages("info");
+//   console.log = logMessages("log");
+//   console.warn = logMessages("warn");
+// }
 
 export default class CalendarPlugin extends Plugin {
-  public options: ISettings;
+  public settings: ISettings;
   private view: CalendarView;
 
   onunload(): void {
@@ -47,12 +43,14 @@ export default class CalendarPlugin extends Plugin {
   }
 
   async onload(): Promise<void> {
-    monkeyPatchConsole(this);
-    this.writeOptions = this.writeOptions.bind(this);
+    // monkeyPatchConsole(this);
+    this.writeSettingsToDisk = this.writeSettingsToDisk.bind(this);
+    this.toggleWeekNumbers = this.toggleWeekNumbers.bind(this);
 
     this.register(
       settings.subscribe((value) => {
-        this.options = value;
+        this.settings = value;
+        this.saveData(value);
       })
     );
 
@@ -75,14 +73,9 @@ export default class CalendarPlugin extends Plugin {
     });
 
     this.addCommand({
-      id: "open-weekly-note",
-      name: "Open Weekly Note",
-      checkCallback: (checking) => {
-        if (checking) {
-          return !appHasPeriodicNotesPluginLoaded();
-        }
-        this.view.openOrCreateWeeklyNote(window.moment(), false);
-      },
+      id: "toggle-week-numbers",
+      name: "Toggle week numbers",
+      callback: this.toggleWeekNumbers,
     });
 
     this.addCommand({
@@ -91,7 +84,7 @@ export default class CalendarPlugin extends Plugin {
       callback: () => this.view.revealActiveNote(),
     });
 
-    await this.loadOptions();
+    await this.loadSettings();
     this.addSettingTab(new CalendarSettingsTab(this.app, this));
 
     // TODO use new onLayoutReady
@@ -113,23 +106,27 @@ export default class CalendarPlugin extends Plugin {
     });
   }
 
-  // TODO: rename this to loadSettings
-  async loadOptions(): Promise<void> {
-    const options = await this.loadData();
-    settings.update((old) => {
-      return {
-        ...old,
-        ...(options || {}),
-      };
-    });
-
-    await this.saveData(this.options);
+  toggleWeekNumbers(): void {
+    settings.update((existingSettings) => ({
+      ...existingSettings,
+      showWeeklyNote: !existingSettings.showWeeklyNote,
+    }));
   }
 
-  async writeOptions(
-    changeOpts: (settings: ISettings) => Partial<ISettings>
+  async loadSettings(): Promise<void> {
+    const savedSettings = await this.loadData();
+    settings.update((existingSettings) => ({
+      ...existingSettings,
+      ...(savedSettings || {}),
+    }));
+
+    await this.saveData(this.settings);
+  }
+
+  async writeSettingsToDisk(
+    settingsUpdater: (settings: ISettings) => Partial<ISettings>
   ): Promise<void> {
-    settings.update((old) => ({ ...old, ...changeOpts(old) }));
-    await this.saveData(this.options);
+    settings.update((old) => ({ ...old, ...settingsUpdater(old) }));
+    await this.saveData(this.settings);
   }
 }
