@@ -7,14 +7,6 @@ export const classList = (obj: Record<string, boolean>): string[] => {
     .map(([k, _k]) => k);
 };
 
-export function clamp(
-  num: number,
-  lowerBound: number,
-  upperBound: number
-): number {
-  return Math.min(Math.max(lowerBound, num), upperBound);
-}
-
 export function partition(
   arr: string[],
   predicate: (elem: string) => boolean
