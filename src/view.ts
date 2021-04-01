@@ -1,20 +1,9 @@
 import type { Moment } from "moment";
-import {
-  getDailyNote,
-  getDailyNoteSettings,
-  getDateFromFile,
-  getMonthlyNote,
-  getMonthlyNoteSettings,
-  getWeeklyNote,
-  getWeeklyNoteSettings,
-} from "obsidian-daily-notes-interface";
+import { IGranularity, getDateFromFile } from "obsidian-daily-notes-interface";
 import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
-import { get } from "svelte/store";
 
 import { TRIGGER_ON_OPEN, VIEW_TYPE_CALENDAR } from "src/constants";
 import { tryToCreateDailyNote } from "src/io/dailyNotes";
-import { tryToCreateWeeklyNote } from "src/io/weeklyNotes";
-import { tryToCreateMonthlyNote } from "src/io/monthlyNotes";
 import type { ISettings } from "src/settings";
 
 import Calendar from "./ui/Calendar.svelte";
@@ -24,7 +13,6 @@ import {
   dailyNotes,
   weeklyNotes,
   settings,
-  monthlyNotes,
   sources,
 } from "./ui/stores";
 import {
@@ -44,10 +32,6 @@ export default class CalendarView extends ItemView {
   constructor(leaf: WorkspaceLeaf) {
     super(leaf);
 
-    this.openOrCreateDailyNote = this.openOrCreateDailyNote.bind(this);
-    this.openOrCreateWeeklyNote = this.openOrCreateWeeklyNote.bind(this);
-    this.openOrCreateMonthlyNote = this.openOrCreateMonthlyNote.bind(this);
-
     this.onNoteSettingsUpdate = this.onNoteSettingsUpdate.bind(this);
     this.onFileCreated = this.onFileCreated.bind(this);
     this.onFileDeleted = this.onFileDeleted.bind(this);
@@ -55,12 +39,9 @@ export default class CalendarView extends ItemView {
     this.onFileRenamed = this.onFileRenamed.bind(this);
     this.onFileOpen = this.onFileOpen.bind(this);
 
-    this.onHoverDay = this.onHoverDay.bind(this);
-    this.onHoverWeek = this.onHoverWeek.bind(this);
-    this.onHoverMonth = this.onHoverMonth.bind(this);
-
-    this.onContextMenuDay = this.onContextMenuDay.bind(this);
-    this.onContextMenuWeek = this.onContextMenuWeek.bind(this);
+    this.openOrCreatePeriodicNote = this.openOrCreatePeriodicNote.bind(this);
+    this.onHover = this.onHover.bind(this);
+    this.onContextMenu = this.onContextMenu.bind(this);
 
     this.registerEvent(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -118,100 +99,87 @@ export default class CalendarView extends ItemView {
     baseSources.forEach(sources.registerSource);
 
     this.calendar = new Calendar({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      target: (this as any).contentEl,
+      target: this.contentEl,
       props: {
-        onClickDay: this.openOrCreateDailyNote,
-        onClickWeek: this.openOrCreateWeeklyNote,
-        onClickMonth: this.openOrCreateMonthlyNote,
-        onHoverDay: this.onHoverDay,
-        onHoverWeek: this.onHoverWeek,
-        onHoverMonth: this.onHoverMonth,
-        onContextMenuDay: this.onContextMenuDay,
-        onContextMenuWeek: this.onContextMenuWeek,
+        app: this.app,
+        eventHandlers: {
+          onClickDay: this.openOrCreatePeriodicNote,
+          onHoverDay: this.onHover,
+          onContextMenuDay: this.onContextMenu,
+        },
       },
     });
   }
 
-  onHoverDay(
+  private onHover(
+    _periodicity: IGranularity,
     date: Moment,
+    file: TFile,
     targetEl: EventTarget,
     isMetaPressed: boolean
   ): void {
     if (!isMetaPressed) {
       return;
     }
-    const { format } = getDailyNoteSettings();
-    const note = getDailyNote(date, get(dailyNotes));
+    // const { format } = getDailyNoteSettings();
+    // const { format } = getWeeklyNoteSettings();
+    const format = ""; // TODO
     this.app.workspace.trigger(
       "link-hover",
       this,
       targetEl,
       date.format(format),
-      note?.path
+      file?.path
     );
   }
 
-  onHoverWeek(
-    date: Moment,
-    targetEl: EventTarget,
-    isMetaPressed: boolean
+  private onContextMenu(
+    _periodicity: IGranularity,
+    _date: Moment,
+    file: TFile,
+    event: MouseEvent
   ): void {
-    if (!isMetaPressed) {
-      return;
-    }
-    const note = getWeeklyNote(date, get(weeklyNotes));
-    const { format } = getWeeklyNoteSettings();
-    this.app.workspace.trigger(
-      "link-hover",
-      this,
-      targetEl,
-      date.format(format),
-      note?.path
-    );
-  }
-
-  onHoverMonth(
-    date: Moment,
-    targetEl: EventTarget,
-    isMetaPressed: boolean
-  ): void {
-    if (!isMetaPressed) {
-      return;
-    }
-    const note = getMonthlyNote(date, get(weeklyNotes));
-    const { format } = getMonthlyNoteSettings();
-    this.app.workspace.trigger(
-      "link-hover",
-      this,
-      targetEl,
-      date.format(format),
-      note?.path
-    );
-  }
-
-  private onContextMenuDay(date: Moment, event: MouseEvent): void {
-    const note = getDailyNote(date, get(dailyNotes));
-    if (!note) {
+    if (!file) {
       // If no file exists for a given day, show nothing.
       return;
     }
-    showFileMenu(this.app, note, {
+    showFileMenu(this.app, file, {
       x: event.pageX,
       y: event.pageY,
     });
   }
 
-  private onContextMenuWeek(date: Moment, event: MouseEvent): void {
-    const note = getWeeklyNote(date, get(weeklyNotes));
-    if (!note) {
-      // If no file exists for a given day, show nothing.
+  async openOrCreatePeriodicNote(
+    date: Moment,
+    existingFile: TFile,
+    inNewSplit: boolean
+  ): Promise<void> {
+    const { workspace } = this.app;
+    // const existingFile = getDailyNote(date, get(dailyNotes));
+    // const startOfWeek = date.clone().startOf("week");
+    // const existingFile = getWeeklyNote(date, get(weeklyNotes));
+    // const startOfMonth = date.clone().startOf("month");
+    // const existingFile = getMonthlyNote(date, get(monthlyNotes));
+
+    if (!existingFile) {
+      // File doesn't exist
+      tryToCreateDailyNote(
+        date,
+        inNewSplit,
+        this.settings,
+        (dailyNote: TFile) => {
+          activeFile.setFile(dailyNote);
+        }
+      );
       return;
     }
-    showFileMenu(this.app, note, {
-      x: event.pageX,
-      y: event.pageY,
-    });
+
+    const leaf = inNewSplit
+      ? workspace.splitActiveLeaf()
+      : workspace.getUnpinnedLeaf();
+    await leaf.openFile(existingFile);
+
+    activeFile.setFile(existingFile);
   }
 
   private onNoteSettingsUpdate(): void {
@@ -278,10 +246,6 @@ export default class CalendarView extends ItemView {
       file = view.file;
     }
     activeFile.setFile(file);
-
-    if (this.calendar) {
-      this.calendar.tick();
-    }
   }
 
   public revealActiveNote(): void {
@@ -304,89 +268,5 @@ export default class CalendarView extends ItemView {
         return;
       }
     }
-  }
-
-  async openOrCreateDailyNote(
-    date: Moment,
-    inNewSplit: boolean
-  ): Promise<void> {
-    const { workspace } = this.app;
-    const existingFile = getDailyNote(date, get(dailyNotes));
-    if (!existingFile) {
-      // File doesn't exist
-      tryToCreateDailyNote(
-        date,
-        inNewSplit,
-        this.settings,
-        (dailyNote: TFile) => {
-          activeFile.setFile(dailyNote);
-        }
-      );
-      return;
-    }
-
-    const leaf = inNewSplit
-      ? workspace.splitActiveLeaf()
-      : workspace.getUnpinnedLeaf();
-    await leaf.openFile(existingFile);
-
-    activeFile.setFile(existingFile);
-  }
-
-  async openOrCreateWeeklyNote(
-    date: Moment,
-    inNewSplit: boolean
-  ): Promise<void> {
-    const { workspace } = this.app;
-
-    const startOfWeek = date.clone().startOf("week");
-
-    const existingFile = getWeeklyNote(date, get(weeklyNotes));
-
-    if (!existingFile) {
-      // File doesn't exist
-      tryToCreateWeeklyNote(startOfWeek, inNewSplit, this.settings, (file) => {
-        activeFile.setFile(file);
-      });
-      return;
-    }
-
-    const leaf = inNewSplit
-      ? workspace.splitActiveLeaf()
-      : workspace.getUnpinnedLeaf();
-    await leaf.openFile(existingFile);
-
-    activeFile.setFile(existingFile);
-  }
-
-  async openOrCreateMonthlyNote(
-    date: Moment,
-    inNewSplit: boolean
-  ): Promise<void> {
-    const { workspace } = this.app;
-
-    const startOfMonth = date.clone().startOf("month");
-
-    const existingFile = getMonthlyNote(date, get(monthlyNotes));
-
-    if (!existingFile) {
-      // File doesn't exist
-      tryToCreateMonthlyNote(
-        startOfMonth,
-        inNewSplit,
-        this.settings,
-        (file) => {
-          activeFile.setFile(file);
-        }
-      );
-      return;
-    }
-
-    const leaf = inNewSplit
-      ? workspace.splitActiveLeaf()
-      : workspace.getUnpinnedLeaf();
-    await leaf.openFile(existingFile);
-
-    activeFile.setFile(existingFile);
   }
 }

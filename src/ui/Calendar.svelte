@@ -19,22 +19,10 @@
   } from "./stores";
 
   let today: Moment;
-
   $: today = getToday($settings);
 
   export let displayedMonth: Moment = today;
-
-  export let onHoverDay: (date: Moment, targetEl: EventTarget) => boolean;
-  export let onHoverWeek: (date: Moment, targetEl: EventTarget) => boolean;
-  export let onHoverMonth: (date: Moment, targetEl: EventTarget) => boolean;
-
-  export let onClickDay: (date: Moment, isMetaPressed: boolean) => boolean;
-  export let onClickWeek: (date: Moment, isMetaPressed: boolean) => boolean;
-  export let onClickMonth: (date: Moment, isMetaPressed: boolean) => boolean;
-
-  export let onContextMenuDay: (date: Moment, event: MouseEvent) => boolean;
-  export let onContextMenuWeek: (date: Moment, event: MouseEvent) => boolean;
-  export let onContextMenuMonth: (date: Moment, event: MouseEvent) => boolean;
+  export let eventHandlers: CallableFunction[];
 
   export function tick() {
     today = window.moment();
@@ -61,6 +49,7 @@
   let heartbeat = setInterval(() => {
     tick();
 
+    console.log("displayedMonth", displayedMonth);
     const isViewingCurrentMonth = displayedMonth.isSame(today, "day");
     if (isViewingCurrentMonth) {
       // if it's midnight on the last day of the month, this will
@@ -78,15 +67,7 @@
   sources={$sources}
   {getSourceSettings}
   {today}
-  {onHoverDay}
-  {onHoverWeek}
-  {onHoverMonth}
-  {onContextMenuDay}
-  {onContextMenuWeek}
-  {onContextMenuMonth}
-  {onClickDay}
-  {onClickWeek}
-  {onClickMonth}
+  {eventHandlers}
   bind:displayedMonth
   localeData={today.localeData()}
   selectedId={$activeFile}

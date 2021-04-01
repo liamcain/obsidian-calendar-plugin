@@ -44,6 +44,7 @@ export default class CalendarPlugin extends Plugin {
 
   async onload(): Promise<void> {
     // monkeyPatchConsole(this);
+    this.initLeaf = this.initLeaf.bind(this);
     this.writeSettingsToDisk = this.writeSettingsToDisk.bind(this);
     this.toggleWeekNumbers = this.toggleWeekNumbers.bind(this);
 
@@ -87,14 +88,7 @@ export default class CalendarPlugin extends Plugin {
     await this.loadSettings();
     this.addSettingTab(new CalendarSettingsTab(this.app, this));
 
-    // TODO use new onLayoutReady
-    if (this.app.workspace.layoutReady) {
-      this.initLeaf();
-    } else {
-      this.registerEvent(
-        this.app.workspace.on("layout-ready", this.initLeaf.bind(this))
-      );
-    }
+    this.app.workspace.onLayoutReady(this.initLeaf);
   }
 
   initLeaf(): void {
