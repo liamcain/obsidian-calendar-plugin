@@ -20,6 +20,7 @@ const mockApp: App = {
       rename: () => Promise.resolve(),
       copy: () => Promise.resolve(),
     },
+    configDir: ".obsidian",
     getName: () => "",
     getAbstractFileByPath: () => null,
     getRoot: () => ({
