@@ -3,8 +3,9 @@ import { App, Plugin, WorkspaceLeaf } from "obsidian";
 
 import { VIEW_TYPE_CALENDAR } from "./constants";
 import { settings } from "./ui/stores";
-import { CalendarSettingsTab, ISettings } from "./settings";
+import type { ISettings } from "./settings";
 import CalendarView from "./view";
+import CalendarSettingsTab from "./ui/settings-tab";
 
 declare global {
   interface Window {
