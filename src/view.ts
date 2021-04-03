@@ -1,23 +1,20 @@
 import type { Moment } from "moment";
-import { IGranularity, getDateFromFile } from "obsidian-daily-notes-interface";
+import {
+  IGranularity,
+  getDateFromFile,
+  getPeriodicNoteSettings,
+} from "obsidian-daily-notes-interface";
 import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
 
 import { TRIGGER_ON_OPEN, VIEW_TYPE_CALENDAR } from "src/constants";
-import { tryToCreateDailyNote } from "src/io/dailyNotes";
+import { tryToCreatePeriodicNote } from "src/io/dailyNotes";
 import type { ISettings } from "src/settings";
 
 import Calendar from "./ui/Calendar.svelte";
 import { showFileMenu } from "./ui/fileMenu";
-import {
-  activeFile,
-  dailyNotes,
-  weeklyNotes,
-  settings,
-  sources,
-} from "./ui/stores";
+import { activeFile, settings, sources } from "./ui/stores";
 import {
   // customTagsSource,
-  // streakSource,
   wordCountSource,
   tasksSource,
   linksSource,
@@ -33,12 +30,7 @@ export default class CalendarView extends ItemView {
     super(leaf);
 
     this.onNoteSettingsUpdate = this.onNoteSettingsUpdate.bind(this);
-    this.onFileCreated = this.onFileCreated.bind(this);
-    this.onFileDeleted = this.onFileDeleted.bind(this);
-    this.onFileModified = this.onFileModified.bind(this);
-    this.onFileRenamed = this.onFileRenamed.bind(this);
     this.onFileOpen = this.onFileOpen.bind(this);
-
     this.openOrCreatePeriodicNote = this.openOrCreatePeriodicNote.bind(this);
     this.onHover = this.onHover.bind(this);
     this.onContextMenu = this.onContextMenu.bind(this);
@@ -50,10 +42,6 @@ export default class CalendarView extends ItemView {
         this.onNoteSettingsUpdate
       )
     );
-    this.registerEvent(this.app.vault.on("create", this.onFileCreated));
-    this.registerEvent(this.app.vault.on("delete", this.onFileDeleted));
-    this.registerEvent(this.app.vault.on("modify", this.onFileModified));
-    this.registerEvent(this.app.vault.on("rename", this.onFileRenamed));
     this.registerEvent(this.app.workspace.on("file-open", this.onFileOpen));
 
     this.settings = null;
@@ -86,7 +74,6 @@ export default class CalendarView extends ItemView {
     // to feed in additional sources.
     const baseSources = [
       // customTagsSource,
-      // streakSource,
       wordCountSource,
       tasksSource,
       linksSource,
@@ -103,16 +90,16 @@ export default class CalendarView extends ItemView {
       props: {
         app: this.app,
         eventHandlers: {
-          onClickDay: this.openOrCreatePeriodicNote,
-          onHoverDay: this.onHover,
-          onContextMenuDay: this.onContextMenu,
+          onClick: this.openOrCreatePeriodicNote,
+          onHover: this.onHover,
+          onContextMenu: this.onContextMenu,
         },
       },
     });
   }
 
   private onHover(
-    _periodicity: IGranularity,
+    granularity: IGranularity,
     date: Moment,
     file: TFile,
     targetEl: EventTarget,
@@ -121,9 +108,7 @@ export default class CalendarView extends ItemView {
     if (!isMetaPressed) {
       return;
     }
-    // const { format } = getDailyNoteSettings();
-    // const { format } = getWeeklyNoteSettings();
-    const format = ""; // TODO
+    const { format } = getPeriodicNoteSettings(granularity);
     this.app.workspace.trigger(
       "link-hover",
       this,
@@ -134,7 +119,7 @@ export default class CalendarView extends ItemView {
   }
 
   private onContextMenu(
-    _periodicity: IGranularity,
+    _granularity: IGranularity,
     _date: Moment,
     file: TFile,
     event: MouseEvent
@@ -150,20 +135,17 @@ export default class CalendarView extends ItemView {
   }
 
   async openOrCreatePeriodicNote(
+    granularity: IGranularity,
     date: Moment,
     existingFile: TFile,
     inNewSplit: boolean
   ): Promise<void> {
     const { workspace } = this.app;
-    // const existingFile = getDailyNote(date, get(dailyNotes));
-    // const startOfWeek = date.clone().startOf("week");
-    // const existingFile = getWeeklyNote(date, get(weeklyNotes));
-    // const startOfMonth = date.clone().startOf("month");
-    // const existingFile = getMonthlyNote(date, get(monthlyNotes));
 
     if (!existingFile) {
       // File doesn't exist
-      tryToCreateDailyNote(
+      tryToCreatePeriodicNote(
+        granularity,
         date,
         inNewSplit,
         this.settings,
@@ -183,53 +165,7 @@ export default class CalendarView extends ItemView {
   }
 
   private onNoteSettingsUpdate(): void {
-    dailyNotes.reindex();
-    weeklyNotes.reindex();
     this.updateActiveFile();
-  }
-
-  private async onFileDeleted(file: TFile): Promise<void> {
-    if (getDateFromFile(file, "day")) {
-      dailyNotes.reindex();
-      this.updateActiveFile();
-    }
-    if (getDateFromFile(file, "week")) {
-      weeklyNotes.reindex();
-      this.updateActiveFile();
-    }
-  }
-
-  private async onFileModified(file: TFile): Promise<void> {
-    const date = getDateFromFile(file, "day") || getDateFromFile(file, "week");
-    if (date && this.calendar) {
-      this.calendar.tick();
-    }
-  }
-
-  private onFileCreated(file: TFile): void {
-    if (this.app.workspace.layoutReady && this.calendar) {
-      if (getDateFromFile(file, "day")) {
-        dailyNotes.reindex();
-        this.calendar.tick();
-      }
-      if (getDateFromFile(file, "week")) {
-        weeklyNotes.reindex();
-        this.calendar.tick();
-      }
-    }
-  }
-
-  private onFileRenamed(file: TFile): void {
-    if (this.app.workspace.layoutReady && this.calendar) {
-      if (getDateFromFile(file, "day")) {
-        dailyNotes.reindex();
-        this.calendar.tick();
-      }
-      if (getDateFromFile(file, "week")) {
-        weeklyNotes.reindex();
-        this.calendar.tick();
-      }
-    }
   }
 
   public onFileOpen(_file: TFile): void {
@@ -249,23 +185,14 @@ export default class CalendarView extends ItemView {
   }
 
   public revealActiveNote(): void {
-    const { moment } = window;
     const { activeLeaf } = this.app.workspace;
-
     if (activeLeaf.view instanceof FileView) {
-      // Check to see if the active note is a daily-note
-      let date = getDateFromFile(activeLeaf.view.file, "day");
-      if (date) {
-        this.calendar.$set({ displayedMonth: date });
-        return;
-      }
-
-      // Check to see if the active note is a weekly-note
-      const { format } = getWeeklyNoteSettings();
-      date = moment(activeLeaf.view.file.basename, format, true);
-      if (date.isValid()) {
-        this.calendar.$set({ displayedMonth: date });
-        return;
+      for (const granularity of ["day", "week", "month"] as IGranularity[]) {
+        const date = getDateFromFile(activeLeaf.view.file, granularity);
+        if (date) {
+          this.calendar.$set({ displayedMonth: date });
+          return;
+        }
       }
     }
   }

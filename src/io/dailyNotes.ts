@@ -1,8 +1,9 @@
 import type { Moment } from "moment";
 import type { TFile } from "obsidian";
 import {
-  createDailyNote,
-  getDailyNoteSettings,
+  createPeriodicNote,
+  getPeriodicNoteSettings,
+  IGranularity,
 } from "obsidian-daily-notes-interface";
 
 import type { ISettings } from "src/settings";
@@ -11,24 +12,25 @@ import { createConfirmationDialog } from "src/ui/modal";
 /**
  * Create a Daily Note for a given date.
  */
-export async function tryToCreateDailyNote(
+export async function tryToCreatePeriodicNote(
+  granularity: IGranularity,
   date: Moment,
   inNewSplit: boolean,
   settings: ISettings,
   cb?: (newFile: TFile) => void
 ): Promise<void> {
   const { workspace } = window.app;
-  const { format } = getDailyNoteSettings();
+  const { format } = getPeriodicNoteSettings(granularity);
   const filename = date.format(format);
 
   const createFile = async () => {
-    const dailyNote = await createDailyNote(date);
+    const periodicNote = await createPeriodicNote(granularity, date);
     const leaf = inNewSplit
       ? workspace.splitActiveLeaf()
       : workspace.getUnpinnedLeaf();
 
-    await leaf.openFile(dailyNote);
-    cb?.(dailyNote);
+    await leaf.openFile(periodicNote);
+    cb?.(periodicNote);
   };
 
   if (settings.shouldConfirmBeforeCreate) {

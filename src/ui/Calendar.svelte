@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Moment } from "moment";
+  import type { App } from "obsidian";
   import {
     Calendar as CalendarBase,
     configureGlobalMomentLocale,
@@ -9,18 +10,12 @@
 
   import type { ISettings } from "src/settings";
 
-  import {
-    activeFile,
-    dailyNotes,
-    monthlyNotes,
-    settings,
-    sources,
-    weeklyNotes,
-  } from "./stores";
+  import { activeFile, settings, sources } from "./stores";
 
   let today: Moment;
   $: today = getToday($settings);
 
+  export let app: App;
   export let displayedMonth: Moment = today;
   export let eventHandlers: CallableFunction[];
 
@@ -30,9 +25,6 @@
 
   function getToday(settings: ISettings) {
     configureGlobalMomentLocale(settings.localeOverride, settings.weekStart);
-    dailyNotes.reindex();
-    weeklyNotes.reindex();
-    monthlyNotes.reindex();
     return window.moment();
   }
 
@@ -49,7 +41,6 @@
   let heartbeat = setInterval(() => {
     tick();
 
-    console.log("displayedMonth", displayedMonth);
     const isViewingCurrentMonth = displayedMonth.isSame(today, "day");
     if (isViewingCurrentMonth) {
       // if it's midnight on the last day of the month, this will
@@ -64,6 +55,7 @@
 </script>
 
 <CalendarBase
+  {app}
   sources={$sources}
   {getSourceSettings}
   {today}

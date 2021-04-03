@@ -56,10 +56,11 @@ export class CalendarSettingsTab extends PluginSettingTab {
     this.saveAllSourceSettings = this.saveAllSourceSettings.bind(this);
   }
 
-  close(): void {
-    super.close();
-    this.view?.$destroy();
-  }
+  // call destroy from the plugin
+  // close(): void {
+  //   super.close();
+  //   this.view?.$destroy();
+  // }
 
   async saveAllSourceSettings(sources: IDayMetadata[]): Promise<void> {
     const sourceSettings = sources.reduce((acc, source, i) => {

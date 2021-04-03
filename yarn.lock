@@ -635,17 +635,17 @@
   dependencies:
     "@babel/types" "^7.3.0"
 
-"@types/codemirror@0.0.98":
-  version "0.0.98"
-  resolved "https://registry.yarnpkg.com/@types/codemirror/-/codemirror-0.0.98.tgz#b35c7a4ab1fc1684b08a4e3eb65240020556ebfb"
-  integrity sha512-cbty5LPayy2vNSeuUdjNA9tggG+go5vAxmnLDRWpiZI5a+RDBi9dlozy4/jW/7P/gletbBWbQREEa7A81YxstA==
+"@types/codemirror@0.0.108":
+  version "0.0.108"
+  resolved "https://registry.yarnpkg.com/@types/codemirror/-/codemirror-0.0.108.tgz#e640422b666bf49251b384c390cdeb2362585bde"
+  integrity sha512-3FGFcus0P7C2UOGCNUVENqObEb4SFk+S8Dnxq7K6aIsLVs/vDtlangl3PEO0ykaKXyK56swVF6Nho7VsA44uhw==
   dependencies:
     "@types/tern" "*"
 
 "@types/estree@*":
-  version "0.0.46"
-  resolved "https://registry.yarnpkg.com/@types/estree/-/estree-0.0.46.tgz#0fb6bfbbeabd7a30880504993369c4bf1deab1fe"
-  integrity sha512-laIjwTQaD+5DukBZaygQ79K1Z0jb1bPEMRrkXSLjtCcZm+abyp5YbrqpSLzD42FwWW6gK/aS4NYpJ804nG2brg==
+  version "0.0.47"
+  resolved "https://registry.yarnpkg.com/@types/estree/-/estree-0.0.47.tgz#d7a51db20f0650efec24cd04994f523d93172ed4"
+  integrity sha512-c5ciR06jK8u9BstrmJyO97m+klJrrhCf9u3rLu3DEAJBirxRqSCvDQoYKmxuYwQI5SZChAWu+tq9oVlGRuzPAg==
 
 "@types/estree@0.0.39":
   version "0.0.39"
@@ -3287,32 +3287,24 @@ obsidian-calendar-ui@../obsidian-calendar-ui:
   dependencies:
     "@popperjs/core" "2.8.6"
     "@popperjs/svelte" "0.1.1"
-    obsidian-daily-notes-interface "0.8.0"
+    obsidian-daily-notes-interface "../obsidian-daily-notes-interface"
     svelte "3.35.0"
     svelte-portal "2.1.1"
     tslib "2.1.0"
 
-obsidian-daily-notes-interface@0.8.0:
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/obsidian-daily-notes-interface/-/obsidian-daily-notes-interface-0.8.0.tgz#4c764318010959edd63c42ac18b81d6c6aabbbe8"
-  integrity sha512-CQ//yGygCFOG+ggLckVrwQR1roSPRxokDDkwA3SJApRV6jLj/ODp5Nu3aU3wMgasTxWjag4Qe78R02ldFLvFKw==
-  dependencies:
-    obsidian obsidianmd/obsidian-api#master
-    tslib "2.1.0"
-
-obsidian-daily-notes-interface@0.8.4:
-  version "0.8.4"
-  resolved "https://registry.yarnpkg.com/obsidian-daily-notes-interface/-/obsidian-daily-notes-interface-0.8.4.tgz#530cec611878c2d2ae94ba868490df5bf17c8ccf"
-  integrity sha512-REKQtAuIOKDbvNH/th1C1gWmJWCP5tRn9T/mfZGZt4Zncgko7McXK0aSKFtEInipvgbZJ2nScivvyLdiWluSMw==
+obsidian-daily-notes-interface@../obsidian-daily-notes-interface, obsidian-daily-notes-interface@0.9.0:
+  version "0.9.0"
   dependencies:
     obsidian obsidianmd/obsidian-api#master
     tslib "2.1.0"
 
 obsidian@obsidianmd/obsidian-api#master:
-  version "0.11.7"
-  resolved "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/55946e5a6259a28c416d2d6e600a7964a86a01dd"
+  version "0.11.11"
+  resolved "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/dbfa19ad7aa6557f0ecff962065c3f540bc77e27"
   dependencies:
-    "@types/codemirror" "0.0.98"
+    "@types/codemirror" "0.0.108"
+    moment "2.29.1"
+    yaml "2.0.0-4"
 
 once@^1.3.0, once@^1.3.1, once@^1.4.0:
   version "1.4.0"
@@ -4554,6 +4546,11 @@ yallist@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/yallist/-/yallist-4.0.0.tgz#9bb92790d9c0effec63be73519e11a35019a3a72"
   integrity sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==
+
+yaml@2.0.0-4:
+  version "2.0.0-4"
+  resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.0.0-4.tgz#0b8089fecd1843d1a8eb8d0aff1470c471653e15"
+  integrity sha512-MoQoNhTFI400tkaeod+X0Vety1KD2L9dUa6pa1CVcyfcATjC/iDxoMLvqZ6U3D8c5KzxBrU2HnJH+PfaXOqI7w==
 
 yaml@^1.7.2:
   version "1.10.0"

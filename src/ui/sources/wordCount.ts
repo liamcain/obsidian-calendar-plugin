@@ -5,16 +5,8 @@ import type {
   ICalendarSource,
   IEvaluatedMetadata,
 } from "obsidian-calendar-ui";
-import {
-  getDailyNote,
-  getMonthlyNote,
-  getWeeklyNote,
-} from "obsidian-daily-notes-interface";
-import { get } from "svelte/store";
 
-// import { DEFAULT_WORDS_PER_DOT } from "src/constants";
-
-import { dailyNotes, monthlyNotes, settings, weeklyNotes } from "../stores";
+import { settings } from "../stores";
 import { getWordCount } from "../utils";
 import { emptyDot, filledDots } from "./utils";
 
@@ -30,45 +22,31 @@ export async function getFileWordCount(note: TFile): Promise<number> {
   return getWordCount(fileContents);
 }
 
-async function getMetadata(file: TFile): Promise<IEvaluatedMetadata> {
-  const wordsPerDot = settings.getSourceSettings<IWordCountSettings>(
-    "wordCount"
-  ).wordsPerDot;
-  const wordCount = await getFileWordCount(file);
-  const numDots = Math.floor(wordCount / wordsPerDot);
-
-  const dots = filledDots(numDots);
-  if (file && !numDots) {
-    dots.push(emptyDot());
-  }
-
-  return {
-    dots,
-    value: wordCount,
-  };
-}
-
 export const wordCountSource: ICalendarSource = {
   id: "wordCount",
   name: "Words",
   description:
     "Visualize the word count of your daily note. Customize the words per dot to help track your daily writing habits.",
+  getMetadata: async (
+    _date: Moment,
+    file: TFile
+  ): Promise<IEvaluatedMetadata> => {
+    const wordsPerDot = settings.getSourceSettings<IWordCountSettings>(
+      "wordCount"
+    ).wordsPerDot;
+    const wordCount = await getFileWordCount(file);
+    const numDots = Math.floor(wordCount / wordsPerDot);
 
-  getDailyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
-    const file = getDailyNote(date, get(dailyNotes));
-    return getMetadata(file);
+    const dots = filledDots(numDots);
+    if (file && !numDots) {
+      dots.push(emptyDot());
+    }
+
+    return {
+      dots,
+      value: wordCount,
+    };
   },
-
-  getWeeklyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
-    const file = getWeeklyNote(date, get(weeklyNotes));
-    return getMetadata(file);
-  },
-
-  getMonthlyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
-    const file = getMonthlyNote(date, get(monthlyNotes));
-    return getMetadata(file);
-  },
-
   defaultSettings: Object.freeze({
     color: "#ebcb8b",
     display: "calendar-and-menu",

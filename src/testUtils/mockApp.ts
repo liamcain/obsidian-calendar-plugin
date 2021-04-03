@@ -3,6 +3,7 @@ import type { App } from "obsidian";
 /* eslint-disable */
 const mockApp: App = {
   vault: {
+    configDir: "",
     adapter: {
       exists: () => Promise.resolve(false),
       getName: () => "",

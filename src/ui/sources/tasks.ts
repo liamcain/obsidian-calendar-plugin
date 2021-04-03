@@ -5,10 +5,9 @@ import type {
   IEvaluatedMetadata,
   ISourceSettings,
 } from "obsidian-calendar-ui";
-import { getDailyNote, getWeeklyNote } from "obsidian-daily-notes-interface";
 import { get } from "svelte/store";
 
-import { dailyNotes, settings, weeklyNotes } from "../stores";
+import { settings } from "../stores";
 import { emptyDots } from "./utils";
 
 const TASK_SOURCE_ID = "tasks";
@@ -31,36 +30,29 @@ export async function getNumberOfTasks(note: TFile): Promise<[number, number]> {
   ];
 }
 
-async function getMetadata(file: TFile): Promise<IEvaluatedMetadata> {
-  const [numRemainingTasks, numCompletedTasks] = await getNumberOfTasks(file);
-  const totalTasks = numRemainingTasks + numCompletedTasks;
-
-  const sourceSettings = get(settings).sourceSettings[
-    TASK_SOURCE_ID
-  ] as ITasksSettings;
-  const maxDots = sourceSettings?.maxIncompleteTaskDots || 1;
-  const numDots = Math.min(numRemainingTasks, maxDots);
-
-  return {
-    dots: emptyDots(numDots),
-    value: numCompletedTasks,
-    goal: totalTasks,
-  };
-}
-
 export const tasksSource: ICalendarSource = {
   id: TASK_SOURCE_ID,
   name: "Tasks",
   description: "Track your pending tasks for any given day",
 
-  getDailyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
-    const file = getDailyNote(date, get(dailyNotes));
-    return getMetadata(file);
-  },
+  getMetadata: async (
+    _date: Moment,
+    file: TFile
+  ): Promise<IEvaluatedMetadata> => {
+    const [numRemainingTasks, numCompletedTasks] = await getNumberOfTasks(file);
+    const totalTasks = numRemainingTasks + numCompletedTasks;
 
-  getWeeklyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
-    const file = getWeeklyNote(date, get(weeklyNotes));
-    return getMetadata(file);
+    const sourceSettings = get(settings).sourceSettings[
+      TASK_SOURCE_ID
+    ] as ITasksSettings;
+    const maxDots = sourceSettings?.maxIncompleteTaskDots || 1;
+    const numDots = Math.min(numRemainingTasks, maxDots);
+
+    return {
+      dots: emptyDots(numDots),
+      value: numCompletedTasks,
+      goal: totalTasks,
+    };
   },
 
   defaultSettings: Object.freeze({

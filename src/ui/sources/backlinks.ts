@@ -1,14 +1,6 @@
 import type { Moment } from "moment";
 import type { TFile } from "obsidian";
 import type { ICalendarSource, IEvaluatedMetadata } from "obsidian-calendar-ui";
-import {
-  getDailyNote,
-  getMonthlyNote,
-  getWeeklyNote,
-} from "obsidian-daily-notes-interface";
-import { get } from "svelte/store";
-
-import { dailyNotes, monthlyNotes, weeklyNotes } from "../stores";
 
 export function getNumBacklinks(note: TFile): number {
   if (!note) {
@@ -21,32 +13,20 @@ export function getNumBacklinks(note: TFile): number {
   );
 }
 
-async function getMetadata(file: TFile): Promise<IEvaluatedMetadata> {
-  const numBacklinks = getNumBacklinks(file);
-
-  return {
-    dots: [],
-    value: numBacklinks,
-  };
-}
-
 export const backlinksSource: ICalendarSource = {
   id: "backlinks",
   name: "Backlinks",
 
-  getDailyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
-    const file = getDailyNote(date, get(dailyNotes));
-    return getMetadata(file);
-  },
+  getMetadata: async (
+    _date: Moment,
+    file: TFile
+  ): Promise<IEvaluatedMetadata> => {
+    const numBacklinks = getNumBacklinks(file);
 
-  getWeeklyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
-    const file = getWeeklyNote(date, get(weeklyNotes));
-    return getMetadata(file);
-  },
-
-  getMonthlyMetadata: async (date: Moment): Promise<IEvaluatedMetadata> => {
-    const file = getMonthlyNote(date, get(monthlyNotes));
-    return getMetadata(file);
+    return {
+      dots: [],
+      value: numBacklinks,
+    };
   },
 
   defaultSettings: Object.freeze({
