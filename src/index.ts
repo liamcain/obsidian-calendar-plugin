@@ -15,24 +15,6 @@ declare global {
   }
 }
 
-// function monkeyPatchConsole(plugin: Plugin) {
-//   const logFile = `${plugin.manifest.dir}/logs.txt`;
-//   const logs = [];
-//   const logMessages = (prefix: string) => (...messages: unknown[]) => {
-//     logs.push(`\n[${prefix}]`);
-//     for (const message of messages) {
-//       logs.push(String(message));
-//     }
-//     plugin.app.vault.adapter.write(logFile, logs.join(" "));
-//   };
-
-//   console.debug = logMessages("debug");
-//   console.error = logMessages("error");
-//   console.info = logMessages("info");
-//   console.log = logMessages("log");
-//   console.warn = logMessages("warn");
-// }
-
 export default class CalendarPlugin extends Plugin {
   public settings: ISettings;
   private view: CalendarView;
@@ -51,8 +33,11 @@ export default class CalendarPlugin extends Plugin {
 
     this.register(
       settings.subscribe((value) => {
+        if (this.settings) {
+          // avoid saving when initializing
+          this.saveData(value);
+        }
         this.settings = value;
-        this.saveData(value);
       })
     );
 
@@ -114,14 +99,11 @@ export default class CalendarPlugin extends Plugin {
       ...existingSettings,
       ...(savedSettings || {}),
     }));
-
-    await this.saveData(this.settings);
   }
 
   async writeSettingsToDisk(
     settingsUpdater: (settings: ISettings) => Partial<ISettings>
   ): Promise<void> {
     settings.update((old) => ({ ...old, ...settingsUpdater(old) }));
-    await this.saveData(this.settings);
   }
 }

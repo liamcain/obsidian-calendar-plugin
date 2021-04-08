@@ -33,11 +33,6 @@ export default class CalendarSettingsTab extends PluginSettingTab {
       return acc;
     }, {});
 
-    // settings.update((oldSettings: ISettings) => ({
-    //   ...oldSettings,
-    //   sourceSettings,
-    // }));
-
     return this.plugin.writeSettingsToDisk(() => ({
       sourceSettings,
     }));

@@ -5,6 +5,7 @@
   import { dndzone } from "svelte-dnd-action";
   import { flip } from "svelte/animate";
 
+  import Picker from "./palette/Picker.svelte";
   import { settings, sources } from "../stores";
 
   export let saveAllSourceSettings;
@@ -27,7 +28,7 @@
     return {
       ...source,
       ...(source.defaultSettings || {}),
-      ...$settings.sourceSettings[source.id],
+      ...settings.getSourceSettings(source.id),
     };
   }
 
@@ -75,7 +76,7 @@
         return newSettings;
       });
 
-    const displayValue = $settings.sourceSettings[activeItemId]?.display;
+    const displayValue = settings.getSourceSettings(activeItemId)?.display;
     new Setting(sourceSettingsEl).setName("Display").addDropdown((dropdown) => {
       dropdown
         .addOption("calendar-and-menu", "On Calendar")
@@ -123,10 +124,8 @@
             </svg>
           </div>
           {item.name}
-          <input
-            class="color-picker"
-            class:highlighted={item.display === "calendar-and-menu"}
-            type="color"
+          <Picker
+            highlighted={item.display === "calendar-and-menu"}
             bind:value={item.color}
             on:input={saveSettings}
           />
@@ -142,9 +141,9 @@
 <style>
   .container {
     border-top: 1px solid var(--background-modifier-border);
+    display: flex;
     display: grid;
     gap: 32px;
-    grid-template-columns: 1fr 1fr;
     margin-top: 8px;
     padding-top: 8px;
   }
@@ -196,29 +195,5 @@
   .handle svg {
     width: 16px;
     height: 16px;
-  }
-
-  .color-picker {
-    -webkit-appearance: none;
-    width: 24px;
-    height: 24px;
-    border: 0;
-    border-radius: 50%;
-    margin: 4px;
-    margin-left: auto;
-    padding: 0;
-  }
-
-  .color-picker::-webkit-color-swatch-wrapper {
-    padding: 0;
-  }
-
-  .color-picker::-webkit-color-swatch {
-    border: none;
-    height: 24px;
-  }
-
-  .highlighted {
-    box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.15);
   }
 </style>

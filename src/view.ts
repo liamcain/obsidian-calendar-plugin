@@ -14,7 +14,7 @@ import Calendar from "./ui/Calendar.svelte";
 import { showFileMenu } from "./ui/fileMenu";
 import { activeFile, settings, sources } from "./ui/stores";
 import {
-  // customTagsSource,
+  emojiTagsSource,
   wordCountSource,
   tasksSource,
   linksSource,
@@ -73,12 +73,12 @@ export default class CalendarView extends ItemView {
     // Integration point: external plugins can listen for `calendar:open`
     // to feed in additional sources.
     const baseSources = [
-      // customTagsSource,
       wordCountSource,
       tasksSource,
       linksSource,
       backlinksSource,
       zettelsSource,
+      emojiTagsSource,
     ];
     // TODO move this into a writable. subscribe the settings component
     // to the writable

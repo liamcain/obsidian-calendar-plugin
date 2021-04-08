@@ -4,31 +4,20 @@ import type {
   IWeekStartOption,
 } from "obsidian-calendar-ui";
 
-import { DEFAULT_WORDS_PER_DOT } from "src/constants";
-
 export interface ISettings {
-  wordsPerDot: number;
   shouldConfirmBeforeCreate: boolean;
-  showWeeklyNote: boolean;
-
-  weekStart: IWeekStartOption;
   localeOverride: ILocaleOverride;
+  weekStart: IWeekStartOption;
 
+  showWeeklyNote: boolean;
   sourceSettings: Record<string, ISourceSettings>;
 }
 
 export const defaultSettings = Object.freeze({
   shouldConfirmBeforeCreate: true,
+  localeOverride: "system-default",
   weekStart: "locale" as IWeekStartOption,
 
-  wordsPerDot: DEFAULT_WORDS_PER_DOT,
-
   showWeeklyNote: false,
-  weeklyNoteFormat: "",
-  weeklyNoteTemplate: "",
-  weeklyNoteFolder: "",
-
-  localeOverride: "system-default",
-
   sourceSettings: {},
 });

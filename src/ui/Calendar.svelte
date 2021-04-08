@@ -28,15 +28,6 @@
     return window.moment();
   }
 
-  function getSourceSettings(sourceId: string): ISourceSettings {
-    const source = $sources.find((source) => source.id === sourceId);
-
-    return {
-      ...(source.defaultSettings || {}),
-      ...settings.getSourceSettings(sourceId),
-    };
-  }
-
   // 1 minute heartbeat to keep `today` reflecting the current day
   let heartbeat = setInterval(() => {
     tick();
@@ -57,7 +48,7 @@
 <CalendarBase
   {app}
   sources={$sources}
-  {getSourceSettings}
+  getSourceSettings={settings.getSourceSettings}
   {today}
   {eventHandlers}
   bind:displayedMonth

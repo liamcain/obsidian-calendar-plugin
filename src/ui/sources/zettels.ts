@@ -1,14 +1,9 @@
 import type { Moment } from "moment";
 import type { TFile } from "obsidian";
 import type { ICalendarSource, IEvaluatedMetadata } from "obsidian-calendar-ui";
-import { getDateFromFile } from "obsidian-daily-notes-interface";
 
-export function getNumZettels(note: TFile): number {
-  if (!note) {
-    return 0;
-  }
-
-  const zettelPrefix = getDateFromFile(note, "day")?.format("YYYYMMDD");
+export function getNumZettels(date: Moment): number {
+  const zettelPrefix = date.format("YYYYMMDD");
   if (!zettelPrefix) {
     return 0;
   }
@@ -25,10 +20,10 @@ export const zettelsSource: ICalendarSource = {
     "Show how many notes use a Zettelkasten prefix matching the current day",
 
   getMetadata: async (
-    _date: Moment,
-    file: TFile
+    date: Moment,
+    _file: TFile
   ): Promise<IEvaluatedMetadata> => {
-    const numZettels = getNumZettels(file);
+    const numZettels = getNumZettels(date);
 
     return {
       dots: [],
