@@ -5,6 +5,7 @@ import replace from "@rollup/plugin-replace";
 import typescript from "@rollup/plugin-typescript";
 import autoPreprocess from "svelte-preprocess";
 import { env } from "process";
+
 import pkg from "./package.json";
 
 export default {

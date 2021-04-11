@@ -1,5 +1,10 @@
 # obsidian-calendar-plugin
 
+| Announcing Calendar 2.0 Beta |
+| ---------------------------- |
+
+| A new version of the calendar plugin is on the horizon! If you'd like to try out the beta, there are instructions for how to download it [here](#installing-the-calendar-beta).
+
 This plugin for [Obsidian](https://obsidian.md/) creates a simple Calendar view for visualizing and navigating between your daily notes.
 
 ![screenshot-full](https://raw.githubusercontent.com/liamcain/obsidian-calendar-plugin/master/images/screenshot-full.png)
@@ -141,6 +146,12 @@ If you open a note from a different month, you might want to see it on the calen
 If you want to style weekends to be distinguishable from weekdays, you can set the `var(--color-background-weekend)` to be any color you want.
 
 ![how-to-weekend](./images/how-to-weekend.png)
+
+## Installing the Calendar Beta
+
+To install the plugin manually, download the `main.js`, `styles.css`, and `manifest.json` from the latest Github Release.
+
+Then move those files into your `<vault>/.obsidian/plugins/calendar/` folder. Restart Obsidian.
 
 ## Say Thanks 🙏
 

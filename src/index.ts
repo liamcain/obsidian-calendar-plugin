@@ -96,11 +96,11 @@ export default class CalendarPlugin extends Plugin {
 
   async loadSettings(): Promise<void> {
     const savedSettings = await this.loadData();
-    const settingsWithMigrationsApplied = applyMigrations(savedSettings);
+    const settingsWithMigrationsApplied = applyMigrations(savedSettings || {});
 
     settings.update((existingSettings) => ({
       ...existingSettings,
-      ...(settingsWithMigrationsApplied || {}),
+      ...settingsWithMigrationsApplied,
     }));
   }
 
