@@ -15,14 +15,24 @@ The plugin reads your Daily Note settings to know your date format, your daily n
 - Go to any **daily note**.
 - Create new daily notes for days that don't have one. (This is helpful for when you need to backfill old notes or if you're planning ahead for future notes! This will use your current **daily note** template!)
 - Visualize your writing. Each day includes a meter to approximate how much you've written that day.
-- Use **Weekly notes** for an added organization layer! They work just like daily notes, but have their own customization options.
 
 ## Settings
 
-- **Start week on [default: locale]**: Configure the Calendar view to show Sunday or Monday as the first day of the week. Choosing 'locale' will set the start day to be whatever is the default for your chosen locale (`Settings > About > Language`)
-- **Words per Dot [default: 250]**: Starting in version 1.3, dots reflect the word count of your files. By default, each dot represents 250 words, you can change that value to whatever you want. Set this to `0` to disable the word count entirely. **Note:** There is a max of 5 dots so that the view doesn't get too big!
+### General Settings
+
 - **Confirm before creating new note [default: on]**: If you don't like that a modal prompts you before creating a new daily note, you can turn it off.
 - **Show Week Number [default: off]**: Enable this to add a new column to the calendar view showing the [Week Number](https://en.wikipedia.org/wiki/Week#Week_numbering). Clicking on these cells will open your **weekly note**.
+
+### Localization
+
+- **Start week on [default: locale]**: Configure the Calendar view to show Sunday or Monday as the first day of the week. Choosing 'locale' will set the start day to be whatever is the default for your chosen locale (`Settings > About > Language`)
+- **Locale**: Configure the locale used by [Moment.JS](https://momentjs.com/docs/#/i18n/). This affects how both the calendar UI as well as how dates will be rendered by templates.
+
+### Source Settings
+
+#### Word Count
+
+- **Words per Dot [default: 250]**: Starting in version 1.3, dots reflect the word count of your files. By default, each dot represents 250 words, you can change that value to whatever you want. Set this to `0` to disable the word count entirely. **Note:** There is a max of 5 dots so that the view doesn't get too big!
 
 ## Customization
 
@@ -108,30 +118,6 @@ From the Settings menu, you can toggle "Start week on Monday".
 
 If you want the weekly note format to include a word (e.g. "Week 21 of Year 2020") you can do so by surrounding the words with `[]` brackets. This tells [moment](https://momentjs.com/docs/#/displaying/format/) to ignore the words. So for the example above, you would set your format to `[Week] ww [of Year] gggg`.
 
-### I don't like showing the week numbers but I still want to use weekly notes. Can I still use them?
-
-You can open the current weekly note from the command palette by searching `Calendar: Open weekly Note`. This will open the weekly note for the current week.
-
-To configure the `format`, `folder`, and `template`, you will temporarily need to toggle on "Show weekly numbers" in the settings, but if you toggle it back off, your settings will persist.
-
-## Protips
-
-### Embed your entire week in a weekly note
-
-If you add the following snippet to your weekly note template, you can a seamless view of your week in a single click.
-
-```md
-## Week at a Glance
-
-![[{{sunday:gggg-MM-DD}}]]
-![[{{monday:gggg-MM-DD}}]]
-![[{{tuesday:gggg-MM-DD}}]]
-![[{{wednesday:gggg-MM-DD}}]]
-![[{{thursday:gggg-MM-DD}}]]
-![[{{friday:gggg-MM-DD}}]]
-![[{{saturday:gggg-MM-DD}}]]
-```
-
 ### Hover Preview
 
 Just like the Obsidian's graph and internal links, the calendar supports page previews for your daily notes. Just hover over a cell while holding down `Ctrl/Cmd` on your keyboard!
@@ -155,35 +141,6 @@ If you open a note from a different month, you might want to see it on the calen
 If you want to style weekends to be distinguishable from weekdays, you can set the `var(--color-background-weekend)` to be any color you want.
 
 ![how-to-weekend](./images/how-to-weekend.png)
-
-### Weekly Notes (deprecated)
-
-#### Weekly notes have a new home
-
-The weekly note functionality has been split out into its [very own plugin](https://github.com/liamcain/obsidian-periodic-notes/). In the future, the functionality will be removed from the Calendar plugin; so if you're currently using weekly notes, I encourage you to make the switch. Don't worry, the behavior is functionally identical and will still integrate with the calendar view!
-
-This split was inspired by the [One Thing Well](https://en.wikipedia.org/wiki/Unix_philosophy) philosophy. Plugins should be as modular. Some users might want weekly notes and have no use for a calendar view. And vice versa.
-
-If you are currently using weekly notes within the Calendar plugin, the new Periodic Notes plugin will migrate your settings for you automatically.
-
-### Usage
-
-You can open **weekly notes** in 2 ways: searching `Calendar: open weekly note` in the command palette or by clicking on the week number. Weekly notes can be configured from the Calendar settings. There are 3 settings:
-
-- **Folder:** The folder that your weekly notes go into. It can be the same or different from your daily notes. By default they are placed in your vault root.
-- **Template:** Configure a template for weekly notes. Weekly notes have slightly different template tags than daily notes. See here for the list of supported [weekly note template tags](#template-tags).
-
-> Note: The path here won't autocomplete for you, you'll need to enter the full path.
-
-- **Format:** The date format for the weekly note filename. Defaults to `"gggg-[W]ww`. If you use `DD` in the week format, this will refer to first day of the week (Sunday or Monday, depending on your settings).
-
-#### Template Tags
-
-| Tag                                                                                    | Description                                                                                                                                                                                                  |
-| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `sunday`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, `saturday`, `sunday` | Because weekly tags refer to main days, you can refer to individual days like this `{{sunday:gggg-MM-DD}}` to automatically insert the date for that particular day. Note, you must specify the date format! |
-| `title`                                                                                | Works the same as the daily note `{{title}}`. It will insert the title of the note                                                                                                                           |
-| `date`, `time`                                                                         | Works the same as the daily note `{{date}}` and `{{time}}`. It will insert the date and time of the first day of the week. Useful for creating a heading (e.g. `# # {{date:gggg [Week] ww}}`).               |
 
 ## Say Thanks 🙏
 
