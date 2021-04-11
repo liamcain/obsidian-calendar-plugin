@@ -2,6 +2,7 @@ import type { Moment, WeekSpec } from "moment";
 import { App, Plugin, WorkspaceLeaf } from "obsidian";
 
 import { VIEW_TYPE_CALENDAR } from "./constants";
+import applyMigrations from "./migrations";
 import { settings } from "./ui/stores";
 import type { ISettings } from "./settings";
 import CalendarView from "./view";
@@ -95,15 +96,23 @@ export default class CalendarPlugin extends Plugin {
 
   async loadSettings(): Promise<void> {
     const savedSettings = await this.loadData();
+    const settingsWithMigrationsApplied = applyMigrations(savedSettings);
+
     settings.update((existingSettings) => ({
       ...existingSettings,
-      ...(savedSettings || {}),
+      ...(settingsWithMigrationsApplied || {}),
     }));
+  }
+
+  private onSettingsUpdate(): void {
+    this.app.workspace.trigger("calendar:metadata-updated");
   }
 
   async writeSettingsToDisk(
     settingsUpdater: (settings: ISettings) => Partial<ISettings>
   ): Promise<void> {
     settings.update((old) => ({ ...old, ...settingsUpdater(old) }));
+
+    this.onSettingsUpdate();
   }
 }

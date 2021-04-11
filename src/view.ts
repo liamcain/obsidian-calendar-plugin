@@ -35,13 +35,6 @@ export default class CalendarView extends ItemView {
     this.onHover = this.onHover.bind(this);
     this.onContextMenu = this.onContextMenu.bind(this);
 
-    this.registerEvent(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (<any>this.app.workspace).on(
-        "periodic-notes:settings-updated",
-        this.onNoteSettingsUpdate
-      )
-    );
     this.registerEvent(this.app.workspace.on("file-open", this.onFileOpen));
 
     this.settings = null;

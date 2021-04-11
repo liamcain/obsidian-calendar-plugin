@@ -4,7 +4,6 @@
   import {
     Calendar as CalendarBase,
     configureGlobalMomentLocale,
-    ISourceSettings,
   } from "obsidian-calendar-ui";
   import { onDestroy } from "svelte";
 

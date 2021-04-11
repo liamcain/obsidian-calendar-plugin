@@ -3,6 +3,7 @@
 
   import type { ISettings } from "src/settings";
 
+  import Footer from "./Footer.svelte";
   import SettingItem from "./SettingItem.svelte";
   import Sources from "./Sources.svelte";
   import Dropdown from "./controls/Dropdown.svelte";
@@ -29,6 +30,15 @@
   const weekStartOptions = [
     { label: `Locale default (${localeWeekStart})`, value: "locale" },
     ...localizedWeekdays.map((day, i) => ({ value: weekdays[i], label: day })),
+  ];
+
+  const sysLocale = navigator.language?.toLowerCase();
+  const localeOptions = [
+    { label: `Same as system (${sysLocale})`, value: "system-default" },
+    ...window.moment.locales().map((locale) => ({
+      label: locale,
+      value: locale,
+    })),
   ];
 </script>
 
@@ -58,7 +68,18 @@
   <SettingItem
     name="Start week on"
     description="Choose what day of the week to start. Select 'locale default' to use the default specified by moment.js"
+    type="dropdown"
   >
-    <Dropdown slot="control" options={weekStartOptions} />
+    <Dropdown slot="control" name="weekStart" options={weekStartOptions} />
   </SettingItem>
+
+  <SettingItem
+    name="Locale"
+    description="Override the locale used by the calendar and other plugins"
+    type="dropdown"
+  >
+    <Dropdown slot="control" name="localeOverride" options={localeOptions} />
+  </SettingItem>
+
+  <Footer />
 </div>

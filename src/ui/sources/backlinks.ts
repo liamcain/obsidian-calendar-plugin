@@ -1,6 +1,9 @@
 import type { Moment } from "moment";
 import type { TFile } from "obsidian";
 import type { ICalendarSource, IEvaluatedMetadata } from "obsidian-calendar-ui";
+import type { IGranularity } from "obsidian-daily-notes-interface";
+
+import { filledDots } from "./utils";
 
 export function getNumBacklinks(note: TFile): number {
   if (!note) {
@@ -18,13 +21,14 @@ export const backlinksSource: ICalendarSource = {
   name: "Backlinks",
 
   getMetadata: async (
+    _granularity: IGranularity,
     _date: Moment,
     file: TFile
   ): Promise<IEvaluatedMetadata> => {
     const numBacklinks = getNumBacklinks(file);
 
     return {
-      dots: [],
+      dots: filledDots(numBacklinks),
       value: numBacklinks,
     };
   },

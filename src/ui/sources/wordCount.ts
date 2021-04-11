@@ -5,6 +5,7 @@ import type {
   ICalendarSource,
   IEvaluatedMetadata,
 } from "obsidian-calendar-ui";
+import type { IGranularity } from "obsidian-daily-notes-interface";
 
 import { settings } from "../stores";
 import { getWordCount } from "../utils";
@@ -25,9 +26,9 @@ export async function getFileWordCount(note: TFile): Promise<number> {
 export const wordCountSource: ICalendarSource = {
   id: "wordCount",
   name: "Words",
-  description:
-    "Visualize the word count of your daily note. Customize the words per dot to help track your daily writing habits.",
+  description: "Visualize the word count of your daily note.",
   getMetadata: async (
+    _granularity: IGranularity,
     _date: Moment,
     file: TFile
   ): Promise<IEvaluatedMetadata> => {

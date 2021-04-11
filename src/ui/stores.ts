@@ -10,14 +10,14 @@ function createSettingsStore() {
   const store = writable<ISettings>(defaultSettings);
   return {
     getSourceSettings: <T>(sourceId: string): T => {
-      const defaultSettings = ((get(sources).find(
+      const defaultSourceSettings = ((get(sources).find(
         (source) => source.id === sourceId
       )?.defaultSettings || {}) as unknown) as T;
       const userSettings = ((get(store).sourceSettings[sourceId] ||
         {}) as unknown) as T;
 
       return {
-        ...defaultSettings,
+        ...defaultSourceSettings,
         ...userSettings,
       };
     },

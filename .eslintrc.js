@@ -8,5 +8,6 @@ module.exports = {
       2,
       { args: "all", argsIgnorePattern: "^_" },
     ],
+    "svelte-a11y/a11y-no-onchange": 0,
   },
 };

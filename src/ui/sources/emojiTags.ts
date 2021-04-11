@@ -1,6 +1,7 @@
 import type { Moment } from "moment";
 import { parseFrontMatterTags, TFile } from "obsidian";
 import type { ICalendarSource, IEvaluatedMetadata } from "obsidian-calendar-ui";
+import type { IGranularity } from "obsidian-daily-notes-interface";
 
 import { partition } from "src/ui/utils";
 
@@ -44,16 +45,16 @@ export const emojiTagsSource: ICalendarSource = {
   description: "Show tags containing emojis directly on the calendar face",
 
   getMetadata: async (
+    _granularity: IGranularity,
     _date: Moment,
     file: TFile
   ): Promise<IEvaluatedMetadata> => {
-    const value = getEmojiTag(file);
     return {
       attrs: {
-        "data-emoji-tag": value,
+        "data-emoji-tag": getEmojiTag(file),
       },
       dots: [],
-      value,
+      value: undefined,
     };
   },
 

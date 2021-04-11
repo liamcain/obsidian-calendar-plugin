@@ -5,6 +5,7 @@ import type {
   IEvaluatedMetadata,
   ISourceSettings,
 } from "obsidian-calendar-ui";
+import type { IGranularity } from "obsidian-daily-notes-interface";
 import { get } from "svelte/store";
 
 import { settings } from "../stores";
@@ -36,6 +37,7 @@ export const tasksSource: ICalendarSource = {
   description: "Track your pending tasks for any given day",
 
   getMetadata: async (
+    _granularity: IGranularity,
     _date: Moment,
     file: TFile
   ): Promise<IEvaluatedMetadata> => {
@@ -70,7 +72,7 @@ export const tasksSource: ICalendarSource = {
       .setDesc("Limit the number of dots shown for incomplete tasks")
       .addSlider((slider) =>
         slider
-          .setLimits(1, 6, 1)
+          .setLimits(1, 5, 1)
           .setDynamicTooltip()
           .setValue(sourceSettings?.maxIncompleteTaskDots || 1)
           .onChange((maxIncompleteTaskDots) => {
