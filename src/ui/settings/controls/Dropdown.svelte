@@ -15,6 +15,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-no-onchange -->
 <select class="dropdown" on:change={onSelect}>
   {#each options as { label, value }}
     <option {value}>{label}</option>
