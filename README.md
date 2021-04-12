@@ -1,4 +1,4 @@
-# obsidian-calendar-plugin
+# 📅 Calendar
 
 > ## Announcing Calendar 2.0 Beta
 >
