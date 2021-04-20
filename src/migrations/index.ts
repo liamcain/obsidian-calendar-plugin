@@ -25,5 +25,5 @@ export default function applyMigrations(settings: IAnySettings): ISettings {
       migration.apply(settings);
     }
   }
-  return;
+  return settings;
 }

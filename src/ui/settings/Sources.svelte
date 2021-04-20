@@ -1,9 +1,11 @@
 <script>
   import { debounce } from "obsidian";
-
   import { writable } from "svelte/store";
   import { dndzone, TRIGGERS } from "svelte-dnd-action";
 
+  import { partition } from "src/ui/utils";
+
+  import DragHandle from "./DragHandle.svelte";
   import Picker from "./palette/Picker.svelte";
   import { settings, sources } from "../stores";
   import SourceSettingsModal from "./SourceSettingsModal";
@@ -15,14 +17,22 @@
   let dragDisabled = true;
 
   let activeItemId;
+  let enabledItems;
+  let disabledItems;
   let items = writable([]);
   let saveSettings = debounce(() => saveAllSourceSettings($items), 200, false);
 
-  sources.subscribe((sourcesVal) => {
-    items.set(
-      sourcesVal.map(getSourceSettings).sort((a, b) => a.order - b.order)
+  function refreshItems() {
+    const allItems = $sources
+      .map(getSourceSettings)
+      .sort((a, b) => a.order - b.order);
+    [enabledItems, disabledItems] = partition(
+      allItems,
+      (item) => item.display !== "none"
     );
-  });
+  }
+
+  sources.subscribe(refreshItems);
 
   function getSourceSettings(source) {
     return {
@@ -33,15 +43,14 @@
   }
 
   function handleConsider(event) {
-    items.set(event.detail.items);
-
+    enabledItems = event.detail.items;
     if (event.detail.info.trigger === TRIGGERS.DRAG_STOPPED) {
       dragDisabled = true;
     }
   }
 
   function handleFinalize(event) {
-    items.set(event.detail.items);
+    enabledItems = event.detail.items;
     dragDisabled = true;
     saveAllSourceSettings($items);
   }
@@ -77,9 +86,9 @@
           },
         };
 
-        // mutate `item` so display refreshes
         item.display = sourceSettings.display;
-        items.update((val) => val);
+        refreshItems();
+
         settings.set(newSettings);
         return newSettings;
       });
@@ -96,41 +105,40 @@
 <div class="container">
   <div
     class="layout-grid"
-    use:dndzone={{ items: $items, dragDisabled, flipDurationMs }}
+    use:dndzone={{
+      items: enabledItems,
+      dragDisabled,
+      dropTargetStyle: {},
+      flipDurationMs,
+    }}
     on:consider={handleConsider}
     on:finalize={handleFinalize}
   >
-    {#each $items as item (item.id)}
+    {#each enabledItems as item (item.id)}
       <div
         class="calendar-source"
         class:active={item.id === activeItemId}
         on:click|stopPropagation={() => setActiveItem(item)}
       >
-        <div
-          aria-label="Drag to rearrange"
-          style={dragDisabled ? "cursor: grab" : "cursor: grabbing"}
-          class="handle"
-          on:mousedown={startDrag}
-          on:touchstart={startDrag}
-          on:keydown={handleKeyDown}
-        >
-          <svg
-            fill="none"
-            height="32"
-            viewBox="0 0 17 32"
-            width="17"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle cx="3.13232" cy="3.64536" r="3" fill="currentColor" />
-            <circle cx="13.167" cy="3.64536" r="3" fill="currentColor" />
-            <circle cx="3.13232" cy="15.8953" r="3" fill="currentColor" />
-            <circle cx="13.167" cy="15.8953" r="3" fill="currentColor" />
-            <circle cx="3.13232" cy="28.1452" r="3" fill="currentColor" />
-            <circle cx="13.167" cy="28.1452" r="3" fill="currentColor" />
-          </svg>
-        </div>
+        <DragHandle {dragDisabled} {startDrag} {handleKeyDown} />
         {item.name}
         <Picker
+          disabled={item.display === "none"}
+          highlighted={item.display === "calendar-and-menu"}
+          bind:value={item.color}
+          on:input={saveSettings}
+        />
+      </div>
+    {/each}
+    {#each disabledItems as item (item.id)}
+      <div
+        class="calendar-source disabled"
+        class:active={item.id === activeItemId}
+        on:click|stopPropagation={() => setActiveItem(item)}
+      >
+        {item.name}
+        <Picker
+          disabled={item.display === "none"}
           highlighted={item.display === "calendar-and-menu"}
           bind:value={item.color}
           on:input={saveSettings}
@@ -171,6 +179,11 @@
     width: 100%;
   }
 
+  .calendar-source.disabled {
+    color: var(--text-muted);
+    padding-left: 32px;
+  }
+
   .calendar-source:hover {
     border: 1px solid var(--text-faint);
   }
@@ -182,21 +195,5 @@
   .calendar-source:nth-child(1),
   .calendar-source:nth-child(2) {
     width: calc(50% - 6px);
-  }
-
-  .handle {
-    color: var(--background-modifier-border);
-    height: 16px;
-    margin-right: 8px;
-    width: 16px;
-  }
-
-  .active .handle {
-    color: var(--text-accent-hover);
-  }
-
-  .handle svg {
-    width: 16px;
-    height: 16px;
   }
 </style>

@@ -81,7 +81,7 @@ export default class CalendarView extends ItemView {
     this.calendar = new Calendar({
       target: this.contentEl,
       props: {
-        app: this.app,
+        plugin: this,
         eventHandlers: {
           onClick: this.openOrCreatePeriodicNote,
           onHover: this.onHover,

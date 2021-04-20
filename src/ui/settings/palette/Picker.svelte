@@ -9,6 +9,7 @@
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const isMobile = (window.app as any).isMobile;
 
+  export let disabled: boolean;
   export let highlighted: boolean;
   export let value: string;
 
@@ -45,6 +46,7 @@
   class="picker-btn"
   class:open={isVisible}
   class:highlighted
+  class:disabled
   style="background-color:{value}"
   on:click={toggleOpen}
   {value}
@@ -95,5 +97,9 @@
 
   .picker-btn.highlighted {
     box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.15);
+  }
+
+  .picker-btn.disabled {
+    background-color: transparent !important;
   }
 </style>

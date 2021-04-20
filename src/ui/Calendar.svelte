@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Moment } from "moment";
-  import type { App } from "obsidian";
+  import type { Plugin } from "obsidian";
   import {
     Calendar as CalendarBase,
     configureGlobalMomentLocale,
@@ -14,7 +14,7 @@
   let today: Moment;
   $: today = getToday($settings);
 
-  export let app: App;
+  export let plugin: Plugin;
   export let displayedMonth: Moment = today;
   export let eventHandlers: CallableFunction[];
 
@@ -45,7 +45,7 @@
 </script>
 
 <CalendarBase
-  {app}
+  {plugin}
   sources={$sources}
   getSourceSettings={settings.getSourceSettings}
   {today}

@@ -969,10 +969,9 @@ normalize-path@^3.0.0, normalize-path@~3.0.0:
   resolved "https://registry.yarnpkg.com/normalize-path/-/normalize-path-3.0.0.tgz#0dcd69ff23a1c9b11fd0978316644a0388216a65"
   integrity sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==
 
-obsidian-calendar-ui@0.4.0:
+obsidian-calendar-ui@liamcain/obsidian-calendar-ui#c275987d032377bb141747da0f9db2c5cde2df03:
   version "0.4.0"
-  resolved "https://registry.yarnpkg.com/obsidian-calendar-ui/-/obsidian-calendar-ui-0.4.0.tgz#fd7d235a0012d94296f35083ab98096545d1a29b"
-  integrity sha512-SycVkLd75uYw6yKx3hOiI7Pcz7ladb3W4cRasLHBwlK2lTySN+/TBC21IlPRUfhlNhr8LhJ7SnX46SEFKo7jZg==
+  resolved "https://codeload.github.com/liamcain/obsidian-calendar-ui/tar.gz/c275987d032377bb141747da0f9db2c5cde2df03"
   dependencies:
     "@popperjs/core" "2.9.2"
     "@popperjs/svelte" "0.1.1"

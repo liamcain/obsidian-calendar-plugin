@@ -50,6 +50,12 @@ function createSourcesStore() {
         val.push(source);
         return val;
       });
+      settings.update((existingSettings) => {
+        existingSettings.sourceSettings[source.id] = settings.getSourceSettings(
+          source.id
+        );
+        return existingSettings;
+      });
     },
     ...store,
   };
