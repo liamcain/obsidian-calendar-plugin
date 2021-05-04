@@ -269,7 +269,6 @@ export default class CalendarView extends ItemView {
       // File doesn't exist
       tryToCreateWeeklyNote(startOfWeek, inNewSplit, this.settings, (file) => {
         activeFile.setFile(file);
-        workspace.setActiveLeaf(leaf, true, true)
       });
       return;
     }
@@ -297,7 +296,6 @@ export default class CalendarView extends ItemView {
         this.settings,
         (dailyNote: TFile) => {
           activeFile.setFile(dailyNote);
-          workspace.setActiveLeaf(leaf, true, true)
         }
       );
       return;

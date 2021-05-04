@@ -27,7 +27,7 @@ export async function tryToCreateWeeklyNote(
       ? workspace.splitActiveLeaf()
       : workspace.getUnpinnedLeaf();
 
-    await leaf.openFile(dailyNote);
+    await leaf.openFile(dailyNote, { active : true });
     cb?.(dailyNote);
   };
 
