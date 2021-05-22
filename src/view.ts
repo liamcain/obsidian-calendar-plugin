@@ -279,6 +279,7 @@ export default class CalendarView extends ItemView {
     await leaf.openFile(existingFile);
 
     activeFile.setFile(existingFile);
+    workspace.setActiveLeaf(leaf, true, true)
   }
 
   async openOrCreateDailyNote(
@@ -305,7 +306,7 @@ export default class CalendarView extends ItemView {
     const leaf = inNewSplit
       ? workspace.splitActiveLeaf()
       : workspace.getUnpinnedLeaf();
-    await leaf.openFile(existingFile, { mode });
+    await leaf.openFile(existingFile, { active : true, mode });
 
     activeFile.setFile(existingFile);
   }
