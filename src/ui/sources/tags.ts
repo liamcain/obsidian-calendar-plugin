@@ -13,12 +13,14 @@ function getNoteTags(note: TFile | null): string[] {
     return [];
   }
 
-  const { metadataCache } = window.app;
-  const frontmatter = metadataCache.getFileCache(note)?.frontmatter;
+  const fileCache = window.app.metadataCache.getFileCache(note);
+  const frontmatter = fileCache?.frontmatter;
 
-  const tags = [];
+  // get normal tags
+  const tags = fileCache?.tags?.map((it) => it.tag) || [];
 
   if (frontmatter) {
+    // get metadata tags
     const frontmatterTags = parseFrontMatterTags(frontmatter) || [];
     tags.push(...frontmatterTags);
   }
