@@ -1,14 +1,15 @@
 import type { Moment } from "moment";
-import { Setting, TFile } from "obsidian";
+import { App, Setting, TFile } from "obsidian";
 import type {
+  Granularity,
   ICalendarSource,
   IEvaluatedMetadata,
   ISourceSettings,
 } from "obsidian-calendar-ui";
 import type { IGranularity } from "obsidian-daily-notes-interface";
+import CalendarPlugin from "src/main";
 import { get } from "svelte/store";
 
-import { settings } from "../stores";
 import { emptyDots } from "./utils";
 
 const TASK_SOURCE_ID = "tasks";
@@ -31,42 +32,52 @@ export async function getNumberOfTasks(note: TFile): Promise<[number, number]> {
   ];
 }
 
-export const tasksSource: ICalendarSource = {
-  id: TASK_SOURCE_ID,
-  name: "Tasks",
-  description: "Track your pending tasks for any given day",
+export class TasksSource implements ICalendarSource {
+  public id: string = TASK_SOURCE_ID;
+  public name: string = "Tasks";
+  public description: string = "Track your pending tasks for any given day";
 
-  getMetadata: async (
-    _granularity: IGranularity,
-    _date: Moment,
-    file: TFile
-  ): Promise<IEvaluatedMetadata> => {
-    const [numRemainingTasks, numCompletedTasks] = await getNumberOfTasks(file);
-    const totalTasks = numRemainingTasks + numCompletedTasks;
+  constructor(readonly app: App, readonly plugin: CalendarPlugin) {}
 
-    const sourceSettings = get(settings).sourceSettings[
-      TASK_SOURCE_ID
-    ] as ITasksSettings;
-    const maxDots = sourceSettings?.maxIncompleteTaskDots || 1;
-    const numDots = Math.min(numRemainingTasks, maxDots);
+  public async getMetadata(
+    granularity: Granularity,
+    date: Moment
+  ): Promise<IEvaluatedMetadata> {
+    const periodicNotes = this.app.plugins.getPlugin("periodic-notes");
+    const exactMatch = periodicNotes.getPeriodicNote(granularity, date);
+
+    let totalTasks = 0;
+    let numCompletedTasks = 0;
+    let numDots = 0;
+    if (exactMatch) {
+      const [numRemainingTasks, numCompletedTasks] = await getNumberOfTasks(exactMatch);
+      totalTasks = numRemainingTasks + numCompletedTasks;
+
+      const sourceSettings = get(this.plugin.settings).sourceSettings[
+        TASK_SOURCE_ID
+      ] as ITasksSettings;
+      const maxDots = sourceSettings?.maxIncompleteTaskDots || 1;
+      numDots = Math.min(numRemainingTasks, maxDots);
+    }
 
     return {
       dots: emptyDots(numDots),
       value: numCompletedTasks,
       goal: totalTasks,
     };
-  },
+  }
 
-  defaultSettings: Object.freeze({
+  public defaultSettings = Object.freeze({
     color: "#d08770",
     display: "calendar-and-menu",
     maxIncompleteTaskDots: 1,
-  }),
-  registerSettings: (
+  });
+
+  public registerSettings(
     containerEl: HTMLElement,
     sourceSettings: ITasksSettings,
     saveSettings: (settings: Partial<ITasksSettings>) => void
-  ) => {
+  ) {
     new Setting(containerEl)
       .setName("Max incomplete tasks shown")
       .setDesc("Limit the number of dots shown for incomplete tasks")
@@ -79,5 +90,5 @@ export const tasksSource: ICalendarSource = {
             saveSettings({ maxIncompleteTaskDots });
           })
       );
-  },
-};
+  }
+}

@@ -1,7 +1,7 @@
+/* src/styles.css */
 button:focus {
   box-shadow: 0 0 0 1px var(--interactive-accent);
 }
-
 #calendar-container [data-emoji-tag]::after {
   content: attr(data-emoji-tag);
   position: absolute;
@@ -11,3 +11,7 @@ button:focus {
   width: 8px;
   z-index: 1;
 }
+#calendar-container {
+  --color-dot: var(--text-muted);
+}
+/*# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsic3JjL3N0eWxlcy5jc3MiXSwKICAic291cmNlc0NvbnRlbnQiOiBbImJ1dHRvbjpmb2N1cyB7XG4gIGJveC1zaGFkb3c6IDAgMCAwIDFweCB2YXIoLS1pbnRlcmFjdGl2ZS1hY2NlbnQpO1xufVxuXG4jY2FsZW5kYXItY29udGFpbmVyIFtkYXRhLWVtb2ppLXRhZ106OmFmdGVyIHtcbiAgY29udGVudDogYXR0cihkYXRhLWVtb2ppLXRhZyk7XG4gIHBvc2l0aW9uOiBhYnNvbHV0ZTtcbiAgdG9wOiAtNHB4O1xuICByaWdodDogNHB4O1xuICBoZWlnaHQ6IDhweDtcbiAgd2lkdGg6IDhweDtcbiAgei1pbmRleDogMTtcbn1cblxuI2NhbGVuZGFyLWNvbnRhaW5lciB7XG4gIC0tY29sb3ItZG90OiB2YXIoLS10ZXh0LW11dGVkKTtcbn1cbiJdLAogICJtYXBwaW5ncyI6ICI7QUFBQTtBQUNFO0FBQUE7QUFHRjtBQUNFO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQUE7QUFHRjtBQUNFO0FBQUE7IiwKICAibmFtZXMiOiBbXQp9Cg== */

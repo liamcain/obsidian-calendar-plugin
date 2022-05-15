@@ -1,6 +1,6 @@
 export interface IColorSwatch {
   name: string;
-  value?: string;
+  value: string;
 }
 
 const colors = {

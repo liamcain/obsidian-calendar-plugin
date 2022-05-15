@@ -1,29 +1,37 @@
 <script lang="ts">
   import type { Moment } from "moment";
-  import type { Plugin } from "obsidian";
-  import {
-    Calendar as CalendarBase,
-    configureGlobalMomentLocale,
+  import type {
+    ICalendarSource,
+    CalendarEventHandlers,
   } from "obsidian-calendar-ui";
-  import { onDestroy } from "svelte";
+  import { Calendar as CalendarBase } from "obsidian-calendar-ui";
+  import { onDestroy, onMount } from "svelte";
 
+  import CalendarPlugin from "src/main";
   import type { ISettings } from "src/settings";
 
-  import { activeFile, settings, sources } from "./stores";
+  export let eventHandlers: CalendarEventHandlers;
+  export let plugin: CalendarPlugin;
+  export let sources: ICalendarSource[];
 
   let today: Moment;
-  $: today = getToday($settings);
+  let displayedMonth: Moment;
+  let settings = plugin.settings;
+  let isISO = plugin.shouldUseISOWeekNumbers();
 
-  export let plugin: Plugin;
-  export let displayedMonth: Moment = today;
-  export let eventHandlers: CallableFunction[];
+  $: today = getToday($settings);
+  $: {
+    if (!displayedMonth) {
+      displayedMonth = today;
+    }
+  }
 
   export function tick() {
     today = window.moment();
   }
 
-  function getToday(settings: ISettings) {
-    configureGlobalMomentLocale(settings.localeOverride, settings.weekStart);
+  function getToday(_settings: ISettings) {
+    // configureGlobalMomentLocale(settings.localeOverride, settings.weekStart);
     return window.moment();
   }
 
@@ -39,19 +47,28 @@
     }
   }, 1000 * 60);
 
+  let calendarEl: HTMLElement;
+  onMount(() => {
+    new CalendarBase({
+      target: calendarEl,
+      props: {
+        app: plugin.app,
+        displayedMonth,
+        isISO,
+        today,
+        eventHandlers,
+        localeData: today.localeData(),
+        showWeekNums: $settings.showWeeklyNote,
+        sources,
+      },
+    });
+  });
+
   onDestroy(() => {
     clearInterval(heartbeat);
   });
 </script>
 
-<CalendarBase
-  {plugin}
-  sources={$sources}
-  getSourceSettings={settings.getSourceSettings}
-  {today}
-  {eventHandlers}
-  bind:displayedMonth
-  localeData={today.localeData()}
-  selectedId={$activeFile}
-  showWeekNums={$settings.showWeeklyNote}
-/>
+<!-- getSourceSettings={settings.getSourceSettings} -->
+
+<div bind:this={calendarEl} />

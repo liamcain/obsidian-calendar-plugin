@@ -1,7 +1,7 @@
 <script lang="ts">
   export let name: string;
   export let description: string;
-  export let isHeading: boolean;
+  export let isHeading: boolean = false;
   export let type: "dropdown" | "toggle";
 </script>
 

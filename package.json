@@ -7,39 +7,42 @@
   "license": "MIT",
   "scripts": {
     "lint": "svelte-check && eslint . --ext .ts",
-    "build": "npm run lint && rollup -c",
-    "build:nolint": "rollup -c",
-    "test:watch": "yarn test -- --watch"
+    "dev": "node --experimental-json-modules esbuild.config.mjs",
+    "watch": "node --experimental-json-modules esbuild.config.mjs watch",
+    "build": "yarn run lint && node --experimental-json-modules esbuild.config.mjs production",
+    "release": "standard-version"
   },
   "dependencies": {
-    "@popperjs/svelte": "0.1.1",
-    "obsidian": "obsidianmd/obsidian-api#master",
-    "obsidian-calendar-ui": "liamcain/obsidian-calendar-ui#c275987d032377bb141747da0f9db2c5cde2df03",
-    "obsidian-daily-notes-interface": "0.9.2",
-    "semver": "7.3.5",
-    "svelte": "3.37.0",
-    "tslib": "2.2.0"
+    "@popperjs/core": "2.11.5",
+    "obsidian": "0.14.6",
+    "obsidian-calendar-ui": "link:../obsidian-calendar-ui",
+    "obsidian-daily-notes-interface": "0.9.4",
+    "semver": "7.3.7",
+    "svelte": "3.48.0",
+    "tslib": "2.4.0"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "18.0.0",
-    "@rollup/plugin-node-resolve": "11.2.1",
-    "@rollup/plugin-replace": "2.4.2",
-    "@rollup/plugin-typescript": "8.2.1",
-    "@tsconfig/svelte": "1.0.10",
+    "@tsconfig/svelte": "3.0.0",
     "@types/moment": "2.13.0",
+    "@types/node": "17.0.24",
     "@types/semver": "7.3.4",
-    "@typescript-eslint/eslint-plugin": "4.21.0",
-    "@typescript-eslint/parser": "4.21.0",
+    "@typescript-eslint/eslint-plugin": "^5.19.0",
+    "@typescript-eslint/parser": "^5.19.0",
+    "builtin-modules": "^3.2.0",
+    "dotenv": "16.0.0",
+    "esbuild": "0.14.36",
+    "esbuild-svelte": "0.7.0",
     "eslint": "7.24.0",
-    "moment": "2.29.1",
-    "rollup": "2.45.1",
-    "rollup-plugin-svelte": "7.1.0",
-    "svelte-check": "1.4.0",
-    "svelte-dnd-action": "0.9.5",
-    "svelte-preprocess": "4.7.0",
-    "typescript": "4.2.4"
+    "sass": "^1.50.0",
+    "standard-version": "^9.3.2",
+    "svelte-check": "2.7.0",
+    "svelte-dnd-action": "0.9.18",
+    "svelte-popperjs": "1.2.9",
+    "svelte-preprocess": "4.10.6",
+    "typescript": "4.6.3"
   },
   "resolutions": {
-    "svelte": "3.37.0"
-  }
+    "svelte": "3.47.0"
+  },
+  "packageManager": "yarn@3.2.0"
 }

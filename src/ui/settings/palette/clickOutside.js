@@ -1,19 +1,16 @@
-/* eslint-disable */
-export default function clickOutside(node, onEventFunction) {
+export default function clickOutside(node) {
   const handleClick = (event) => {
-    var path = event.composedPath();
-
-    if (!path.includes(node)) {
-      onEventFunction();
+    if (node && !node.contains(event.target) && !event.defaultPrevented) {
+      event.stopPropagation();
+      node.dispatchEvent(new CustomEvent("clickOutside", node));
     }
   };
 
-  document.addEventListener("click", handleClick);
+  document.addEventListener("click", handleClick, true);
 
   return {
     destroy() {
-      document.removeEventListener("click", handleClick);
+      document.removeEventListener("click", handleClick, true);
     },
   };
 }
-/* eslint-enable */

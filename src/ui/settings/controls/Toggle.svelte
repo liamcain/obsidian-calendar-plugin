@@ -1,15 +1,10 @@
 <script lang="ts">
-  import { settings } from "src/ui/stores";
-
-  export let name: string;
-
-  function toggleEnabled() {
-    $settings[name] = !$settings[name];
-  }
+  export let isEnabled: boolean;
+  export let onChange: (value: boolean) => void;
 </script>
 
 <div
   class="checkbox-container"
-  class:is-enabled={$settings[name]}
-  on:click={toggleEnabled}
+  class:is-enabled={isEnabled}
+  on:click={() => onChange(!isEnabled)}
 />

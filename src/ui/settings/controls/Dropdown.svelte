@@ -1,22 +1,16 @@
 <script lang="ts">
-  import { settings } from "src/ui/stores";
-
   interface IOption {
     label: string;
     value: string;
   }
 
-  export let name: string;
+  export let onChange: (e: Event) => void;
   export let options: IOption[] = [];
-
-  function onSelect(event: Event): void {
-    const newValue = (event.target as HTMLSelectElement).value;
-    $settings[name] = newValue;
-  }
+  export let value: string;
 </script>
 
 <!-- svelte-ignore a11y-no-onchange -->
-<select class="dropdown" on:change={onSelect}>
+<select class="dropdown" on:change={onChange} {value}>
   {#each options as { label, value }}
     <option {value}>{label}</option>
   {/each}

@@ -1,15 +1,11 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
 
-  import getColors, {
-    getPaletteNames,
-    getPaletteName,
-    IColorSwatch,
-  } from "./colors";
+  import type { IColorSwatch } from "./colors";
+  import getColors, { getPaletteNames, getPaletteName } from "./colors";
 
-  export let value: string;
   export let close: () => void;
-  export let setValue: (newValue: string) => void;
+  export let value: string;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const theme = (<any>window.app).customCss.theme;
@@ -23,7 +19,6 @@
   function selectSwatch(swatch: string) {
     value = swatch;
     dispatch("input", swatch);
-    setValue?.(swatch);
     close();
   }
 </script>
@@ -54,7 +49,7 @@
   </div>
 </div>
 
-<style>
+<style lang="scss">
   .container {
     display: flex;
     flex-direction: column;
@@ -108,10 +103,13 @@
 
   .swatch {
     position: absolute;
-  }
 
-  .swatch:hover {
-    border: 1px solid var(--text-muted);
+    &:hover {
+      border: 1px solid var(--text-muted);
+    }
+    &.selected {
+      border: 2px solid var(--text-normal);
+    }
   }
 
   .opacity-grid {
@@ -124,9 +122,5 @@
     border-radius: 50%;
     border: none;
     position: relative;
-  }
-
-  .swatch.selected {
-    border: 2px solid var(--text-normal);
   }
 </style>

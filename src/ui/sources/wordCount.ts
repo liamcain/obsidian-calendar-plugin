@@ -1,15 +1,17 @@
 import type { Moment } from "moment";
-import { Setting, TFile } from "obsidian";
+import { App, Setting, TFile } from "obsidian";
 import type {
   ISourceSettings,
   ICalendarSource,
   IEvaluatedMetadata,
+  Granularity,
 } from "obsidian-calendar-ui";
-import type { IGranularity } from "obsidian-daily-notes-interface";
+import { get } from "svelte/store";
 
-import { settings } from "../stores";
+import CalendarPlugin from "src/main";
+
 import { getWordCount } from "../utils";
-import { emptyDot, filledDots } from "./utils";
+import { emptyDot, filledDot, filledDots } from "./utils";
 
 interface IWordCountSettings extends ISourceSettings {
   wordsPerDot: number;
@@ -23,41 +25,44 @@ export async function getFileWordCount(note: TFile): Promise<number> {
   return getWordCount(fileContents);
 }
 
-export const wordCountSource: ICalendarSource = {
-  id: "wordCount",
-  name: "Words",
-  description: "Visualize the word count of your daily note.",
-  getMetadata: async (
-    _granularity: IGranularity,
-    _date: Moment,
-    file: TFile
-  ): Promise<IEvaluatedMetadata> => {
-    const wordsPerDot = settings.getSourceSettings<IWordCountSettings>(
-      "wordCount"
-    ).wordsPerDot;
-    const wordCount = await getFileWordCount(file);
-    const numDots = Math.floor(wordCount / wordsPerDot);
+export class WordCountSource implements ICalendarSource {
+  public id: string = "wordCount";
+  public name: string = "Words";
+  public description: string = "Visualize the word count of your daily note.";
 
-    const dots = filledDots(numDots);
-    if (file && !numDots) {
-      dots.push(emptyDot());
-    }
+  constructor(readonly app: App, readonly plugin: CalendarPlugin) {}
 
-    return {
-      dots,
-      value: wordCount,
-    };
-  },
-  defaultSettings: Object.freeze({
+  public defaultSettings = Object.freeze({
     color: "#ebcb8b",
     display: "calendar-and-menu",
     wordsPerDot: 250,
-  }),
-  registerSettings: (
+  });
+
+  async getMetadata(granularity: Granularity, date: Moment): Promise<IEvaluatedMetadata> {
+    const periodicNotes = this.app.plugins.getPlugin("periodic-notes");
+    const exactMatch = periodicNotes.getPeriodicNote(granularity, date);
+    const value: IEvaluatedMetadata = {
+      dots: [],
+      value: 0,
+    };
+    if (exactMatch) {
+      const wordsPerDot = get(this.plugin.settings).sourceSettings["wordCount"]
+        ?.wordsPerDot;
+      const wordCount = await getFileWordCount(exactMatch);
+      const numDots = Math.floor(wordCount / wordsPerDot);
+      if (numDots > 0) {
+        value.dots.push(...filledDots(numDots));
+      } else {
+        value.dots.push(filledDot());
+      }
+    }
+    return value;
+  }
+  public registerSettings(
     containerEl: HTMLElement,
     sourceSettings: IWordCountSettings,
     saveSettings: (settings: Partial<IWordCountSettings>) => void
-  ) => {
+  ) {
     new Setting(containerEl)
       .setName("Words per dot")
       .setDesc("How many words should be represented by a single dot?")
@@ -68,5 +73,5 @@ export const wordCountSource: ICalendarSource = {
           saveSettings({ wordsPerDot: Number(val) });
         });
       });
-  },
-};
+  }
+}

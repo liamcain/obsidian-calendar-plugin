@@ -1,13 +1,17 @@
 {
   "extends": "@tsconfig/svelte/tsconfig.json",
-
-  "include": ["src/**/*", "popper.d.ts"],
-  "exclude": ["node_modules/*"],
   "compilerOptions": {
-    "types": ["node", "svelte"],
+    "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
-    "paths": {
-      "src": ["src/*"]
-    }
-  }
+    "module": "ESNext",
+    "target": "es6",
+    "allowJs": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "importsNotUsedAsValues": "remove",
+    "lib": ["dom", "es5", "scripthost", "es2015"]
+  },
+  "include": ["**/*.ts"]
 }
