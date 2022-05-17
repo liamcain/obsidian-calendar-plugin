@@ -23,7 +23,6 @@ import SettingsTab from "./settings/SettingsTab.svelte";
 
 export default class CalendarSettingsTab extends PluginSettingTab {
   public plugin: CalendarPlugin;
-
   private view: SvelteComponent;
 
   constructor(app: App, plugin: CalendarPlugin) {

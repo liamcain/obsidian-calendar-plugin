@@ -6,7 +6,6 @@ import type {
   IEvaluatedMetadata,
   ISourceSettings,
 } from "obsidian-calendar-ui";
-import type { IGranularity } from "obsidian-daily-notes-interface";
 import CalendarPlugin from "src/main";
 import { get } from "svelte/store";
 
@@ -68,8 +67,8 @@ export class TasksSource implements ICalendarSource {
   }
 
   public defaultSettings = Object.freeze({
-    color: "#d08770",
-    display: "calendar-and-menu",
+    color: "var(--background-modifier-success)",
+    enabled: true,
     maxIncompleteTaskDots: 1,
   });
 

@@ -1,17 +1,17 @@
 import type { Moment } from "moment";
 import { App, Setting, TFile } from "obsidian";
-import type {
-  ISourceSettings,
-  ICalendarSource,
-  IEvaluatedMetadata,
-  Granularity,
-} from "obsidian-calendar-ui";
 import { get } from "svelte/store";
 
 import CalendarPlugin from "src/main";
 
 import { getWordCount } from "../utils";
-import { emptyDot, filledDot, filledDots } from "./utils";
+import { filledDot, filledDots } from "./utils";
+import type {
+  Granularity,
+  ICalendarSource,
+  IEvaluatedMetadata,
+  ISourceSettings,
+} from "../types";
 
 interface IWordCountSettings extends ISourceSettings {
   wordsPerDot: number;
@@ -33,8 +33,8 @@ export class WordCountSource implements ICalendarSource {
   constructor(readonly app: App, readonly plugin: CalendarPlugin) {}
 
   public defaultSettings = Object.freeze({
-    color: "#ebcb8b",
-    display: "calendar-and-menu",
+    color: "var(--text-muted)",
+    enabled: true,
     wordsPerDot: 250,
   });
 

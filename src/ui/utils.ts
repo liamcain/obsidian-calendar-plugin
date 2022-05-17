@@ -39,3 +39,127 @@ export function getWordCount(text: string): number {
   );
   return (text.match(pattern) || []).length;
 }
+
+import type { Moment } from "moment";
+import { Platform } from "obsidian";
+
+import type {
+  Granularity,
+  HTMLAttributes,
+  ICalendarSource,
+  IDot,
+  IMonth,
+  ISourceSettings,
+  IWeek,
+  SourceMetadata,
+} from "./types";
+
+function isMacOS() {
+  return Platform.isMacOS;
+}
+
+export function isMetaPressed(e: MouseEvent): boolean {
+  return isMacOS() ? e.metaKey : e.ctrlKey;
+}
+
+export function getDaysOfWeek(..._args: unknown[]): string[] {
+  return window.moment.weekdaysShort(true);
+}
+
+export function isWeekend(date: Moment): boolean {
+  return date.isoWeekday() === 6 || date.isoWeekday() === 7;
+}
+
+export function getStartOfWeek(days: Moment[]): Moment {
+  return days[0].weekday(0);
+}
+
+export function isoWeek(date: Moment): number {
+  return Math.trunc((date.dayOfYear() + 10) / 7);
+}
+
+/**
+ * Generate a 2D array of daily information to power
+ * the calendar view.
+ */
+export function getMonth(
+  displayedMonth: Moment,
+  isISO: boolean,
+  ..._args: unknown[]
+): IMonth {
+  const locale = window.moment().locale();
+  const month = [];
+  let week: IWeek;
+
+  const startOfMonth = displayedMonth.clone().locale(locale).date(1);
+  const startOffset = startOfMonth.weekday();
+  let date: Moment = startOfMonth.clone().subtract(startOffset, "day");
+
+  for (let _day = 0; _day < 42; _day++) {
+    if (_day % 7 === 0) {
+      week = {
+        days: [],
+        weekNum: isISO ? isoWeek(date) : date.week(),
+      };
+      month.push(week);
+    }
+
+    week.days.push(date);
+    date = date.clone().add(1, "day");
+  }
+
+  return month;
+}
+
+export const emptyDot = (): IDot => ({ isFilled: false });
+export const emptyDots = (numDots: number): IDot[] =>
+  numDots ? [...Array(numDots).keys()].map(emptyDot) : [];
+
+export const filledDot = (): IDot => ({ isFilled: true });
+export const filledDots = (numDots: number): IDot[] =>
+  numDots ? [...Array(numDots).keys()].map(filledDot) : [];
+
+export async function evaluateMetadataFromSources(
+  sources: ICalendarSource[],
+  granularity: Granularity,
+  date: Moment,
+  ..._args: any[]
+): Promise<SourceMetadata[]> {
+  const metadata: SourceMetadata[] = [];
+  for (const source of sources) {
+    const sourceMeta = await source.getMetadata(granularity, date);
+    metadata.push({
+      attrs: sourceMeta.attrs,
+      sourceId: source.id,
+      dots: sourceMeta.dots,
+      value: sourceMeta.value,
+    });
+  }
+  return metadata;
+}
+
+export function getSourceColors(
+  sources: ICalendarSource[],
+  sourceSettings: Record<string, ISourceSettings>
+): string {
+  const colors: Record<string, string> = {};
+  for (const source of sources) {
+    const settings = { ...source.defaultSettings, ...sourceSettings[source.id] };
+    colors[source.id] = settings.color;
+  }
+  return Object.entries(colors)
+    .map(([k, v]) => `--calendar-source-${k}: ${v};`)
+    .join(" ");
+}
+
+export function getAttributes(metadata: SourceMetadata[]): HTMLAttributes {
+  if (!metadata) {
+    return {};
+  }
+  return metadata.reduce((acc, meta) => {
+    return {
+      ...acc,
+      ...meta.attrs,
+    };
+  }, {});
+}

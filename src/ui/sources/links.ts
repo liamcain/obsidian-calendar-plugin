@@ -31,6 +31,6 @@ export const linksSource: ICalendarSource = {
 
   defaultSettings: Object.freeze({
     color: "#a3be8c",
-    display: "menu",
+    enabled: false,
   }),
 };

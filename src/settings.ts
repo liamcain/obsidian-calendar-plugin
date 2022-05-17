@@ -1,8 +1,6 @@
-import type {
-  ILocaleOverride,
-  ISourceSettings,
-  IWeekStartOption,
-} from "obsidian-calendar-ui";
+import type { IWeekStartOption } from "obsidian-calendar-ui";
+
+import type { ISourceSettings } from "./ui/types";
 
 export type IWeekNumberingPreference = "locale" | "iso-8601";
 export interface ISettings {

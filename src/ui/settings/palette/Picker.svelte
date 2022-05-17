@@ -3,13 +3,14 @@
   import { createEventDispatcher } from "svelte";
   import { createPopperActions } from "svelte-popperjs";
 
-  import clickOutside from "./clickOutside";
+  import clickOutside from "src/ui/clickOutside";
+
   import Palette from "./Palette.svelte";
   import MobileColorModal from "./MobileColorModal";
 
-  export let disabled: boolean;
-  export let highlighted: boolean;
   export let value: string;
+  export let disabled: boolean = false;
+  export let highlighted: boolean = false;
 
   let isVisible: boolean = false;
 
@@ -83,9 +84,10 @@
     border-radius: 50%;
     cursor: pointer;
     display: flex;
-    margin-left: auto;
-    height: 24px;
-    width: 24px;
+    margin-left: 4px;
+    margin-right: 16px;
+    height: 20px;
+    width: 20px;
 
     &.open {
       border: 2px solid var(--text-normal);

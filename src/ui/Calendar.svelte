@@ -4,11 +4,12 @@
     ICalendarSource,
     CalendarEventHandlers,
   } from "obsidian-calendar-ui";
-  import { Calendar as CalendarBase } from "obsidian-calendar-ui";
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy } from "svelte";
 
   import CalendarPlugin from "src/main";
   import type { ISettings } from "src/settings";
+
+  import CalendarBase from "./components/Calendar.svelte";
 
   export let eventHandlers: CalendarEventHandlers;
   export let plugin: CalendarPlugin;
@@ -18,8 +19,12 @@
   let displayedMonth: Moment;
   let settings = plugin.settings;
   let isISO = plugin.shouldUseISOWeekNumbers();
+  let enabledSources: ICalendarSource[];
 
   $: today = getToday($settings);
+  $: enabledSources = sources.filter(
+    (source) => $settings.sourceSettings[source.id].enabled
+  );
   $: {
     if (!displayedMonth) {
       displayedMonth = today;
@@ -47,22 +52,23 @@
     }
   }, 1000 * 60);
 
-  let calendarEl: HTMLElement;
-  onMount(() => {
-    new CalendarBase({
-      target: calendarEl,
-      props: {
-        app: plugin.app,
-        displayedMonth,
-        isISO,
-        today,
-        eventHandlers,
-        localeData: today.localeData(),
-        showWeekNums: $settings.showWeeklyNote,
-        sources,
-      },
-    });
-  });
+  // let calendarEl: HTMLElement;
+  // onMount(() => {
+  //   new CalendarBase({
+  //     target: calendarEl,
+  //     props: {
+  //       app: plugin.app,
+  //       displayedMonth,
+  //       isISO,
+  //       today,
+  //       eventHandlers,
+  //       localeData: today.localeData(),
+  //       showWeekNums: $settings.showWeeklyNote,
+  //       sources,
+  //       sourceSettings: $settings.sourceSettings,
+  //     },
+  //   });
+  // });
 
   onDestroy(() => {
     clearInterval(heartbeat);
@@ -71,4 +77,14 @@
 
 <!-- getSourceSettings={settings.getSourceSettings} -->
 
-<div bind:this={calendarEl} />
+<CalendarBase
+  app={plugin.app}
+  {displayedMonth}
+  {isISO}
+  {today}
+  {eventHandlers}
+  localeData={today.localeData()}
+  showWeekNums={$settings.showWeeklyNote}
+  sources={enabledSources}
+  sourceSettings={$settings.sourceSettings}
+/>

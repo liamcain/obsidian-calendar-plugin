@@ -1,20 +1,12 @@
 import type { Moment } from "moment";
 import { TFile, ItemView, WorkspaceLeaf, MarkdownView, Platform, App } from "obsidian";
-import { type Granularity, type ICalendarSource } from "obsidian-calendar-ui";
 
-import { TRIGGER_ON_OPEN, VIEW_TYPE_CALENDAR } from "src/constants";
+import { VIEW_TYPE_CALENDAR } from "src/constants";
 
 import Calendar from "./ui/Calendar.svelte";
 import { showFileMenu } from "./ui/fileMenu";
-import {
-  emojiTagsSource,
-  WordCountSource,
-  TasksSource,
-  linksSource,
-  backlinksSource,
-  RelatedFilesSource,
-} from "./ui/sources";
 import type CalendarPlugin from "./main";
+import type { Granularity, ICalendarSource } from "./ui/types";
 
 // TODO move to utils file
 export function isMetaPressed(e: MouseEvent | KeyboardEvent): boolean {
@@ -38,6 +30,8 @@ export default class CalendarView extends ItemView {
     this.onContextMenu = this.onContextMenu.bind(this);
 
     this.registerEvent(this.app.workspace.on("file-open", this.onFileOpen));
+
+    this.sources = [...plugin.registeredSources];
   }
 
   getViewType(): string {
@@ -58,13 +52,6 @@ export default class CalendarView extends ItemView {
   }
 
   async onOpen(): Promise<void> {
-    this.sources.push(
-      ...[
-        new WordCountSource(this.app, this.plugin),
-        new TasksSource(this.app, this.plugin),
-        new RelatedFilesSource(this.app, this.plugin),
-      ]
-    );
     // TODO move this into a writable. subscribe the settings component
     // to the writable
     // Integration point: external plugins can listen for `calendar:open`

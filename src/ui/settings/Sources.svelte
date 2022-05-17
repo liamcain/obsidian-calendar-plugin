@@ -7,9 +7,10 @@
 
   import DragHandle from "./DragHandle.svelte";
   import Picker from "./palette/Picker.svelte";
-  import type { ISourceSettings } from "obsidian-calendar-ui";
+  import type { ICalendarSource } from "../types";
 
   export let settings: Writable<ISettings>;
+  export let registeredSources: ICalendarSource[];
 
   const flipDurationMs = 100;
   let dragDisabled = true;
@@ -90,24 +91,19 @@
   //   handleTeardown
   // ).open();
   // }
-
-  let sourceIds: (keyof ISourceSettings)[];
-  $: sourceIds = Object.keys(
-    $settings.sourceSettings
-  ) as (keyof ISourceSettings)[];
 </script>
 
 <div class="container">
   <div class="layout-grid">
-    {#each sourceIds as sourceId}
-      {@const source = $settings.sourceSettings[sourceId]}
+    {#each registeredSources as source}
       <div class="calendar-source">
         <DragHandle {dragDisabled} {startDrag} {handleKeyDown} />
-        {sourceId}
-        <Picker
-          disabled={source.display === "none"}
-          highlighted={source.display === "calendar-and-menu"}
-          bind:value={$settings.sourceSettings[sourceId].color}
+        <Picker bind:value={$settings.sourceSettings[source.id].color} />
+        {source.name}
+        <input
+          class="source-toggle"
+          type="checkbox"
+          bind:checked={$settings.sourceSettings[source.id].enabled}
         />
       </div>
     {/each}
@@ -135,13 +131,13 @@
     transition: border-color 0.1s ease-in-out;
     align-items: center;
     cursor: pointer;
-    background-color: var(--background-secondary);
+    background-color: var(--background-primaryAlt);
     border-radius: 8px;
     border: 1px solid var(--background-modifier-border);
     display: flex;
     font-size: 14px;
     margin: 4px 0;
-    padding: 8px;
+    padding: 12px;
     width: 100%;
 
     // &.disabled {
@@ -156,5 +152,9 @@
     // &.active {
     //   border: 1px solid var(--text-accent-hover);
     // }
+  }
+
+  .source-toggle {
+    margin-left: auto;
   }
 </style>

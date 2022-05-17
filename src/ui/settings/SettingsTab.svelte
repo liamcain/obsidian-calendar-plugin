@@ -1,6 +1,6 @@
 <script lang="ts">
   import { App } from "obsidian";
-  import type { IWeekStartOption } from "obsidian-calendar-ui";
+  import type { ICalendarSource, IWeekStartOption } from "obsidian-calendar-ui";
   import { writable } from "svelte/store";
 
   import {
@@ -19,14 +19,14 @@
 
   export let app: App;
   export let plugin: CalendarPlugin;
-
-  let localization = writable(getLocalizationSettings(app));
+  let registeredSources = plugin.registeredSources;
 
   const weekNumberingOptions = [
     { label: "ISO-8601 numbers", value: "iso-8601" },
     { label: "Locale-aware numbers", value: "locale" },
   ];
 
+  let localization = writable(getLocalizationSettings(app));
   let settings = plugin.settings;
 
   function setWeekStart(e: Event) {
@@ -92,7 +92,7 @@
     Drag to reorder.
   </div>
 
-  <Sources {settings} />
+  <Sources {registeredSources} {settings} />
 
   <h3>Localization</h3>
   <div class="setting-item-description">

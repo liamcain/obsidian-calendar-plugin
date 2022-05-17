@@ -1,9 +1,9 @@
 import type { Moment } from "moment";
-import { parseFrontMatterTags, TFile } from "obsidian";
-import type { ICalendarSource, IEvaluatedMetadata } from "obsidian-calendar-ui";
-import type { IGranularity } from "obsidian-daily-notes-interface";
+import { App, parseFrontMatterTags, TFile } from "obsidian";
+import CalendarPlugin from "src/main";
 
 import { partition } from "src/ui/utils";
+import type { Granularity, ICalendarSource, IEvaluatedMetadata } from "../types";
 
 function getNoteTags(note: TFile | null): string[] {
   if (!note) {
@@ -39,26 +39,31 @@ function getEmojiTag(note: TFile | null): string {
   return emojiTags[0];
 }
 
-export const emojiTagsSource: ICalendarSource = {
-  id: "emoji-tags",
-  name: "Emoji Tags",
-  description: "Show tags containing emojis directly on the calendar face",
+export class EmojiTagsSource implements ICalendarSource {
+  public id: string = "emoji";
+  public name: string = "Emoji Tags";
+  public description: string = "Render emoji tags on your calendar";
 
-  getMetadata: async (
-    _granularity: IGranularity,
-    _date: Moment,
-    file: TFile
-  ): Promise<IEvaluatedMetadata> => {
-    return {
-      attrs: {
-        "data-emoji-tag": getEmojiTag(file),
-      },
+  constructor(readonly app: App, readonly plugin: CalendarPlugin) {}
+
+  public defaultSettings = Object.freeze({
+    color: "var(--text-muted)",
+    enabled: true,
+    wordsPerDot: 250,
+  });
+
+  async getMetadata(granularity: Granularity, date: Moment): Promise<IEvaluatedMetadata> {
+    const periodicNotes = this.app.plugins.getPlugin("periodic-notes");
+    const exactMatch = periodicNotes.getPeriodicNote(granularity, date);
+    const value: IEvaluatedMetadata = {
       dots: [],
-      value: undefined,
+      value: 0,
     };
-  },
 
-  defaultSettings: {
-    display: "none",
-  },
-};
+    if (exactMatch) {
+      console.log("tag", getEmojiTag(exactMatch));
+      value.attrs = { "data-emoji-tag": getEmojiTag(exactMatch) };
+    }
+    return value;
+  }
+}

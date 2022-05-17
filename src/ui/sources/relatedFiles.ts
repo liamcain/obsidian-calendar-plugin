@@ -7,6 +7,7 @@ import type {
 } from "obsidian-calendar-ui";
 
 import CalendarPlugin from "src/main";
+import type { ISourceSettings } from "../types";
 
 import { filledDots } from "./utils";
 
@@ -33,8 +34,8 @@ export class RelatedFilesSource implements ICalendarSource {
     };
   }
 
-  defaultSettings = Object.freeze({
-    color: "#b48ead",
-    display: "calendar-and-menu",
+  defaultSettings: Partial<ISourceSettings> = Object.freeze({
+    color: "var(--text-faint)",
+    enabled: true,
   });
 }

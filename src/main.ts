@@ -1,16 +1,27 @@
 import { Plugin, TFile, WorkspaceLeaf } from "obsidian";
+import { get, type Writable } from "svelte/store";
+
+import { initializeLocaleConfigOnce } from "src/localization";
 
 import { VIEW_TYPE_CALENDAR } from "./constants";
 import { createActiveFileStore, createSettingsStore } from "./ui/stores";
 import { DEFAULT_SETTINGS, type ISettings } from "./settings";
 import CalendarView from "./view";
 import CalendarSettingsTab from "./ui/settings-tab";
-import { type Writable } from "svelte/store";
-import { initializeLocaleConfigOnce } from "src/localization";
+
+import type { ICalendarSource } from "./ui/types";
+import {
+  BackLinksSource,
+  RelatedFilesSource,
+  TasksSource,
+  WordCountSource,
+} from "./ui/sources";
+import { EmojiTagsSource } from "./ui/sources/emojiTags";
 
 export default class CalendarPlugin extends Plugin {
   public settings: Writable<ISettings>;
   public activeFile: Writable<TFile | undefined>;
+  public registeredSources: ICalendarSource[] = [];
 
   onunload(): void {
     this.app.workspace
@@ -58,9 +69,35 @@ export default class CalendarPlugin extends Plugin {
       callback: this.revealActiveNote.bind(this),
     });
 
+    this.registerSources();
     this.addSettingTab(new CalendarSettingsTab(this.app, this));
+    this.app.workspace.onLayoutReady(() => {});
+  }
 
-    this.app.workspace.onLayoutReady(this.initLeaf);
+  registerSources() {
+    // TODO fire event here to allow hooking into registeredSources
+    this.registeredSources.push(
+      ...[
+        new WordCountSource(this.app, this),
+        new TasksSource(this.app, this),
+        new RelatedFilesSource(this.app, this),
+        new BackLinksSource(this.app, this),
+        new EmojiTagsSource(this.app, this),
+      ]
+    );
+
+    const settings = get(this.settings);
+    this.registeredSources.forEach((source, idx) => {
+      const sourceSettings = settings.sourceSettings[source.id];
+      if (!sourceSettings) {
+        settings.sourceSettings[source.id] = {
+          color: "var(--text-muted)",
+          enabled: false,
+          order: idx,
+          ...source.defaultSettings,
+        };
+      }
+    });
   }
 
   revealActiveNote() {

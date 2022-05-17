@@ -88,7 +88,7 @@
   .opacity-grid,
   .swatch {
     border: 1px solid var(--background-modifier-border);
-    border-radius: 50%;
+    border-radius: 4px;
     cursor: pointer;
     display: flex;
     height: 24px;
