@@ -1,36 +1,44 @@
 import type { Moment } from "moment";
-import type { TFile } from "obsidian";
-import type { ICalendarSource, IEvaluatedMetadata } from "obsidian-calendar-ui";
-import type { IGranularity } from "obsidian-daily-notes-interface";
+import { App, TFile } from "obsidian";
+import type {
+  Granularity,
+  ICalendarSource,
+  IEvaluatedMetadata,
+} from "obsidian-calendar-ui";
+
+import CalendarPlugin from "src/main";
 
 import { filledDots } from "./utils";
 
-export function getNumLinks(note: TFile): number {
-  if (!note) {
-    return 0;
-  }
-  return window.app.metadataCache.getCache(note.path)?.links?.length || 0;
+export function getNumLinks(app: App, note: TFile): number {
+  return app.metadataCache.getCache(note.path)?.links?.length || 0;
 }
 
-export const linksSource: ICalendarSource = {
-  id: "links",
-  name: "Links",
+export class LinksSource implements ICalendarSource {
+  public id: string = "links";
+  public name: string = "Links";
+  public description = "Show how many wiki-links this periodic note has";
 
-  getMetadata: async (
-    _granularity: IGranularity,
-    _date: Moment,
-    file: TFile
-  ): Promise<IEvaluatedMetadata> => {
-    const numLinks = getNumLinks(file);
+  constructor(readonly app: App, readonly plugin: CalendarPlugin) {}
+
+  public async getMetadata(
+    granularity: Granularity,
+    date: Moment
+  ): Promise<IEvaluatedMetadata> {
+    const file = app.plugins
+      .getPlugin("periodic-notes")
+      .getPeriodicNote(granularity, date);
+
+    const numBacklinks = file ? getNumLinks(this.app, file) : 0;
 
     return {
-      dots: filledDots(numLinks),
-      value: numLinks,
+      dots: filledDots(numBacklinks),
+      value: numBacklinks,
     };
-  },
+  }
 
-  defaultSettings: Object.freeze({
-    color: "#a3be8c",
+  defaultSettings = Object.freeze({
+    color: "var(--text-faint)",
     enabled: false,
-  }),
-};
+  });
+}

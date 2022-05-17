@@ -17,6 +17,7 @@ import {
   WordCountSource,
 } from "./ui/sources";
 import { EmojiTagsSource } from "./ui/sources/emojiTags";
+import { LinksSource } from "./ui/sources/links";
 
 export default class CalendarPlugin extends Plugin {
   public settings: Writable<ISettings>;
@@ -82,6 +83,7 @@ export default class CalendarPlugin extends Plugin {
         new TasksSource(this.app, this),
         new RelatedFilesSource(this.app, this),
         new BackLinksSource(this.app, this),
+        new LinksSource(this.app, this),
         new EmojiTagsSource(this.app, this),
       ]
     );
