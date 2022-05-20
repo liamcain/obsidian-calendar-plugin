@@ -29,6 +29,8 @@ export interface ISourceSettings {
   color: string;
   enabled: boolean;
   order: number;
+
+  [key: string]: any;
 }
 
 export interface ICalendarSource {

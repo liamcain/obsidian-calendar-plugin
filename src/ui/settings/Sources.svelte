@@ -8,6 +8,7 @@
   import DragHandle from "./DragHandle.svelte";
   import Picker from "./palette/Picker.svelte";
   import type { ICalendarSource } from "../types";
+  import { router } from "./router";
 
   export let settings: Writable<ISettings>;
   export let registeredSources: ICalendarSource[];
@@ -91,7 +92,7 @@
     class="layout-grid"
     use:dndzone={{
       items,
-      dragDisabled: false,
+      dragDisabled,
       dropTargetStyle: {},
       flipDurationMs: 100,
     }}
@@ -99,7 +100,12 @@
     on:finalize={handleFinalize}
   >
     {#each items as source (source.id)}
-      <div class="calendar-source" animate:flip={{ duration: 100 }}>
+      <div
+        class="calendar-source"
+        animate:flip={{ duration: 100 }}
+        on:click|stopPropagation={() =>
+          router.navigate(["Calendar", source.name])}
+      >
         <DragHandle {dragDisabled} {startDrag} {handleKeyDown} />
         <Picker bind:value={$settings.sourceSettings[source.sourceId].color} />
         <div class="source-info">

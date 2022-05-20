@@ -19,7 +19,7 @@
   export let persistedViewState: ICalendarViewState;
 
   let today: Moment;
-  let displayedMonth: Moment;
+  let displayedMonth: Moment = persistedViewState.displayedMonth;
   let settings = plugin.settings;
   let isISO = plugin.shouldUseISOWeekNumbers();
   let enabledSources: ICalendarSource[];
@@ -32,6 +32,7 @@
         $settings.sourceSettings[a.id].order -
         $settings.sourceSettings[b.id].order
     );
+
   $: {
     if (!displayedMonth) {
       displayedMonth = today;

@@ -13,6 +13,8 @@ import type {
   ISourceSettings,
 } from "../types";
 
+const DEFAULT_WORDS_PER_DOT = 250;
+
 interface IWordCountSettings extends ISourceSettings {
   wordsPerDot: number;
 }
@@ -35,7 +37,7 @@ export class WordCountSource implements ICalendarSource {
   public defaultSettings = Object.freeze({
     color: "var(--text-muted)",
     enabled: true,
-    wordsPerDot: 250,
+    wordsPerDot: DEFAULT_WORDS_PER_DOT,
   });
 
   async getMetadata(granularity: Granularity, date: Moment): Promise<IEvaluatedMetadata> {
@@ -46,8 +48,9 @@ export class WordCountSource implements ICalendarSource {
       value: 0,
     };
     if (exactMatch) {
-      const wordsPerDot = get(this.plugin.settings).sourceSettings["wordCount"]
-        ?.wordsPerDot;
+      const wordsPerDot =
+        get(this.plugin.settings).sourceSettings["wordCount"]?.wordsPerDot ||
+        DEFAULT_WORDS_PER_DOT;
       const wordCount = await getFileWordCount(exactMatch);
       const numDots = Math.floor(wordCount / wordsPerDot);
       if (numDots > 0) {
@@ -69,8 +72,9 @@ export class WordCountSource implements ICalendarSource {
       .addText((textfield) => {
         textfield.inputEl.type = "number";
         textfield.setValue(String(sourceSettings.wordsPerDot));
+        textfield.setPlaceholder(`e.g. ${DEFAULT_WORDS_PER_DOT}`);
         textfield.onChange((val) => {
-          saveSettings({ wordsPerDot: Number(val) });
+          saveSettings({ wordsPerDot: val ? parseInt(val, 10) : DEFAULT_WORDS_PER_DOT });
         });
       });
   }

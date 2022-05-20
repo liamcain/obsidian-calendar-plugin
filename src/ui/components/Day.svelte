@@ -33,7 +33,6 @@
   $: metadata = evaluateMetadataFromSources(sources, "day", date, $today);
 
   function handleClick(event: MouseEvent) {
-    console.log("\n\nclicked", event);
     eventHandlers.onClick?.("day", date, event);
     // if (isMobile) {
     //   dispatch("hoverDay", {
