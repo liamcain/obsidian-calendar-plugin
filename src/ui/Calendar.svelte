@@ -25,9 +25,13 @@
   let enabledSources: ICalendarSource[];
 
   $: today = getToday($settings);
-  $: enabledSources = sources.filter(
-    (source) => $settings.sourceSettings[source.id].enabled
-  );
+  $: enabledSources = sources
+    .filter((source) => $settings.sourceSettings[source.id].enabled)
+    .sort(
+      (a, b) =>
+        $settings.sourceSettings[a.id].order -
+        $settings.sourceSettings[b.id].order
+    );
   $: {
     if (!displayedMonth) {
       displayedMonth = today;

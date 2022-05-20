@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, onMount } from "svelte";
+  import { flip } from "svelte/animate";
   import type { Writable } from "svelte/store";
   import { dndzone, TRIGGERS } from "svelte-dnd-action";
 
@@ -12,39 +12,32 @@
   export let settings: Writable<ISettings>;
   export let registeredSources: ICalendarSource[];
 
-  const flipDurationMs = 100;
+  let items = registeredSources
+    .map((s) => ({
+      ...s,
+      sourceId: s.id,
+      order: $settings.sourceSettings[s.id].order,
+    }))
+    .sort((a, b) => a.order - b.order);
+
   let dragDisabled = true;
 
-  // function refreshItems() {
-  //   const allItems = $sources
-  //     .map(getSourceSettings)
-  //     .sort((a, b) => a.order - b.order);
-  //   [enabledItems, disabledItems] = partition(
-  //     allItems,
-  //     (item) => item.display !== "none"
-  //   );
-  // }
+  function handleConsider(event: any) {
+    items = event.detail.items;
+    if (event.detail.info.trigger === TRIGGERS.DRAG_STOPPED) {
+      dragDisabled = true;
+    }
+  }
 
-  // function getSourceSettings(source) {
-  //   return {
-  //     ...source,
-  //     ...(source.defaultSettings || {}),
-  //     ...settings.getSourceSettings(source.id),
-  //   };
-  // }
+  function handleFinalize(event: any) {
+    items = event.detail.items;
+    dragDisabled = true;
 
-  // function handleConsider(event) {
-  //   enabledItems = event.detail.items;
-  //   if (event.detail.info.trigger === TRIGGERS.DRAG_STOPPED) {
-  //     dragDisabled = true;
-  //   }
-  // }
-
-  // function handleFinalize(event) {
-  //   enabledItems = event.detail.items;
-  //   dragDisabled = true;
-  //   saveAllSourceSettings($items);
-  // }
+    // Save order to settigns
+    items.forEach((source, i) => {
+      $settings.sourceSettings[source.sourceId].order = i;
+    });
+  }
 
   function startDrag(e: DragEvent) {
     // preventing default to prevent lag on touch devices (because of the browser checking for screen scrolling)
@@ -52,7 +45,7 @@
     dragDisabled = false;
   }
 
-  function handleKeyDown(e) {
+  function handleKeyDown(e: KeyboardEvent) {
     if ((e.key === "Enter" || e.key === " ") && dragDisabled)
       dragDisabled = false;
   }
@@ -94,11 +87,21 @@
 </script>
 
 <div class="container">
-  <div class="layout-grid">
-    {#each registeredSources as source}
-      <div class="calendar-source">
+  <div
+    class="layout-grid"
+    use:dndzone={{
+      items,
+      dragDisabled: false,
+      dropTargetStyle: {},
+      flipDurationMs: 100,
+    }}
+    on:consider={handleConsider}
+    on:finalize={handleFinalize}
+  >
+    {#each items as source (source.id)}
+      <div class="calendar-source" animate:flip={{ duration: 100 }}>
         <DragHandle {dragDisabled} {startDrag} {handleKeyDown} />
-        <Picker bind:value={$settings.sourceSettings[source.id].color} />
+        <Picker bind:value={$settings.sourceSettings[source.sourceId].color} />
         <div class="source-info">
           <div class="source-name">
             {source.name}
@@ -110,7 +113,7 @@
         <input
           class="source-toggle"
           type="checkbox"
-          bind:checked={$settings.sourceSettings[source.id].enabled}
+          bind:checked={$settings.sourceSettings[source.sourceId].enabled}
         />
       </div>
     {/each}
@@ -130,15 +133,15 @@
 
   .layout-grid {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 6px;
   }
 
   .calendar-source {
     transition: border-color 0.1s ease-in-out;
     align-items: center;
     cursor: pointer;
-    background-color: var(--background-primaryAlt);
+    background-color: var(--background-primary-alt);
     border-radius: 8px;
     border: 1px solid var(--background-modifier-border);
     display: flex;
