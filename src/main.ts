@@ -49,12 +49,9 @@ export default class CalendarPlugin extends Plugin {
 
     this.addCommand({
       id: "show-calendar-view",
-      name: "Open view",
-      checkCallback: (checking: boolean) => {
-        if (checking) {
-          return this.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR).length === 0;
-        }
-        this.initLeaf();
+      name: "Show view",
+      callback: () => {
+        this.app.workspace.ensureSideLeaf(VIEW_TYPE_CALENDAR, "right", false);
       },
     });
 

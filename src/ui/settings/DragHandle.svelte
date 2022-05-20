@@ -28,12 +28,17 @@
   </svg>
 </div>
 
-<style>
+<style lang="scss">
   .handle {
     color: var(--background-modifier-border);
     height: 16px;
     margin-right: 8px;
+    transition: color 0.1s ease-in-out;
     width: 16px;
+
+    :global(:hover) > & {
+      color: var(--interactive-accent);
+    }
   }
 
   :global(.active) .handle {

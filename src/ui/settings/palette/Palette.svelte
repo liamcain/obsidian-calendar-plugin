@@ -105,10 +105,10 @@
     position: absolute;
 
     &:hover {
-      border: 1px solid var(--text-muted);
+      border: 1px solid var(--interactive-accent);
     }
     &.selected {
-      border: 2px solid var(--text-normal);
+      border: 2px solid var(--interactive-accent);
     }
   }
 

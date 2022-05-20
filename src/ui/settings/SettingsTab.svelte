@@ -16,6 +16,7 @@
   import SettingItem from "./SettingItem.svelte";
   import Sources from "./Sources.svelte";
   import Toggle from "./controls/Toggle.svelte";
+  import IconButton from "./IconButton.svelte";
 
   export let app: App;
   export let plugin: CalendarPlugin;
@@ -44,6 +45,10 @@
   function setWeekNumberingPreference(e: Event) {
     const val = (e.target as HTMLSelectElement).value;
     $settings.weekNumberingPreference = val as IWeekNumberingPreference;
+  }
+
+  function resetSources() {
+    //
   }
 </script>
 
@@ -86,18 +91,31 @@
     </SettingItem>
   {/if}
 
-  <h3>Sources</h3>
-  <div class="setting-item-description">
-    Configure what appears on the calendar and what shows in the hover menu.
-    Drag to reorder.
+  <div class="setting-item setting-item-heading">
+    <div class="setting-item-info">
+      <h3 class="setting-item-name">Sources</h3>
+      <div class="setting-item-description">
+        Configure what appears on the calendar and what shows in the hover menu.
+        Drag to reorder.
+      </div>
+    </div>
+    <div class="setting-item-control">
+      <div class="setting-editor-extra-setting-button clickable-icon">
+        <IconButton iconType="reset" size={16} onClick={resetSources} />
+      </div>
+    </div>
   </div>
 
   <Sources {registeredSources} {settings} />
 
-  <h3>Localization</h3>
-  <div class="setting-item-description">
-    These settings are applied to your entire vault, meaning the values you
-    specify here may impact other plugins as well.
+  <div class="setting-item setting-item-heading">
+    <div class="setting-item-info">
+      <h3 class="setting-item-name">Localization</h3>
+      <div class="setting-item-description">
+        These settings are applied to your entire vault, meaning the values you
+        specify here may impact other plugins as well.
+      </div>
+    </div>
   </div>
   <SettingItem
     name="Start week on"
@@ -127,3 +145,13 @@
 
   <Footer />
 </div>
+
+<style>
+  .setting-item {
+    align-items: baseline;
+  }
+
+  .setting-item-name {
+    margin-bottom: 0.25em;
+  }
+</style>

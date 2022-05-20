@@ -12,12 +12,8 @@
 </script>
 
 <div class="toolbar-container">
-  <CalendarSetSwitcher app="{app}" />
-  <SourcesToggler
-    on:changeSources
-    sources="{sources}"
-    selectedSourceIds="{selectedSourceIds}"
-  />
+  <CalendarSetSwitcher {app} />
+  <SourcesToggler on:changeSources {sources} {selectedSourceIds} />
 </div>
 
 <style lang="scss">

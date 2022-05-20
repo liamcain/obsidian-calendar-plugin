@@ -8,12 +8,15 @@
 
   import CalendarPlugin from "src/main";
   import type { ISettings } from "src/settings";
+  import type { ICalendarViewState } from "src/view";
+  import CalendarView from "src/view";
 
   import CalendarBase from "./components/Calendar.svelte";
 
   export let eventHandlers: CalendarEventHandlers;
   export let plugin: CalendarPlugin;
   export let sources: ICalendarSource[];
+  export let persistedViewState: ICalendarViewState;
 
   let today: Moment;
   let displayedMonth: Moment;
@@ -83,6 +86,7 @@
   {isISO}
   {today}
   {eventHandlers}
+  {persistedViewState}
   localeData={today.localeData()}
   showWeekNums={$settings.showWeeklyNote}
   sources={enabledSources}

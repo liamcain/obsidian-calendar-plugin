@@ -47,7 +47,7 @@ export class EmojiTagsSource implements ICalendarSource {
 
   public defaultSettings = Object.freeze({
     color: "var(--text-muted)",
-    enabled: true,
+    enabled: false,
     wordsPerDot: 250,
   });
 

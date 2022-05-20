@@ -33,6 +33,14 @@ declare module "obsidian" {
       file: TFile,
       metadata: PeriodicNoteCachedMetadata
     ): EventRef;
+
+    ensureSideLeaf(
+      viewType: string,
+      side: "left" | "right",
+      split: boolean,
+      before?: boolean,
+      viewState?: ViewState
+    ): void;
   }
 
   interface CommandManager {

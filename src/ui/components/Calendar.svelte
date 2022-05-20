@@ -13,6 +13,7 @@
     ICalendarSource,
     ISourceSettings,
   } from "src/types";
+  import type { ICalendarViewState } from "src/view";
 
   import { ACTIVE_FILE, DISPLAYED_MONTH, IS_MOBILE, TODAY } from "../context";
   import PopoverMenu from "../components/popover/PopoverMenu.svelte";
@@ -38,6 +39,7 @@
   // External sources (All optional)
   export let app: App;
   export let sources: ICalendarSource[] = [];
+  export let persistedViewState: ICalendarViewState;
   export let sourceSettings: Record<string, ISourceSettings> = {};
 
   export let displayedMonth: Moment = today;
@@ -53,7 +55,9 @@
   let popoverMetadata: IEvaluatedMetadata;
   let activeFile = writable<TFile | null>(null);
   let hoveredDay = writable<HTMLElement | null>(null);
-  let selectedSourceIds: string[] = sources.map((s) => s.id);
+  let selectedSourceIds: string[] = persistedViewState.selectedSourceIds
+    ? persistedViewState.selectedSourceIds
+    : sources.map((s) => s.id);
   let visibleSources: ICalendarSource[];
 
   setContext(TODAY, todayStore);
@@ -63,13 +67,13 @@
 
   $: month = getMonth($displayedMonthStore, isISO, localeData);
   $: daysOfWeek = getDaysOfWeek($todayStore, localeData);
-  $: visibleSources = sources;
+  $: visibleSources = sources.filter((s) => selectedSourceIds.includes(s.id));
 
   function openPopover() {
     showPopover = true;
   }
 
-  function updateVisibleSources(event: CustomEvent) {
+  async function updateVisibleSources(event: CustomEvent) {
     const { sourceId, isolated } = event.detail;
     if (isolated) {
       if (
@@ -87,7 +91,12 @@
     } else {
       selectedSourceIds = [...selectedSourceIds, sourceId];
     }
+
     visibleSources = sources.filter((s) => selectedSourceIds.includes(s.id));
+
+    // Store the selected source IDs to the workspace
+    persistedViewState.selectedSourceIds = selectedSourceIds;
+    app.workspace.requestSaveLayout();
   }
 
   function updatePopover(event: CustomEvent) {
@@ -227,11 +236,11 @@
       </tbody>
     </table>
   </div>
-  <PopoverMenu
+  <!-- <PopoverMenu
     referenceElement={$hoveredDay}
     metadata={popoverMetadata}
     isVisible={showPopover}
-  />
+  /> -->
 </div>
 
 <style>

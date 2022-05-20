@@ -1,5 +1,14 @@
 import type { Moment } from "moment";
-import { TFile, ItemView, WorkspaceLeaf, MarkdownView, Platform, App } from "obsidian";
+import {
+  TFile,
+  ItemView,
+  WorkspaceLeaf,
+  MarkdownView,
+  Platform,
+  App,
+  type ViewState,
+  type ViewStateResult,
+} from "obsidian";
 
 import { VIEW_TYPE_CALENDAR } from "src/constants";
 
@@ -12,9 +21,15 @@ import type { Granularity, ICalendarSource } from "./ui/types";
 export function isMetaPressed(e: MouseEvent | KeyboardEvent): boolean {
   return Platform.isMacOS ? e.metaKey : e.ctrlKey;
 }
+
+export interface ICalendarViewState {
+  selectedSourceIds: string[];
+}
+
 export default class CalendarView extends ItemView {
   private calendar: Calendar;
   public sources: ICalendarSource[] = [];
+  private persistedViewState: ICalendarViewState;
 
   constructor(
     readonly leaf: WorkspaceLeaf,
@@ -32,6 +47,9 @@ export default class CalendarView extends ItemView {
     this.registerEvent(this.app.workspace.on("file-open", this.onFileOpen));
 
     this.sources = [...plugin.registeredSources];
+    this.persistedViewState = {
+      selectedSourceIds: [],
+    };
   }
 
   getViewType(): string {
@@ -46,9 +64,16 @@ export default class CalendarView extends ItemView {
     return "calendar-with-checkmark";
   }
 
-  onClose(): Promise<void> {
+  async onClose(): Promise<void> {
     this.calendar?.$destroy();
-    return Promise.resolve();
+  }
+
+  async setState(state: ICalendarViewState): Promise<void> {
+    this.persistedViewState = state;
+  }
+
+  getState() {
+    return this.persistedViewState;
   }
 
   async onOpen(): Promise<void> {
@@ -64,6 +89,7 @@ export default class CalendarView extends ItemView {
         target: this.contentEl,
         props: {
           plugin: this.plugin,
+          persistedViewState: this.persistedViewState,
           sources: this.sources,
           eventHandlers: {
             onClick: this.openOrCreatePeriodicNote,

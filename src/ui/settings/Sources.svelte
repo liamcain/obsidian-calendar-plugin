@@ -99,7 +99,14 @@
       <div class="calendar-source">
         <DragHandle {dragDisabled} {startDrag} {handleKeyDown} />
         <Picker bind:value={$settings.sourceSettings[source.id].color} />
-        {source.name}
+        <div class="source-info">
+          <div class="source-name">
+            {source.name}
+          </div>
+          <div class="source-description setting-item-description">
+            {source.description}
+          </div>
+        </div>
         <input
           class="source-toggle"
           type="checkbox"
@@ -140,21 +147,13 @@
     padding: 12px;
     width: 100%;
 
-    // &.disabled {
-    //   color: var(--text-muted);
-    //   padding-left: 32px;
-    // }
-
     &:hover {
-      border: 1px solid var(--text-faint);
+      border-color: var(--interactive-accent);
     }
-
-    // &.active {
-    //   border: 1px solid var(--text-accent-hover);
-    // }
   }
 
   .source-toggle {
     margin-left: auto;
+    transform: scale(1.4) translateX(-4px);
   }
 </style>
