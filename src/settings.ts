@@ -13,6 +13,7 @@ export interface ISettings {
 
   // Weekly Note settings
   showWeeklyNote: boolean;
+  showWeeklyNoteRight: boolean;
   weeklyNoteFormat: string;
   weeklyNoteTemplate: string;
   weeklyNoteFolder: string;
@@ -37,6 +38,7 @@ export const defaultSettings = Object.freeze({
   wordsPerDot: DEFAULT_WORDS_PER_DOT,
 
   showWeeklyNote: false,
+  showWeeklyNoteRight: false,
   weeklyNoteFormat: "",
   weeklyNoteTemplate: "",
   weeklyNoteFolder: "",
@@ -81,6 +83,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
     this.addWeekStartSetting();
     this.addConfirmCreateSetting();
     this.addShowWeeklyNoteSetting();
+    this.addShowWeeklyNoteRightSetting();
 
     if (
       this.plugin.options.showWeeklyNote &&
@@ -172,6 +175,19 @@ export class CalendarSettingsTab extends PluginSettingTab {
           this.display(); // show/hide weekly settings
         });
       });
+  }
+
+  addShowWeeklyNoteRightSetting(): void {
+    new Setting(this.containerEl)
+        .setName("Change week number side")
+        .setDesc("Enable this to show week numbers to the right of the calendar")
+        .addToggle((toggle) => {
+          toggle.setValue(this.plugin.options.showWeeklyNoteRight);
+          toggle.onChange(async (value) => {
+            this.plugin.writeOptions(() => ({ showWeeklyNoteRight: value }));
+            this.display(); // show/hide weekly settings
+          });
+        });
   }
 
   addWeeklyNoteFormatSetting(): void {

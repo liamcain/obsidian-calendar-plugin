@@ -10,6 +10,7 @@ export function getDefaultSettings(
       shouldConfirmBeforeCreate: false,
       wordsPerDot: 50,
       showWeeklyNote: false,
+      showWeeklyNoteRight: false,
       weeklyNoteFolder: "",
       weeklyNoteFormat: "",
       weeklyNoteTemplate: "",
