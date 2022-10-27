@@ -54,6 +54,27 @@ export default class CalendarPlugin extends Plugin {
     });
 
     this.addCommand({
+      id: "show-calendar-tab",
+      name: "Open calendar tab",
+      callback: async () => {
+        const existing = this.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
+        if (existing.length) {
+          this.app.workspace.revealLeaf(existing[0]);
+          return;
+        }
+
+        await this.app.workspace.getRightLeaf(false).setViewState({
+          type: VIEW_TYPE_CALENDAR,
+          active: true,
+        });
+
+        this.app.workspace.revealLeaf(
+          this.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR)[0]
+        );
+      },
+    });
+
+    this.addCommand({
       id: "open-weekly-note",
       name: "Open Weekly Note",
       checkCallback: (checking) => {
