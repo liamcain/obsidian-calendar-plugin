@@ -10,6 +10,8 @@ export interface ISettings {
   wordsPerDot: number;
   weekStart: IWeekStartOption;
   shouldConfirmBeforeCreate: boolean;
+  enableViewModeOverride: boolean,
+  viewModeOverride: string;
 
   // Weekly Note settings
   showWeeklyNote: boolean;
@@ -33,6 +35,8 @@ const weekdays = [
 export const defaultSettings = Object.freeze({
   shouldConfirmBeforeCreate: true,
   weekStart: "locale" as IWeekStartOption,
+  enableViewModeOverride: false,
+  viewModeOverride: app.vault.getConfig("defaultViewMode"),
 
   wordsPerDot: DEFAULT_WORDS_PER_DOT,
 
@@ -80,6 +84,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
     this.addDotThresholdSetting();
     this.addWeekStartSetting();
     this.addConfirmCreateSetting();
+    this.addViewModeOverrideSetting();
     this.addShowWeeklyNoteSetting();
 
     if (
@@ -156,6 +161,40 @@ export class CalendarSettingsTab extends PluginSettingTab {
         toggle.onChange(async (value) => {
           this.plugin.writeOptions(() => ({
             shouldConfirmBeforeCreate: value,
+          }));
+        });
+      });
+  }
+
+  addViewModeOverrideSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Override default view for new notes")
+      .setDesc("Override the default view for new notes created via the calendar")
+      .addToggle((toggle) => {
+          toggle.setValue(this.plugin.options.enableViewModeOverride);
+          toggle.onChange(async (value) => {
+                  this.plugin.writeOptions(() => ({
+                    enableViewModeOverride: value,
+                  }));
+                  // Force refresh
+                  this.display();
+              });
+      });
+
+    if (!this.plugin.options.enableViewModeOverride) {
+      return;
+    }
+
+    new Setting(this.containerEl)
+      .setName("Default view for new note:")
+      .setDesc("The default view that a new calendar note gets opened in")
+      .addDropdown((dropdown) => {
+        dropdown.addOption("preview", `Reading view`);
+        dropdown.addOption("source", `Editing view`);
+        dropdown.setValue(this.plugin.options.viewModeOverride);
+        dropdown.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({
+            viewModeOverride: value,
           }));
         });
       });
