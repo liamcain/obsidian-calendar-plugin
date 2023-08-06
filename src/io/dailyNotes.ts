@@ -26,8 +26,10 @@ export async function tryToCreateDailyNote(
     const leaf = inNewSplit
       ? workspace.splitActiveLeaf()
       : workspace.getUnpinnedLeaf();
-
-    await leaf.openFile(dailyNote, { active : true });
+    const openState = settings.enableViewModeOverride
+      ? { active : true, state : { mode : settings.viewModeOverride } }
+      : { active : true };
+    await leaf.openFile(dailyNote, openState);
     cb?.(dailyNote);
   };
 
