@@ -273,20 +273,17 @@ export default class CalendarView extends ItemView {
       return;
     }
 
-    let leaf;
+    let leaf: WorkspaceLeaf;
     if (ctrlPressed) {
       if (this.settings.ctrlClickOpensInNewTab) {
         leaf = workspace.getLeaf('tab');
       } else {
-        leaf = workspace.splitActiveLeaf();
+        leaf = workspace.getLeaf('split', 'vertical');
       }
     } else {
-      leaf = workspace.getUnpinnedLeaf();
+      leaf = workspace.getLeaf(false);
     }
     await leaf.openFile(existingFile);
-
-    activeFile.setFile(existingFile);
-    workspace.setActiveLeaf(leaf, true, true)
   }
 
   async openOrCreateDailyNote(
@@ -310,18 +307,16 @@ export default class CalendarView extends ItemView {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mode = (this.app.vault as any).getConfig("defaultViewMode");
-    let leaf;
+    let leaf: WorkspaceLeaf;
     if (ctrlPressed) {
       if (this.settings.ctrlClickOpensInNewTab) {
         leaf = workspace.getLeaf('tab');
       } else {
-        leaf = workspace.splitActiveLeaf();
+        leaf = workspace.getLeaf('split', 'vertical');
       }
     } else {
-      leaf = workspace.getUnpinnedLeaf();
+      leaf = workspace.getLeaf(false);
     }
     await leaf.openFile(existingFile, { active : true, mode });
-
-    activeFile.setFile(existingFile);
   }
 }

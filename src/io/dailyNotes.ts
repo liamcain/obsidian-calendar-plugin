@@ -1,5 +1,5 @@
 import type { Moment } from "moment";
-import type { TFile } from "obsidian";
+import type { TFile, WorkspaceLeaf } from "obsidian";
 import {
   createDailyNote,
   getDailyNoteSettings,
@@ -23,15 +23,15 @@ export async function tryToCreateDailyNote(
 
   const createFile = async () => {
     const dailyNote = await createDailyNote(date);
-    let leaf;
+    let leaf: WorkspaceLeaf;
     if (ctrlPressed) {
       if (settings.ctrlClickOpensInNewTab) {
         leaf = workspace.getLeaf('tab');
       } else {
-        leaf = workspace.splitActiveLeaf();
+        leaf = workspace.getLeaf('split', 'vertical');
       }
     } else {
-      leaf = workspace.getUnpinnedLeaf();
+      leaf = workspace.getLeaf(false);
     }
     await leaf.openFile(dailyNote, { active : true });
     cb?.(dailyNote);
