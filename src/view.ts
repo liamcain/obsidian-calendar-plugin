@@ -305,8 +305,6 @@ export default class CalendarView extends ItemView {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mode = (this.app.vault as any).getConfig("defaultViewMode");
     let leaf: WorkspaceLeaf;
     if (ctrlPressed) {
       if (this.settings.ctrlClickOpensInNewTab) {
@@ -317,6 +315,6 @@ export default class CalendarView extends ItemView {
     } else {
       leaf = workspace.getLeaf(false);
     }
-    await leaf.openFile(existingFile, { active : true, mode });
+    await leaf.openFile(existingFile);
   }
 }
