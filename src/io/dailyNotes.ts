@@ -1,5 +1,5 @@
 import type { Moment } from "moment";
-import type { TFile } from "obsidian";
+import type { TFile, WorkspaceLeaf } from "obsidian";
 import {
   createDailyNote,
   getDailyNoteSettings,
@@ -13,7 +13,7 @@ import { createConfirmationDialog } from "src/ui/modal";
  */
 export async function tryToCreateDailyNote(
   date: Moment,
-  inNewSplit: boolean,
+  ctrlPressed: boolean,
   settings: ISettings,
   cb?: (newFile: TFile) => void
 ): Promise<void> {
@@ -23,10 +23,16 @@ export async function tryToCreateDailyNote(
 
   const createFile = async () => {
     const dailyNote = await createDailyNote(date);
-    const leaf = inNewSplit
-      ? workspace.splitActiveLeaf()
-      : workspace.getUnpinnedLeaf();
-
+    let leaf: WorkspaceLeaf;
+    if (ctrlPressed) {
+      if (settings.ctrlClickOpensInNewTab) {
+        leaf = workspace.getLeaf('tab');
+      } else {
+        leaf = workspace.getLeaf('split', 'vertical');
+      }
+    } else {
+      leaf = workspace.getLeaf(false);
+    }
     await leaf.openFile(dailyNote, { active : true });
     cb?.(dailyNote);
   };

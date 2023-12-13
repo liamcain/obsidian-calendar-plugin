@@ -11,6 +11,15 @@ export function showFileMenu(app: App, file: TFile, position: Point): void {
         (<any>app).fileManager.promptForFileDeletion(file);
       })
   );
+  fileMenu.addItem((item) =>
+    item
+      .setTitle("Open in new tab")
+      .setIcon("file-plus")
+      .setSection("open")
+      .onClick(() => {
+        app.workspace.openLinkText(file.path, "", true);
+      })
+  );
 
   app.workspace.trigger(
     "file-menu",

@@ -257,7 +257,7 @@ export default class CalendarView extends ItemView {
 
   async openOrCreateWeeklyNote(
     date: Moment,
-    inNewSplit: boolean
+    ctrlPressed: boolean
   ): Promise<void> {
     const { workspace } = this.app;
 
@@ -267,24 +267,28 @@ export default class CalendarView extends ItemView {
 
     if (!existingFile) {
       // File doesn't exist
-      tryToCreateWeeklyNote(startOfWeek, inNewSplit, this.settings, (file) => {
+      tryToCreateWeeklyNote(startOfWeek, ctrlPressed, this.settings, (file) => {
         activeFile.setFile(file);
       });
       return;
     }
 
-    const leaf = inNewSplit
-      ? workspace.splitActiveLeaf()
-      : workspace.getUnpinnedLeaf();
+    let leaf: WorkspaceLeaf;
+    if (ctrlPressed) {
+      if (this.settings.ctrlClickOpensInNewTab) {
+        leaf = workspace.getLeaf('tab');
+      } else {
+        leaf = workspace.getLeaf('split', 'vertical');
+      }
+    } else {
+      leaf = workspace.getLeaf(false);
+    }
     await leaf.openFile(existingFile);
-
-    activeFile.setFile(existingFile);
-    workspace.setActiveLeaf(leaf, true, true)
   }
 
   async openOrCreateDailyNote(
     date: Moment,
-    inNewSplit: boolean
+    ctrlPressed: boolean
   ): Promise<void> {
     const { workspace } = this.app;
     const existingFile = getDailyNote(date, get(dailyNotes));
@@ -292,7 +296,7 @@ export default class CalendarView extends ItemView {
       // File doesn't exist
       tryToCreateDailyNote(
         date,
-        inNewSplit,
+        ctrlPressed,
         this.settings,
         (dailyNote: TFile) => {
           activeFile.setFile(dailyNote);
@@ -301,13 +305,16 @@ export default class CalendarView extends ItemView {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mode = (this.app.vault as any).getConfig("defaultViewMode");
-    const leaf = inNewSplit
-      ? workspace.splitActiveLeaf()
-      : workspace.getUnpinnedLeaf();
-    await leaf.openFile(existingFile, { active : true, mode });
-
-    activeFile.setFile(existingFile);
+    let leaf: WorkspaceLeaf;
+    if (ctrlPressed) {
+      if (this.settings.ctrlClickOpensInNewTab) {
+        leaf = workspace.getLeaf('tab');
+      } else {
+        leaf = workspace.getLeaf('split', 'vertical');
+      }
+    } else {
+      leaf = workspace.getLeaf(false);
+    }
+    await leaf.openFile(existingFile);
   }
 }
