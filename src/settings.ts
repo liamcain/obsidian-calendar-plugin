@@ -10,6 +10,7 @@ export interface ISettings {
   wordsPerDot: number;
   weekStart: IWeekStartOption;
   shouldConfirmBeforeCreate: boolean;
+  pinDailyNoteToTopLeft: boolean;
 
   // Weekly Note settings
   showWeeklyNote: boolean;
@@ -32,6 +33,7 @@ const weekdays = [
 
 export const defaultSettings = Object.freeze({
   shouldConfirmBeforeCreate: true,
+  pinDailyNoteToTopLeft: false,
   weekStart: "locale" as IWeekStartOption,
 
   wordsPerDot: DEFAULT_WORDS_PER_DOT,
@@ -80,6 +82,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
     this.addDotThresholdSetting();
     this.addWeekStartSetting();
     this.addConfirmCreateSetting();
+    this.addPinDailyNoteToTopLeftSetting();
     this.addShowWeeklyNoteSetting();
 
     if (
@@ -156,6 +159,20 @@ export class CalendarSettingsTab extends PluginSettingTab {
         toggle.onChange(async (value) => {
           this.plugin.writeOptions(() => ({
             shouldConfirmBeforeCreate: value,
+          }));
+        });
+      });
+  }
+
+  addPinDailyNoteToTopLeftSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Pin daily note to top left")
+      .setDesc("Daily note will always be displayed in the first (top left) pane")
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.options.pinDailyNoteToTopLeft);
+        toggle.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({
+            pinDailyNoteToTopLeft: value,
           }));
         });
       });

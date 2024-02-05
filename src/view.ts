@@ -303,9 +303,14 @@ export default class CalendarView extends ItemView {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mode = (this.app.vault as any).getConfig("defaultViewMode");
-    const leaf = inNewSplit
-      ? workspace.splitActiveLeaf()
-      : workspace.getUnpinnedLeaf();
+    
+    const markdownLeaves = this.settings.pinDailyNoteToTopLeft 
+                            ? workspace.getLeavesOfType("markdown")
+                            : null;
+    const leaf = markdownLeaves && markdownLeaves.length > 0
+                    ? markdownLeaves[0]
+                    : inNewSplit ? workspace.splitActiveLeaf() : workspace.getUnpinnedLeaf();
+
     await leaf.openFile(existingFile, { active : true, mode });
 
     activeFile.setFile(existingFile);
