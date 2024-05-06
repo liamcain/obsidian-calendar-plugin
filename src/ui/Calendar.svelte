@@ -22,6 +22,7 @@
   export let onHoverWeek: (date: Moment, targetEl: EventTarget) => boolean;
   export let onClickDay: (date: Moment, isMetaPressed: boolean) => boolean;
   export let onClickWeek: (date: Moment, isMetaPressed: boolean) => boolean;
+  export let onClickMonth: (date: Moment, isMetaPressed: boolean) => boolean;
   export let onContextMenuDay: (date: Moment, event: MouseEvent) => boolean;
   export let onContextMenuWeek: (date: Moment, event: MouseEvent) => boolean;
 
@@ -62,6 +63,7 @@
   {onContextMenuWeek}
   {onClickDay}
   {onClickWeek}
+  {onClickMonth}
   bind:displayedMonth
   localeData={today.localeData()}
   selectedId={$activeFile}

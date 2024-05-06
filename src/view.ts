@@ -10,8 +10,7 @@ import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
 import { get } from "svelte/store";
 
 import { TRIGGER_ON_OPEN, VIEW_TYPE_CALENDAR } from "src/constants";
-import { tryToCreateDailyNote } from "src/io/dailyNotes";
-import { tryToCreateWeeklyNote } from "src/io/weeklyNotes";
+import { getDateForPeriodicNote, tryToCreatePeriodicNote, Period } from "src/io/periodicNotes";
 import type { ISettings } from "src/settings";
 
 import Calendar from "./ui/Calendar.svelte";
@@ -33,6 +32,7 @@ export default class CalendarView extends ItemView {
 
     this.openOrCreateDailyNote = this.openOrCreateDailyNote.bind(this);
     this.openOrCreateWeeklyNote = this.openOrCreateWeeklyNote.bind(this);
+    this.openOrCreateMonthlyNote = this.openOrCreateMonthlyNote.bind(this);
 
     this.onNoteSettingsUpdate = this.onNoteSettingsUpdate.bind(this);
     this.onFileCreated = this.onFileCreated.bind(this);
@@ -105,6 +105,7 @@ export default class CalendarView extends ItemView {
       props: {
         onClickDay: this.openOrCreateDailyNote,
         onClickWeek: this.openOrCreateWeeklyNote,
+        onClickMonth: this.openOrCreateMonthlyNote,
         onHoverDay: this.onHoverDay,
         onHoverWeek: this.onHoverWeek,
         onContextMenuDay: this.onContextMenuDay,
@@ -255,45 +256,21 @@ export default class CalendarView extends ItemView {
     }
   }
 
-  async openOrCreateWeeklyNote(
+  async openOrCreatePeriodicNote(
+    noteType: Period,
     date: Moment,
-    inNewSplit: boolean
+    inNewSplit: boolean,
   ): Promise<void> {
     const { workspace } = this.app;
-
-    const startOfWeek = date.clone().startOf("week");
-
-    const existingFile = getWeeklyNote(date, get(weeklyNotes));
-
+    const periodicNoteDate = getDateForPeriodicNote(date, noteType);
+    const existingFile = getDailyNote(periodicNoteDate, get(dailyNotes));
     if (!existingFile) {
       // File doesn't exist
-      tryToCreateWeeklyNote(startOfWeek, inNewSplit, this.settings, (file) => {
-        activeFile.setFile(file);
-      });
-      return;
-    }
-
-    const leaf = inNewSplit
-      ? workspace.splitActiveLeaf()
-      : workspace.getUnpinnedLeaf();
-    await leaf.openFile(existingFile);
-
-    activeFile.setFile(existingFile);
-    workspace.setActiveLeaf(leaf, true, true)
-  }
-
-  async openOrCreateDailyNote(
-    date: Moment,
-    inNewSplit: boolean
-  ): Promise<void> {
-    const { workspace } = this.app;
-    const existingFile = getDailyNote(date, get(dailyNotes));
-    if (!existingFile) {
-      // File doesn't exist
-      tryToCreateDailyNote(
+      tryToCreatePeriodicNote(
         date,
         inNewSplit,
         this.settings,
+        Period.Daily,
         (dailyNote: TFile) => {
           activeFile.setFile(dailyNote);
         }
@@ -310,4 +287,27 @@ export default class CalendarView extends ItemView {
 
     activeFile.setFile(existingFile);
   }
+  
+  async openOrCreateDailyNote(
+    date: Moment,
+    inNewSplit: boolean
+  ) {
+    this.openOrCreatePeriodicNote(Period.Daily, date, inNewSplit);
+  }
+
+  async openOrCreateWeeklyNote(
+    date: Moment,
+    inNewSplit: boolean
+  ) {
+    this.openOrCreatePeriodicNote(Period.Weekly, date, inNewSplit);
+  }
+
+  async openOrCreateMonthlyNote(
+    date: Moment,
+    inNewSplit: boolean
+  ) {
+    this.openOrCreatePeriodicNote(Period.Monthly, date, inNewSplit);
+  }
+  
+
 }
