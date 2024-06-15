@@ -1,20 +1,29 @@
 {
   "name": "calendar",
-  "version": "1.5.10",
+  "version": "1.5.11",
   "description": "Calendar view of your daily notes",
   "author": "liamcain",
   "main": "main.js",
   "license": "MIT",
+  "//": "node engine as follows from `process.version` in obsidian; npm for workspace support",
+  "engines": {
+    "node": "^18.18.2",
+    "npm": ">7"
+  },
+  "engineStrict": true,
+  "packageManager": "pnpm@9.3.0+sha512.ee7b93e0c2bd11409c6424f92b866f31d3ea1bef5fbe47d3c7500cdc3c9668833d2e55681ad66df5b640c61fa9dc25d546efa54d76d7f8bf54b13614ac293631",
   "scripts": {
+    "distclean": "git clean -dfx",
     "lint": "svelte-check && eslint . --ext .ts",
-    "build": "npm run lint && rollup -c",
+    "build": "rollup -c",
+    "prepare": "npm run build",
     "test": "jest --passWithNoTests",
     "test:watch": "yarn test -- --watch"
   },
   "dependencies": {
-    "obsidian": "obsidianmd/obsidian-api#master",
-    "obsidian-calendar-ui": "0.3.12",
-    "obsidian-daily-notes-interface": "0.9.0",
+    "obsidian": "^0.12.0",
+    "obsidian-calendar-ui": "*",
+    "obsidian-daily-notes-interface": "*",
     "svelte": "3.35.0",
     "tslib": "2.1.0"
   },
@@ -56,5 +65,9 @@
       "ts",
       "svelte"
     ]
-  }
+  },
+  "workspaces": [
+    "packages/daily-notes-api",
+    "packages/ui"
+  ]
 }

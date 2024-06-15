@@ -4,3 +4,5 @@ data.json
 main.js
 .vscode/
 *.code-workspace
+*.tsbuildinfo
+.rollup.cache/*

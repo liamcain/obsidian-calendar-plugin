@@ -1,0 +1,12 @@
+{
+  "extends": "@tsconfig/svelte/tsconfig.json",
+
+  "include": ["src/*.ts", "src/components/*.svelte", "src/components/popover/*.svelte", "popper.d.ts"],
+  "compilerOptions": {
+    "types": ["node", "jest", "svelte"],
+    "baseUrl": ".",
+    "paths": {
+      "src": ["src/*"]
+    }
+  }
+}

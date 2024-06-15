@@ -1,0 +1,3 @@
+export const DEFAULT_DAILY_NOTE_FORMAT = "YYYY-MM-DD";
+export const DEFAULT_WEEKLY_NOTE_FORMAT = "gggg-[W]ww";
+export const DEFAULT_MONTHLY_NOTE_FORMAT = "YYYY-MM";

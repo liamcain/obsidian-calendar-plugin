@@ -1,0 +1,63 @@
+{
+  "name": "obsidian-daily-notes-interface",
+  "version": "0.10.0",
+  "description": "Interface for creating daily notes in Obsidian",
+  "author": "liamcain",
+  "license": "MIT",
+  "engines": {
+    "node": "^18.18.2",
+    "npm": ">7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/liamcain/obsidian-daily-notes-interface"
+  },
+  "files": [
+    "dist/mjs/**",
+    "dist/bundled.cjs"
+  ],
+  "main": "dist/bundled.cjs",
+  "module": "dist/mjs/index.js",
+  "scripts": {
+    "clean": "rm -rf dist/*",
+    "distclean": "git clean -dfx",
+    "lint": "eslint . --ext .ts",
+    "build": "tsc --build tsconfig.json",
+    "prepare": "npm run build && rollup -c",
+    "test": "jest",
+    "test:watch": "yarn test -- --watch"
+  },
+  "dependencies": {
+    "obsidian": "^0.12.0",
+    "tslib": "2.1.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "18.0.0",
+    "@rollup/plugin-node-resolve": "11.2.1",
+    "@rollup/plugin-typescript": "8.2.1",
+    "@types/jest": "26.0.22",
+    "@types/moment": "2.13.0",
+    "@typescript-eslint/eslint-plugin": "4.20.0",
+    "@typescript-eslint/parser": "4.20.0",
+    "eslint": "7.23.0",
+    "jest": "26.6.3",
+    "moment": "2.29.1",
+    "moment-timezone": "0.5.33",
+    "rollup": "2.44.0",
+    "ts-jest": "26.5.4",
+    "typescript": "4.2.3"
+  },
+  "jest": {
+    "clearMocks": true,
+    "moduleNameMapper": {
+      "src/(.*)": "<rootDir>/src/$1"
+    },
+    "transform": {
+      "^.+\\.ts$": "ts-jest"
+    },
+    "moduleFileExtensions": [
+      "js",
+      "ts"
+    ]
+  }
+}

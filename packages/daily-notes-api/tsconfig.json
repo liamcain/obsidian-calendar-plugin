@@ -1,0 +1,21 @@
+{
+
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "composite": true,
+    "inlineSourceMap": true,
+    "declarationMap": true,
+    "module": "esnext",
+    // per https://compat-table.github.io/compat-table/es2016plus/#node18_3 everything but the 
+    // /d flag of regexes is good through 2022, so ... let's _not_ polyfill for no reason
+    "target": "esnext",
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "outDir": "dist/mjs",
+    "rootDir": "src",
+  },
+  "include": [
+    "src/*.ts"
+  ],
+}
