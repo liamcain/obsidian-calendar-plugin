@@ -23,6 +23,7 @@ import {
   tasksSource,
   wordCountSource,
 } from "./ui/sources";
+import openLeaf from "./openLeaf";
 
 export default class CalendarView extends ItemView {
   private calendar: Calendar;
@@ -255,10 +256,7 @@ export default class CalendarView extends ItemView {
     }
   }
 
-  async openOrCreateWeeklyNote(
-    date: Moment,
-    inNewSplit: boolean
-  ): Promise<void> {
+  async openOrCreateWeeklyNote(date: Moment, inNewTab: boolean): Promise<void> {
     const { workspace } = this.app;
 
     const startOfWeek = date.clone().startOf("week");
@@ -267,47 +265,38 @@ export default class CalendarView extends ItemView {
 
     if (!existingFile) {
       // File doesn't exist
-      tryToCreateWeeklyNote(startOfWeek, inNewSplit, this.settings, (file) => {
+      tryToCreateWeeklyNote(startOfWeek, inNewTab, this.settings, (file) => {
         activeFile.setFile(file);
       });
       return;
     }
 
-    const leaf = inNewSplit
-      ? workspace.splitActiveLeaf()
-      : workspace.getUnpinnedLeaf();
+    const leaf = openLeaf(inNewTab);
     await leaf.openFile(existingFile);
 
     activeFile.setFile(existingFile);
-    workspace.setActiveLeaf(leaf, true, true)
+    workspace.setActiveLeaf(leaf, true, true);
   }
 
-  async openOrCreateDailyNote(
-    date: Moment,
-    inNewSplit: boolean
-  ): Promise<void> {
-    const { workspace } = this.app;
+  async openOrCreateDailyNote(date: Moment, inNewTab: boolean): Promise<void> {
     const existingFile = getDailyNote(date, get(dailyNotes));
     if (!existingFile) {
       // File doesn't exist
       tryToCreateDailyNote(
         date,
-        inNewSplit,
+        inNewTab,
         this.settings,
         (dailyNote: TFile) => {
           activeFile.setFile(dailyNote);
         }
       );
-      return;
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mode = (this.app.vault as any).getConfig("defaultViewMode");
+      const leaf = openLeaf(inNewTab);
+      await leaf.openFile(existingFile, { active: true, mode });
+
+      activeFile.setFile(existingFile);
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mode = (this.app.vault as any).getConfig("defaultViewMode");
-    const leaf = inNewSplit
-      ? workspace.splitActiveLeaf()
-      : workspace.getUnpinnedLeaf();
-    await leaf.openFile(existingFile, { active : true, mode });
-
-    activeFile.setFile(existingFile);
   }
 }
