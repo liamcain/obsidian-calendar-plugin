@@ -78,7 +78,7 @@ export default class CalendarView extends ItemView {
   }
 
   getIcon(): string {
-    return "calendar-with-checkmark";
+    return "calendar-days";
   }
 
   onClose(): Promise<void> {
