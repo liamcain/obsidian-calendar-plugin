@@ -60,14 +60,14 @@ export default class CalendarPlugin extends Plugin {
         if (checking) {
           return !appHasPeriodicNotesPluginLoaded();
         }
-        this.view.openOrCreateWeeklyNote(window.moment(), false);
+        this.openOrCreateWeeklyNote(window.moment(), false);
       },
     });
 
     this.addCommand({
       id: "reveal-active-note",
       name: "Reveal active note",
-      callback: () => this.view.revealActiveNote(),
+      callback: () => this.view?.revealActiveNote(),
     });
 
     await this.loadOptions();
@@ -109,5 +109,20 @@ export default class CalendarPlugin extends Plugin {
   ): Promise<void> {
     settings.update((old) => ({ ...old, ...changeOpts(old) }));
     await this.saveData(this.options);
+  }
+
+  openOrCreateWeeklyNote(date: Moment, inNewSplit: boolean): void {
+    if (!this.view) {
+      // If the calendar view is not initialized, create it
+      this.initLeaf();
+    }
+    // Use setTimeout to ensure the view is created before accessing it
+    setTimeout(() => {
+      if (this.view) {
+        this.view.openOrCreateWeeklyNote(date, inNewSplit);
+      } else {
+        console.error("Calendar view is not initialized");
+      }
+    }, 0);
   }
 }
