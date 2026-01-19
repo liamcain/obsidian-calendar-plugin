@@ -1,5 +1,8 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import { appHasDailyNotesPluginLoaded } from "obsidian-daily-notes-interface";
+import {
+  appHasDailyNotesPluginLoaded,
+  type IDateMatchingSource,
+} from "obsidian-daily-notes-interface";
 import type { ILocaleOverride, IWeekStartOption } from "obsidian-calendar-ui";
 
 import { DEFAULT_WEEK_FORMAT, DEFAULT_WORDS_PER_DOT } from "src/constants";
@@ -16,6 +19,9 @@ export interface ISettings {
   weeklyNoteFormat: string;
   weeklyNoteTemplate: string;
   weeklyNoteFolder: string;
+
+  // Date matching settings
+  dateMatchingSource: IDateMatchingSource;
 
   localeOverride: ILocaleOverride;
 }
@@ -40,6 +46,8 @@ export const defaultSettings = Object.freeze({
   weeklyNoteFormat: "",
   weeklyNoteTemplate: "",
   weeklyNoteFolder: "",
+
+  dateMatchingSource: "filename" as IDateMatchingSource,
 
   localeOverride: "system-default",
 });
@@ -102,6 +110,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
     this.containerEl.createEl("h3", {
       text: "Advanced Settings",
     });
+    this.addDateMatchingSourceSetting();
     this.addLocaleOverrideSetting();
   }
 
@@ -209,6 +218,25 @@ export class CalendarSettingsTab extends PluginSettingTab {
         textfield.setValue(this.plugin.options.weeklyNoteFolder);
         textfield.onChange(async (value) => {
           this.plugin.writeOptions(() => ({ weeklyNoteFolder: value }));
+        });
+      });
+  }
+
+  addDateMatchingSourceSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Date matching source")
+      .setDesc(
+        "Choose how daily notes are matched to calendar dates. 'Filename' uses the note's filename, 'Aliases' uses the aliases property in front matter, 'Both' tries filename first then aliases."
+      )
+      .addDropdown((dropdown) => {
+        dropdown.addOption("filename", "Filename (default)");
+        dropdown.addOption("aliases", "Aliases (front matter)");
+        dropdown.addOption("both", "Both (filename, then aliases)");
+        dropdown.setValue(this.plugin.options.dateMatchingSource);
+        dropdown.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({
+            dateMatchingSource: value as IDateMatchingSource,
+          }));
         });
       });
   }
