@@ -8,7 +8,8 @@
   "scripts": {
     "lint": "svelte-check && eslint . --ext .ts",
     "build": "npm run lint && rollup -c",
-    "cli-build": "node openclaw-calendar-cli.cjs help > /dev/null",
+    "postbuild": "npm run cli-build",
+    "cli-build": "mkdir -p dist && cp openclaw-calendar-cli.cjs openclaw-plugin-cli.cjs dist/ && node openclaw-calendar-cli.cjs help > /dev/null",
     "test": "jest --passWithNoTests",
     "test:watch": "yarn test -- --watch"
   },

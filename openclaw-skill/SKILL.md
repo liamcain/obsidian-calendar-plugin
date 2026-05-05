@@ -5,21 +5,21 @@ description: Use this skill when an OpenClaw agent needs to create or find Obsid
 
 # Obsidian Calendar CLI
 
-Use this repo's CLI to create or find daily and weekly notes. Always pass `--vault <vault>`.
+Use the CLI shipped in the installed plugin folder. Always pass `--vault <vault>`.
 
 ```bash
-PLUGIN_REPO=/path/to/obsidian-calendar-plugin
-npm --prefix "$PLUGIN_REPO" run cli-build
-node "$PLUGIN_REPO/openclaw-calendar-cli.cjs" daily --vault <vault> --date 2026-05-06
+VAULT=/path/to/vault
+CLI="$VAULT/.obsidian/plugins/calendar/openclaw-calendar-cli.cjs"
+node "$CLI" daily --vault "$VAULT" --date 2026-05-06
 ```
 
 Create or find weekly notes:
 
 ```bash
-node "$PLUGIN_REPO/openclaw-calendar-cli.cjs" weekly --vault <vault> --date 2026-05-06
+node "$CLI" weekly --vault "$VAULT" --date 2026-05-06
 ```
 
-If installed or linked, `obsidian-calendar-cli ...` may be used instead.
+If the installed plugin does not include the CLI yet, use `obsidian-calendar-cli` from `PATH` or `node "$PLUGIN_REPO/openclaw-calendar-cli.cjs"` from a checkout.
 
 ## Safety
 
