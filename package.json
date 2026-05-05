@@ -8,8 +8,12 @@
   "scripts": {
     "lint": "svelte-check && eslint . --ext .ts",
     "build": "npm run lint && rollup -c",
+    "cli-build": "node openclaw-calendar-cli.cjs help > /dev/null",
     "test": "jest --passWithNoTests",
     "test:watch": "yarn test -- --watch"
+  },
+  "bin": {
+    "obsidian-calendar-cli": "./openclaw-calendar-cli.cjs"
   },
   "dependencies": {
     "obsidian": "obsidianmd/obsidian-api#master",
