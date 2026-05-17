@@ -10,6 +10,7 @@ export interface ISettings {
   wordsPerDot: number;
   weekStart: IWeekStartOption;
   shouldConfirmBeforeCreate: boolean;
+  allowDailyNoteTitleSuffix: boolean;
 
   // Weekly Note settings
   showWeeklyNote: boolean;
@@ -32,6 +33,7 @@ const weekdays = [
 
 export const defaultSettings = Object.freeze({
   shouldConfirmBeforeCreate: true,
+  allowDailyNoteTitleSuffix: false,
   weekStart: "locale" as IWeekStartOption,
 
   wordsPerDot: DEFAULT_WORDS_PER_DOT,
@@ -80,6 +82,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
     this.addDotThresholdSetting();
     this.addWeekStartSetting();
     this.addConfirmCreateSetting();
+    this.addDailyNoteTitleSuffixSetting();
     this.addShowWeeklyNoteSetting();
 
     if (
@@ -156,6 +159,22 @@ export class CalendarSettingsTab extends PluginSettingTab {
         toggle.onChange(async (value) => {
           this.plugin.writeOptions(() => ({
             shouldConfirmBeforeCreate: value,
+          }));
+        });
+      });
+  }
+
+  addDailyNoteTitleSuffixSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Allow title after daily note date")
+      .setDesc(
+        'Recognize daily notes with filenames like "2026-05-17 Sunday reflection".'
+      )
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.options.allowDailyNoteTitleSuffix);
+        toggle.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({
+            allowDailyNoteTitleSuffix: value,
           }));
         });
       });

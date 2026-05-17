@@ -10,7 +10,7 @@ import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
 import { get } from "svelte/store";
 
 import { TRIGGER_ON_OPEN, VIEW_TYPE_CALENDAR } from "src/constants";
-import { tryToCreateDailyNote } from "src/io/dailyNotes";
+import { getDailyDateFromFile, tryToCreateDailyNote } from "src/io/dailyNotes";
 import { tryToCreateWeeklyNote } from "src/io/weeklyNotes";
 import type { ISettings } from "src/settings";
 
@@ -183,7 +183,7 @@ export default class CalendarView extends ItemView {
   }
 
   private async onFileDeleted(file: TFile): Promise<void> {
-    if (getDateFromFile(file, "day")) {
+    if (getDailyDateFromFile(file, this.settings.allowDailyNoteTitleSuffix)) {
       dailyNotes.reindex();
       this.updateActiveFile();
     }
@@ -194,7 +194,9 @@ export default class CalendarView extends ItemView {
   }
 
   private async onFileModified(file: TFile): Promise<void> {
-    const date = getDateFromFile(file, "day") || getDateFromFile(file, "week");
+    const date =
+      getDailyDateFromFile(file, this.settings.allowDailyNoteTitleSuffix) ||
+      getDateFromFile(file, "week");
     if (date && this.calendar) {
       this.calendar.tick();
     }
@@ -202,7 +204,7 @@ export default class CalendarView extends ItemView {
 
   private onFileCreated(file: TFile): void {
     if (this.app.workspace.layoutReady && this.calendar) {
-      if (getDateFromFile(file, "day")) {
+      if (getDailyDateFromFile(file, this.settings.allowDailyNoteTitleSuffix)) {
         dailyNotes.reindex();
         this.calendar.tick();
       }
@@ -239,7 +241,10 @@ export default class CalendarView extends ItemView {
 
     if (activeLeaf.view instanceof FileView) {
       // Check to see if the active note is a daily-note
-      let date = getDateFromFile(activeLeaf.view.file, "day");
+      let date = getDailyDateFromFile(
+        activeLeaf.view.file,
+        this.settings.allowDailyNoteTitleSuffix
+      );
       if (date) {
         this.calendar.$set({ displayedMonth: date });
         return;
