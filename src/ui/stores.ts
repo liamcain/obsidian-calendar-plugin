@@ -1,10 +1,8 @@
 import type { TFile } from "obsidian";
-import {
-  getAllDailyNotes,
-  getAllWeeklyNotes,
-} from "obsidian-daily-notes-interface";
-import { writable } from "svelte/store";
+import { getAllWeeklyNotes } from "obsidian-daily-notes-interface";
+import { get, writable } from "svelte/store";
 
+import { getAllDailyNotes } from "src/io/dailyNotes";
 import { defaultSettings, ISettings } from "src/settings";
 
 import { getDateUIDFromFile } from "./utils";
@@ -15,7 +13,9 @@ function createDailyNotesStore() {
   return {
     reindex: () => {
       try {
-        const dailyNotes = getAllDailyNotes();
+        const dailyNotes = getAllDailyNotes({
+          allowTitleSuffix: get(settings).allowDailyNoteTitleSuffix,
+        });
         store.set(dailyNotes);
         hasError = false;
       } catch (err) {
@@ -62,7 +62,10 @@ function createSelectedFileStore() {
 
   return {
     setFile: (file: TFile) => {
-      const id = getDateUIDFromFile(file);
+      const id = getDateUIDFromFile(
+        file,
+        get(settings).allowDailyNoteTitleSuffix
+      );
       store.set(id);
     },
     ...store,
