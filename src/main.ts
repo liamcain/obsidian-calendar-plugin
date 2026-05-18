@@ -2,6 +2,7 @@ import type { Moment, WeekSpec } from "moment";
 import { App, Plugin, WorkspaceLeaf } from "obsidian";
 
 import { VIEW_TYPE_CALENDAR } from "./constants";
+import { JumpToDateModal } from "./ui/modal";
 import { settings } from "./ui/stores";
 import {
   appHasPeriodicNotesPluginLoaded,
@@ -68,6 +69,21 @@ export default class CalendarPlugin extends Plugin {
       id: "reveal-active-note",
       name: "Reveal active note",
       callback: () => this.view.revealActiveNote(),
+    });
+
+    this.addCommand({
+      id: "jump-to-date",
+      name: "Jump to date",
+      checkCallback: (checking) => {
+        if (checking) {
+          return (
+            this.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR).length > 0
+          );
+        }
+        new JumpToDateModal(this.app, window.moment(), (target) =>
+          this.view.setDisplayedMonth(target)
+        ).open();
+      },
     });
 
     await this.loadOptions();

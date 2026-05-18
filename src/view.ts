@@ -233,6 +233,12 @@ export default class CalendarView extends ItemView {
     }
   }
 
+  public setDisplayedMonth(date: Moment): void {
+    if (this.calendar) {
+      this.calendar.$set({ displayedMonth: date });
+    }
+  }
+
   public revealActiveNote(): void {
     const { moment } = window;
     const { activeLeaf } = this.app.workspace;

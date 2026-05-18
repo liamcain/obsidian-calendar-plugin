@@ -9,3 +9,37 @@
 .settings-banner h4 {
   margin: 0;
 }
+
+.calendar-nav-title {
+  cursor: pointer;
+}
+
+.jump-to-date-year-row {
+  align-items: center;
+  display: flex;
+  gap: 0.5em;
+  justify-content: center;
+  margin: 1em 0;
+}
+
+.jump-to-date-year-row input {
+  font-size: 1.1em;
+  text-align: center;
+  width: 6em;
+}
+
+.jump-to-date-month-label {
+  margin: 0 0 0.5em;
+  text-align: center;
+}
+
+.jump-to-date-month-grid {
+  display: grid;
+  gap: 0.5em;
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 1em;
+}
+
+.jump-to-date-month-grid button {
+  padding: 0.5em 0;
+}

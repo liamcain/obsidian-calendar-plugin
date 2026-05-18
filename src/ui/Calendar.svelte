@@ -7,10 +7,11 @@
     ICalendarSource,
     configureGlobalMomentLocale,
   } from "obsidian-calendar-ui";
-  import { onDestroy } from "svelte";
+  import { onDestroy, onMount } from "svelte";
 
   import type { ISettings } from "src/settings";
   import { activeFile, dailyNotes, settings, weeklyNotes } from "./stores";
+  import { JumpToDateModal } from "./modal";
 
   let today: Moment;
 
@@ -48,22 +49,49 @@
     }
   }, 1000 * 60);
 
+  let containerEl: HTMLDivElement;
+
+  // Delegated listener: matches `.title` regardless of whether the upstream
+  // `obsidian-calendar-ui` recreates the title element across re-renders.
+  function onContainerClick(event: MouseEvent) {
+    const target = event.target as HTMLElement | null;
+    const titleEl = target?.closest(".title");
+    if (!titleEl || !containerEl.contains(titleEl)) {
+      return;
+    }
+    new JumpToDateModal(window.app, displayedMonth, (newMonth) => {
+      displayedMonth = newMonth;
+    }).open();
+  }
+
+  onMount(() => {
+    containerEl.addEventListener("click", onContainerClick);
+    containerEl
+      .querySelectorAll(".title")
+      .forEach((el) => el.classList.add("calendar-nav-title"));
+  });
+
   onDestroy(() => {
     clearInterval(heartbeat);
+    if (containerEl) {
+      containerEl.removeEventListener("click", onContainerClick);
+    }
   });
 </script>
 
-<CalendarBase
-  {sources}
-  {today}
-  {onHoverDay}
-  {onHoverWeek}
-  {onContextMenuDay}
-  {onContextMenuWeek}
-  {onClickDay}
-  {onClickWeek}
-  bind:displayedMonth
-  localeData={today.localeData()}
-  selectedId={$activeFile}
-  showWeekNums={$settings.showWeeklyNote}
-/>
+<div bind:this={containerEl}>
+  <CalendarBase
+    {sources}
+    {today}
+    {onHoverDay}
+    {onHoverWeek}
+    {onContextMenuDay}
+    {onContextMenuWeek}
+    {onClickDay}
+    {onClickWeek}
+    bind:displayedMonth
+    localeData={today.localeData()}
+    selectedId={$activeFile}
+    showWeekNums={$settings.showWeeklyNote}
+  />
+</div>
