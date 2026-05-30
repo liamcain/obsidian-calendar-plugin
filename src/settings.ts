@@ -10,6 +10,11 @@ export interface ISettings {
   wordsPerDot: number;
   weekStart: IWeekStartOption;
   shouldConfirmBeforeCreate: boolean;
+  shouldIndexDailyNotesInAllFolders: boolean;
+  dailyNoteFilenameDateFormat: string;
+  shouldIndexDailyNotesFromFrontmatter: boolean;
+  dailyNoteFrontmatterDateFields: string;
+  dailyNoteIncludedFolders: string;
 
   // Weekly Note settings
   showWeeklyNote: boolean;
@@ -32,6 +37,11 @@ const weekdays = [
 
 export const defaultSettings = Object.freeze({
   shouldConfirmBeforeCreate: true,
+  shouldIndexDailyNotesInAllFolders: false,
+  dailyNoteFilenameDateFormat: "",
+  shouldIndexDailyNotesFromFrontmatter: false,
+  dailyNoteFrontmatterDateFields: "date, daily_date, calendar_date",
+  dailyNoteIncludedFolders: "",
   weekStart: "locale" as IWeekStartOption,
 
   wordsPerDot: DEFAULT_WORDS_PER_DOT,
@@ -77,9 +87,13 @@ export class CalendarSettingsTab extends PluginSettingTab {
     this.containerEl.createEl("h3", {
       text: "General Settings",
     });
-    this.addDotThresholdSetting();
     this.addWeekStartSetting();
     this.addConfirmCreateSetting();
+    this.addIndexDailyNotesInAllFoldersSetting();
+    this.addDailyNoteIncludedFoldersSetting();
+    this.addDailyNoteFilenameDateFormatSetting();
+    this.addIndexDailyNotesFromFrontmatterSetting();
+    this.addDailyNoteFrontmatterDateFieldsSetting();
     this.addShowWeeklyNoteSetting();
 
     if (
@@ -103,22 +117,6 @@ export class CalendarSettingsTab extends PluginSettingTab {
       text: "Advanced Settings",
     });
     this.addLocaleOverrideSetting();
-  }
-
-  addDotThresholdSetting(): void {
-    new Setting(this.containerEl)
-      .setName("Words per dot")
-      .setDesc("How many words should be represented by a single dot?")
-      .addText((textfield) => {
-        textfield.setPlaceholder(String(DEFAULT_WORDS_PER_DOT));
-        textfield.inputEl.type = "number";
-        textfield.setValue(String(this.plugin.options.wordsPerDot));
-        textfield.onChange(async (value) => {
-          this.plugin.writeOptions(() => ({
-            wordsPerDot: value !== "" ? Number(value) : undefined,
-          }));
-        });
-      });
   }
 
   addWeekStartSetting(): void {
@@ -156,6 +154,93 @@ export class CalendarSettingsTab extends PluginSettingTab {
         toggle.onChange(async (value) => {
           this.plugin.writeOptions(() => ({
             shouldConfirmBeforeCreate: value,
+          }));
+        });
+      });
+  }
+
+  addIndexDailyNotesInAllFoldersSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Detect daily notes in all folders")
+      .setDesc(
+        "Find every Markdown file whose file name matches the daily note format, even outside the configured daily notes folder. Matching notes for the selected date appear below the calendar."
+      )
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.options.shouldIndexDailyNotesInAllFolders);
+        toggle.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({
+            shouldIndexDailyNotesInAllFolders: value,
+          }));
+        });
+      });
+  }
+
+  addDailyNoteFilenameDateFormatSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Date format inside daily note filenames")
+      .setDesc(
+        "Optional. Calendar already looks for the Daily Notes date format anywhere in the file name. Add extra comma-separated formats here, such as YYYYMMDD for files like 'meeting 20260529.md'."
+      )
+      .addText((textfield) => {
+        textfield.setPlaceholder("YYYYMMDD");
+        textfield.setValue(this.plugin.options.dailyNoteFilenameDateFormat);
+        textfield.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({
+            dailyNoteFilenameDateFormat: value,
+          }));
+        });
+      });
+  }
+
+  addIndexDailyNotesFromFrontmatterSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Use frontmatter date fallback")
+      .setDesc(
+        "When a file name does not contain a matching date, read the configured frontmatter fields and map the note to that date."
+      )
+      .addToggle((toggle) => {
+        toggle.setValue(
+          this.plugin.options.shouldIndexDailyNotesFromFrontmatter
+        );
+        toggle.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({
+            shouldIndexDailyNotesFromFrontmatter: value,
+          }));
+        });
+      });
+  }
+
+  addDailyNoteFrontmatterDateFieldsSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Frontmatter date fields")
+      .setDesc(
+        "Comma-separated field names to read when frontmatter fallback is enabled. Nested fields can use dot notation, such as calendar.date."
+      )
+      .addText((textfield) => {
+        textfield.setPlaceholder("date, daily_date, calendar_date");
+        textfield.setValue(this.plugin.options.dailyNoteFrontmatterDateFields);
+        textfield.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({
+            dailyNoteFrontmatterDateFields: value,
+          }));
+        });
+      });
+  }
+
+  addDailyNoteIncludedFoldersSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Folders to scan for daily notes")
+      .setDesc(
+        "Optional. Leave blank to scan the whole vault. Add comma-separated folder paths to limit filename and frontmatter matching."
+      )
+      .addTextArea((textarea) => {
+        textarea.setPlaceholder(
+          "Journal, Work/Daily, Projects/Research"
+        );
+        textarea.setValue(this.plugin.options.dailyNoteIncludedFolders);
+        textarea.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({
+            dailyNoteIncludedFolders: value,
           }));
         });
       });

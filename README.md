@@ -13,15 +13,23 @@ The plugin reads your Daily Note settings to know your date format, your daily n
 ## Features
 
 - Go to any **daily note**.
+- Select a date and view every matching note for that day below the calendar.
+- Open multiple daily notes for the same date when they are spread across different folders.
+- Limit daily-note detection from the Calendar sidebar with a collapsible folder filter.
 - Create new daily notes for days that don't have one. (This is helpful for when you need to backfill old notes or if you're planning ahead for future notes! This will use your current **daily note** template!)
-- Visualize your writing. Each day includes a meter to approximate how much you've written that day.
+- Visualize how many matching notes are mapped to each day.
 - Use **Weekly notes** for an added organization layer! They work just like daily notes, but have their own customization options.
 
 ## Settings
 
 - **Start week on [default: locale]**: Configure the Calendar view to show Sunday or Monday as the first day of the week. Choosing 'locale' will set the start day to be whatever is the default for your chosen locale (`Settings > About > Language`)
-- **Words per Dot [default: 250]**: Starting in version 1.3, dots reflect the word count of your files. By default, each dot represents 250 words, you can change that value to whatever you want. Set this to `0` to disable the word count entirely. **Note:** There is a max of 5 dots so that the view doesn't get too big!
+- **Note count dots**: Solid dots reflect how many matching notes are mapped to each day. There is a max of 5 dots so that the view doesn't get too big.
 - **Confirm before creating new note [default: on]**: If you don't like that a modal prompts you before creating a new daily note, you can turn it off.
+- **Detect daily notes in all folders [default: off]**: Scan your vault for every Markdown file whose file name matches your daily note format, even outside the configured daily notes folder. If multiple files match the same date, they appear below the calendar when that day is selected.
+- **Folders to scan for daily notes [default: blank]**: Optionally limit daily-note detection to comma-separated folder paths. Leave blank to scan the whole vault. This can also be adjusted directly from the Calendar sidebar.
+- **Date format inside daily note filenames [default: blank]**: Calendar already looks for the Daily Notes date format anywhere in the file name. Optionally add extra comma-separated formats. For example, `YYYYMMDD` matches files like `meeting 20260529.md` and `journal 20260529.md`.
+- **Use frontmatter date fallback [default: off]**: If a file name does not contain a matching date, Calendar can read configured frontmatter fields and map the note to that date. File name dates take priority when both are present.
+- **Frontmatter date fields [default: date, daily_date, calendar_date]**: Comma-separated field names to read when frontmatter fallback is enabled. Nested fields can use dot notation, such as `calendar.date`.
 - **Show Week Number [default: off]**: Enable this to add a new column to the calendar view showing the [Week Number](https://en.wikipedia.org/wiki/Week#Week_numbering). Clicking on these cells will open your **weekly note**.
 
 ## Customization
@@ -76,7 +84,7 @@ You can install the plugin via the Community Plugins tab within Obsidian. Just s
 
 ### What do the dots mean?
 
-Each solid dot represents 250 words in your daily note. So 4 dots means you've written a thousands words for that day! If you want to change that threshold, you can set a different value for "Words Per Dot" in the Calendar settings.
+Each solid dot represents one matching note for that day, up to a maximum of 5 dots.
 
 The hollow dots, on the other hand, mean that the day has incomplete tasks in it. (**Note:** There will only ever be 1 hollow dot on a particular day, regardless of the number of remaining tasks)
 

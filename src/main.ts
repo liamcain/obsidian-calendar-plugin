@@ -2,7 +2,7 @@ import type { Moment, WeekSpec } from "moment";
 import { App, Plugin, WorkspaceLeaf } from "obsidian";
 
 import { VIEW_TYPE_CALENDAR } from "./constants";
-import { settings } from "./ui/stores";
+import { dailyNotes, settings, weeklyNotes } from "./ui/stores";
 import {
   appHasPeriodicNotesPluginLoaded,
   CalendarSettingsTab,
@@ -37,7 +37,7 @@ export default class CalendarPlugin extends Plugin {
 
     this.registerView(
       VIEW_TYPE_CALENDAR,
-      (leaf: WorkspaceLeaf) => (this.view = new CalendarView(leaf))
+      (leaf: WorkspaceLeaf) => (this.view = new CalendarView(leaf, this))
     );
 
     this.addCommand({
@@ -109,5 +109,7 @@ export default class CalendarPlugin extends Plugin {
   ): Promise<void> {
     settings.update((old) => ({ ...old, ...changeOpts(old) }));
     await this.saveData(this.options);
+    dailyNotes.reindex();
+    weeklyNotes.reindex();
   }
 }

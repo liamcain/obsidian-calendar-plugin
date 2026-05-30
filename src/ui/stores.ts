@@ -3,11 +3,20 @@ import {
   getAllDailyNotes,
   getAllWeeklyNotes,
 } from "obsidian-daily-notes-interface";
-import { writable } from "svelte/store";
+import { get, writable } from "svelte/store";
 
 import { defaultSettings, ISettings } from "src/settings";
+import {
+  buildDailyNotesByDate,
+  DailyNotesByDate,
+  dailyNotesByDateToSingleNotes,
+  singleDailyNotesToDailyNotesByDate,
+} from "src/io/dailyNoteIndex";
 
 import { getDateUIDFromFile } from "./utils";
+
+export const settings = writable<ISettings>(defaultSettings);
+export const dailyNotesByDate = writable<DailyNotesByDate>({});
 
 function createDailyNotesStore() {
   let hasError = false;
@@ -15,8 +24,26 @@ function createDailyNotesStore() {
   return {
     reindex: () => {
       try {
-        const dailyNotes = getAllDailyNotes();
+        const shouldIndexAllFolders = get(
+          settings
+        ).shouldIndexDailyNotesInAllFolders;
+        const notesByDate = shouldIndexAllFolders
+          ? buildDailyNotesByDate(
+              window.app.vault.getMarkdownFiles(),
+              {
+                filenameDateFormat: get(settings).dailyNoteFilenameDateFormat,
+                frontmatterDateFields: get(settings)
+                  .shouldIndexDailyNotesFromFrontmatter
+                  ? get(settings).dailyNoteFrontmatterDateFields
+                  : "",
+                includedFolders: get(settings).dailyNoteIncludedFolders,
+              }
+            )
+          : singleDailyNotesToDailyNotesByDate(getAllDailyNotes());
+        const dailyNotes = dailyNotesByDateToSingleNotes(notesByDate);
+
         store.set(dailyNotes);
+        dailyNotesByDate.set(notesByDate);
         hasError = false;
       } catch (err) {
         if (!hasError) {
@@ -24,6 +51,7 @@ function createDailyNotesStore() {
           console.log("[Calendar] Failed to find daily notes folder", err);
         }
         store.set({});
+        dailyNotesByDate.set({});
         hasError = true;
       }
     },
@@ -53,7 +81,6 @@ function createWeeklyNotesStore() {
   };
 }
 
-export const settings = writable<ISettings>(defaultSettings);
 export const dailyNotes = createDailyNotesStore();
 export const weeklyNotes = createWeeklyNotesStore();
 

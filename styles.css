@@ -9,3 +9,194 @@
 .settings-banner h4 {
   margin: 0;
 }
+
+.calendar-note-panel {
+  border-top: 1px solid var(--background-modifier-border);
+  margin-top: 12px;
+  padding-top: 10px;
+}
+
+.calendar-note-panel-header {
+  align-items: center;
+  color: var(--text-muted);
+  display: flex;
+  font-size: 12px;
+  gap: 8px;
+  justify-content: space-between;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.calendar-note-count {
+  flex: 0 0 auto;
+}
+
+.calendar-note-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  max-height: min(34vh, 320px);
+  overflow-y: auto;
+  padding: 0;
+  padding-right: 2px;
+}
+
+.calendar-note-list li {
+  margin: 0;
+  padding: 0;
+}
+
+.calendar-note-list-item {
+  align-items: flex-start;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  box-shadow: none;
+  color: var(--text-normal);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font: inherit;
+  height: auto;
+  line-height: 1.35;
+  min-height: 0;
+  padding: 8px;
+  text-align: left;
+  transition: background-color 120ms ease, border-color 120ms ease;
+  white-space: normal;
+  width: 100%;
+}
+
+.calendar-note-list-item:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(
+    --background-modifier-border-hover,
+    var(--background-modifier-border)
+  );
+}
+
+.calendar-note-list-item:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+.calendar-note-title,
+.calendar-note-path {
+  overflow-wrap: anywhere;
+}
+
+.calendar-note-title {
+  color: var(--text-normal);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.calendar-note-path,
+.calendar-note-empty {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.calendar-note-path {
+  margin-top: 2px;
+}
+
+.calendar-note-empty {
+  padding: 4px 0;
+}
+
+.calendar-filter-panel {
+  border-top: 1px solid var(--background-modifier-border);
+  margin-top: 10px;
+  padding-top: 8px;
+}
+
+.calendar-filter-toggle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  box-shadow: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  font-size: 12px;
+  justify-content: space-between;
+  line-height: 1.4;
+  padding: 4px;
+  text-align: left;
+  width: 100%;
+}
+
+.calendar-filter-toggle:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.calendar-filter-toggle:focus-visible,
+.calendar-filter-action:focus-visible,
+.calendar-filter-textarea:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+.calendar-filter-summary {
+  color: var(--text-faint);
+  flex: 0 0 auto;
+  margin-left: 8px;
+}
+
+.calendar-filter-body {
+  margin-top: 6px;
+}
+
+.calendar-filter-textarea {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  color: var(--text-normal);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  min-height: 64px;
+  padding: 6px;
+  resize: vertical;
+  width: 100%;
+}
+
+.calendar-filter-textarea::placeholder {
+  color: var(--text-faint);
+}
+
+.calendar-filter-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.calendar-filter-action {
+  background: var(--interactive-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  box-shadow: none;
+  color: var(--text-normal);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  height: auto;
+  line-height: 1.4;
+  padding: 4px 8px;
+}
+
+.calendar-filter-action:hover:not(:disabled) {
+  background: var(--interactive-hover);
+}
+
+.calendar-filter-action:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
