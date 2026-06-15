@@ -11,6 +11,7 @@ import { get } from "svelte/store";
 
 import { TRIGGER_ON_OPEN, VIEW_TYPE_CALENDAR } from "src/constants";
 import { tryToCreateDailyNote } from "src/io/dailyNotes";
+import { getDatedNotePath } from "src/io/notePaths";
 import { tryToCreateWeeklyNote } from "src/io/weeklyNotes";
 import type { ISettings } from "src/settings";
 
@@ -114,6 +115,34 @@ export default class CalendarView extends ItemView {
     });
   }
 
+  private getExpectedNote(
+    folder: string | undefined,
+    date: Moment,
+    filename: string
+  ): TFile | null {
+    const expectedPath = getDatedNotePath(folder, date, filename);
+    const expectedFile = this.app.vault.getAbstractFileByPath(expectedPath);
+
+    return expectedFile instanceof TFile ? expectedFile : null;
+  }
+
+  private getDailyNoteForDate(date: Moment): TFile | null {
+    const { folder, format } = getDailyNoteSettings();
+    return (
+      this.getExpectedNote(folder, date, date.format(format)) ||
+      getDailyNote(date, get(dailyNotes))
+    );
+  }
+
+  private getWeeklyNoteForDate(date: Moment): TFile | null {
+    const startOfWeek = date.clone().startOf("week");
+    const { folder, format } = getWeeklyNoteSettings();
+    return (
+      this.getExpectedNote(folder, startOfWeek, startOfWeek.format(format)) ||
+      getWeeklyNote(date, get(weeklyNotes))
+    );
+  }
+
   onHoverDay(
     date: Moment,
     targetEl: EventTarget,
@@ -123,7 +152,7 @@ export default class CalendarView extends ItemView {
       return;
     }
     const { format } = getDailyNoteSettings();
-    const note = getDailyNote(date, get(dailyNotes));
+    const note = this.getDailyNoteForDate(date);
     this.app.workspace.trigger(
       "link-hover",
       this,
@@ -141,7 +170,7 @@ export default class CalendarView extends ItemView {
     if (!isMetaPressed) {
       return;
     }
-    const note = getWeeklyNote(date, get(weeklyNotes));
+    const note = this.getWeeklyNoteForDate(date);
     const { format } = getWeeklyNoteSettings();
     this.app.workspace.trigger(
       "link-hover",
@@ -153,7 +182,7 @@ export default class CalendarView extends ItemView {
   }
 
   private onContextMenuDay(date: Moment, event: MouseEvent): void {
-    const note = getDailyNote(date, get(dailyNotes));
+    const note = this.getDailyNoteForDate(date);
     if (!note) {
       // If no file exists for a given day, show nothing.
       return;
@@ -165,7 +194,7 @@ export default class CalendarView extends ItemView {
   }
 
   private onContextMenuWeek(date: Moment, event: MouseEvent): void {
-    const note = getWeeklyNote(date, get(weeklyNotes));
+    const note = this.getWeeklyNoteForDate(date);
     if (!note) {
       // If no file exists for a given day, show nothing.
       return;
@@ -263,7 +292,7 @@ export default class CalendarView extends ItemView {
 
     const startOfWeek = date.clone().startOf("week");
 
-    const existingFile = getWeeklyNote(date, get(weeklyNotes));
+    const existingFile = this.getWeeklyNoteForDate(date);
 
     if (!existingFile) {
       // File doesn't exist
@@ -287,7 +316,7 @@ export default class CalendarView extends ItemView {
     inNewSplit: boolean
   ): Promise<void> {
     const { workspace } = this.app;
-    const existingFile = getDailyNote(date, get(dailyNotes));
+    const existingFile = this.getDailyNoteForDate(date);
     if (!existingFile) {
       // File doesn't exist
       tryToCreateDailyNote(

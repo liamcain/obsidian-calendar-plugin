@@ -204,8 +204,11 @@ export class CalendarSettingsTab extends PluginSettingTab {
   addWeeklyNoteFolderSetting(): void {
     new Setting(this.containerEl)
       .setName("Weekly note folder")
-      .setDesc("New weekly notes will be placed here")
+      .setDesc(
+        "New weekly notes will be placed here. Nested paths are supported relative to the vault root (for example: Journal/Weekly); year/month folders are created automatically."
+      )
       .addText((textfield) => {
+        textfield.setPlaceholder("Journal/Weekly");
         textfield.setValue(this.plugin.options.weeklyNoteFolder);
         textfield.onChange(async (value) => {
           this.plugin.writeOptions(() => ({ weeklyNoteFolder: value }));
