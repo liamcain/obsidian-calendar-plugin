@@ -18,6 +18,10 @@ export interface ISettings {
   weeklyNoteFolder: string;
 
   localeOverride: ILocaleOverride;
+
+  // Day Markers (holidays, leave days, non-working days)
+  showDayMarkers: boolean;
+  holidayFilepath: string;
 }
 
 const weekdays = [
@@ -42,6 +46,9 @@ export const defaultSettings = Object.freeze({
   weeklyNoteFolder: "",
 
   localeOverride: "system-default",
+
+  showDayMarkers: true,
+  holidayFilepath: "holiday.json",
 });
 
 export function appHasPeriodicNotesPluginLoaded(): boolean {
@@ -98,6 +105,12 @@ export class CalendarSettingsTab extends PluginSettingTab {
       this.addWeeklyNoteTemplateSetting();
       this.addWeeklyNoteFolderSetting();
     }
+
+    this.containerEl.createEl("h3", {
+      text: "Day Markers",
+    });
+    this.addShowDayMarkersSetting();
+    this.addHolidayFilepathSetting();
 
     this.containerEl.createEl("h3", {
       text: "Advanced Settings",
@@ -209,6 +222,35 @@ export class CalendarSettingsTab extends PluginSettingTab {
         textfield.setValue(this.plugin.options.weeklyNoteFolder);
         textfield.onChange(async (value) => {
           this.plugin.writeOptions(() => ({ weeklyNoteFolder: value }));
+        });
+      });
+  }
+
+  addShowDayMarkersSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Show day markers")
+      .setDesc(
+        "Highlight holidays, leave days, and non-working days on the calendar"
+      )
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.options.showDayMarkers);
+        toggle.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({ showDayMarkers: value }));
+        });
+      });
+  }
+
+  addHolidayFilepathSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Holiday data file")
+      .setDesc(
+        "Path to a JSON file in your vault that defines holidays, leave days, and non-working days"
+      )
+      .addText((textfield) => {
+        textfield.setValue(this.plugin.options.holidayFilepath);
+        textfield.setPlaceholder("holiday.json");
+        textfield.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({ holidayFilepath: value }));
         });
       });
   }

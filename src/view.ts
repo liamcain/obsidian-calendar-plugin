@@ -22,7 +22,9 @@ import {
   streakSource,
   tasksSource,
   wordCountSource,
+  leaveDaySource,
 } from "./ui/sources";
+import { invalidateHolidayCache } from "./ui/sources/leaveDay";
 
 export default class CalendarView extends ItemView {
   private calendar: Calendar;
@@ -96,6 +98,7 @@ export default class CalendarView extends ItemView {
       streakSource,
       wordCountSource,
       tasksSource,
+      leaveDaySource,
     ];
     this.app.workspace.trigger(TRIGGER_ON_OPEN, sources);
 
@@ -197,6 +200,13 @@ export default class CalendarView extends ItemView {
     const date = getDateFromFile(file, "day") || getDateFromFile(file, "week");
     if (date && this.calendar) {
       this.calendar.tick();
+    }
+    // Invalidate holiday cache when the holiday data file changes
+    if (file.path === this.settings?.holidayFilepath) {
+      invalidateHolidayCache();
+      if (this.calendar) {
+        this.calendar.tick();
+      }
     }
   }
 

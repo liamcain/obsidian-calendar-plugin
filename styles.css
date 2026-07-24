@@ -1,11 +1,47 @@
-.settings-banner {
-  background-color: var(--background-secondary-alt);
-  border-radius: 4px;
-  margin-bottom: 2em;
-  padding: 1.5em;
-  text-align: left;
+/* Day Markers — holidays, leave days, non-working days */
+
+/* 节假日 — 红色背景 */
+#calendar-container .day.is-holiday {
+  background-color: rgba(220, 38, 38, 0.12);
+  font-weight: 600;
 }
 
-.settings-banner h4 {
-  margin: 0;
+#calendar-container .day.is-holiday:hover {
+  background-color: rgba(220, 38, 38, 0.20);
+}
+
+/* 请假 — 橙色背景 */
+#calendar-container .day.is-leave-day {
+  background-color: rgba(249, 115, 22, 0.12);
+  font-style: italic;
+}
+
+#calendar-container .day.is-leave-day:hover {
+  background-color: rgba(249, 115, 22, 0.20);
+}
+
+/* 非工作日 — 灰色背景 */
+#calendar-container .day.is-nonworkday {
+  background-color: rgba(100, 116, 139, 0.10);
+  color: var(--text-muted);
+}
+
+#calendar-container .day.is-nonworkday:hover {
+  background-color: rgba(100, 116, 139, 0.18);
+}
+
+/* 周末默认样式微调（与节假日/请假叠加时优先级更高） */
+#calendar-container .day.is-holiday[data-day-marker="holiday"]::after,
+#calendar-container .day.is-leave-day[data-day-marker="leave"]::after,
+#calendar-container .day.is-nonworkday[data-day-marker="non-workday"]::after {
+  content: attr(data-day-marker-name);
+  position: absolute;
+  bottom: 1px;
+  right: 2px;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 400;
+  opacity: 0.7;
+  line-height: 1;
+  pointer-events: none;
 }
