@@ -12,7 +12,7 @@
   import type { ISettings } from "src/settings";
   import { activeFile, dailyNotes, settings, weeklyNotes } from "./stores";
 
-  let today: Moment;
+  let today: Moment = window.moment();
 
   $: today = getToday($settings);
 

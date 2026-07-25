@@ -18,17 +18,28 @@ import Calendar from "./ui/Calendar.svelte";
 import { showFileMenu } from "./ui/fileMenu";
 import { activeFile, dailyNotes, weeklyNotes, settings } from "./ui/stores";
 import {
-  customTagsSource,
   streakSource,
   tasksSource,
   wordCountSource,
   leaveDaySource,
 } from "./ui/sources";
-import { invalidateHolidayCache } from "./ui/sources/leaveDay";
+import { invalidateAllCache, setAppInstance } from "./ui/sources/leaveDay";
+import { statusSource, setStatusResolver, setWeatherStore } from "./ui/sources/statusSource";
+import { StatusConfigStore } from "./status/StatusConfigStore";
+import { StatusResolver } from "./status/StatusResolver";
+import { GeoLocator } from "./weather/GeoLocator";
+import { WeatherStore } from "./weather/WeatherStore";
+import { WeatherAutoWriter } from "./weather/WeatherAutoWriter";
+
 
 export default class CalendarView extends ItemView {
   private calendar: Calendar;
   private settings: ISettings;
+  private statusConfigStore: StatusConfigStore;
+  private statusResolver: StatusResolver;
+  private weatherStore: WeatherStore;
+  private weatherAutoWriter: WeatherAutoWriter;
+  private geoLocator: GeoLocator;
 
   constructor(leaf: WorkspaceLeaf) {
     super(leaf);
@@ -91,30 +102,90 @@ export default class CalendarView extends ItemView {
   }
 
   async onOpen(): Promise<void> {
+    console.log("[Calendar+] onOpen() started");
+    // Pass app instance to leaveDay module for cache file access
+    try {
+      setAppInstance(this.app);
+    } catch (e) {
+      console.warn("[Calendar+] Failed to set app instance:", e);
+    }
+
+    console.log("[Calendar+] Initializing StatusConfigStore...");
+    // Initialize StatusConfigStore and StatusResolver (non-blocking, error-safe)
+    try {
+      this.statusConfigStore = new StatusConfigStore(this.app);
+      await this.statusConfigStore.load();
+      this.statusResolver = new StatusResolver(this.app, this.statusConfigStore);
+      setStatusResolver(this.statusResolver);
+    } catch (e) {
+      console.warn("[Calendar+] StatusResolver initialization failed:", e);
+    }
+
+    console.log("[Calendar+] Status init done. Initializing Weather...");
+    // Initialize Weather modules (non-blocking, error-safe)
+    try {
+      this.geoLocator = new GeoLocator();
+      this.weatherStore = new WeatherStore();
+      setWeatherStore(this.weatherStore);
+
+      // Initialize weather location if enabled (don't await — non-blocking)
+      if (this.settings?.enableWeather) {
+        this.initWeatherLocation().catch((e) =>
+          console.warn("[Calendar+] Weather location init failed:", e)
+        );
+      }
+      this.weatherAutoWriter = new WeatherAutoWriter(this.app, this.weatherStore);
+      this.weatherAutoWriter.setEnabled(
+        this.settings?.enableWeather === true && this.settings?.autoWriteWeather !== false
+      );
+    } catch (e) {
+      console.warn("[Calendar+] Weather initialization failed:", e);
+    }
+
     // Integration point: external plugins can listen for `calendar:open`
     // to feed in additional sources.
     const sources = [
-      customTagsSource,
       streakSource,
       wordCountSource,
       tasksSource,
-      leaveDaySource,
     ];
+
+    // Add statusSource or leaveDaySource (which internally falls back to leaveDaySource)
+    try {
+      if (this.settings?.showDayMarkers !== false) {
+        if (this.settings?.enableStatusTags !== false) {
+          sources.push(statusSource);
+        } else {
+          sources.push(leaveDaySource);
+        }
+      }
+    } catch (e) {
+      console.warn("[Calendar+] Source setup failed, using leaveDaySource:", e);
+      sources.push(leaveDaySource);
+    }
+
+    console.log("[Calendar+] Sources:", sources.length, "Creating Calendar component...");
     this.app.workspace.trigger(TRIGGER_ON_OPEN, sources);
 
-    this.calendar = new Calendar({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      target: (this as any).contentEl,
-      props: {
-        onClickDay: this.openOrCreateDailyNote,
-        onClickWeek: this.openOrCreateWeeklyNote,
-        onHoverDay: this.onHoverDay,
-        onHoverWeek: this.onHoverWeek,
-        onContextMenuDay: this.onContextMenuDay,
-        onContextMenuWeek: this.onContextMenuWeek,
-        sources,
-      },
-    });
+    console.log("[Calendar+] Creating Svelte Calendar component...");
+    try {
+      this.calendar = new Calendar({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        target: (this as any).contentEl,
+        props: {
+          onClickDay: this.openOrCreateDailyNote,
+          onClickWeek: this.openOrCreateWeeklyNote,
+          onHoverDay: this.onHoverDay,
+          onHoverWeek: this.onHoverWeek,
+          onContextMenuDay: this.onContextMenuDay,
+          onContextMenuWeek: this.onContextMenuWeek,
+          sources,
+        },
+      });
+      console.log("[Calendar+] Calendar component created successfully");
+    } catch (e) {
+      console.error("[Calendar+] FAILED to create Calendar component:", e);
+    }
   }
 
   onHoverDay(
@@ -179,6 +250,38 @@ export default class CalendarView extends ItemView {
     });
   }
 
+  private async initWeatherLocation(): Promise<void> {
+    const city = this.settings?.weatherCity || "";
+    const savedLat = this.settings?.weatherLatitude || 0;
+    const savedLon = this.settings?.weatherLongitude || 0;
+
+    // If we have a saved location and no manual city change pending, use it
+    if (savedLat !== 0 && savedLon !== 0) {
+      this.weatherStore.setLocation(savedLat, savedLon);
+    }
+
+    // If user specified a city, try to resolve it
+    if (city) {
+      const location = await this.geoLocator.searchCity(city);
+      if (location) {
+        this.weatherStore.setLocation(location.latitude, location.longitude);
+        // Save coordinates to settings
+        this.settings.weatherLatitude = location.latitude;
+        this.settings.weatherLongitude = location.longitude;
+      }
+    } else if (savedLat === 0 || savedLon === 0) {
+      // Try IP geolocation
+      const location = await this.geoLocator.locateByIP();
+      if (location) {
+        this.weatherStore.setLocation(location.latitude, location.longitude);
+        this.settings.weatherLatitude = location.latitude;
+        this.settings.weatherLongitude = location.longitude;
+      }
+    }
+
+    this.weatherStore.setEnabled(true);
+  }
+
   private onNoteSettingsUpdate(): void {
     dailyNotes.reindex();
     weeklyNotes.reindex();
@@ -188,6 +291,7 @@ export default class CalendarView extends ItemView {
   private async onFileDeleted(file: TFile): Promise<void> {
     if (getDateFromFile(file, "day")) {
       dailyNotes.reindex();
+      invalidateAllCache();
       this.updateActiveFile();
     }
     if (getDateFromFile(file, "week")) {
@@ -199,14 +303,16 @@ export default class CalendarView extends ItemView {
   private async onFileModified(file: TFile): Promise<void> {
     const date = getDateFromFile(file, "day") || getDateFromFile(file, "week");
     if (date && this.calendar) {
-      this.calendar.tick();
-    }
-    // Invalidate holiday cache when the holiday data file changes
-    if (file.path === this.settings?.holidayFilepath) {
-      invalidateHolidayCache();
-      if (this.calendar) {
-        this.calendar.tick();
+      // Invalidate leave cache when a daily note is modified
+      // (frontmatter tags may have changed)
+      if (getDateFromFile(file, "day")) {
+        invalidateAllCache();
+        // Also invalidate StatusResolver cache for this date
+        if (this.statusResolver) {
+          this.statusResolver.invalidateCache(date.format("YYYY-MM-DD"));
+        }
       }
+      this.calendar.tick();
     }
   }
 
@@ -214,7 +320,19 @@ export default class CalendarView extends ItemView {
     if (this.app.workspace.layoutReady && this.calendar) {
       if (getDateFromFile(file, "day")) {
         dailyNotes.reindex();
+        invalidateAllCache();
+        if (this.statusResolver) {
+          this.statusResolver.invalidateCache();
+        }
         this.calendar.tick();
+
+        // Auto-write weather to newly created daily note
+        if (this.weatherAutoWriter) {
+          const date = getDateFromFile(file, "day");
+          if (date) {
+            this.weatherAutoWriter.tryWriteWeather(date);
+          }
+        }
       }
       if (getDateFromFile(file, "week")) {
         weeklyNotes.reindex();

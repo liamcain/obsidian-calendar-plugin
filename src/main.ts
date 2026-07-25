@@ -94,10 +94,23 @@ export default class CalendarPlugin extends Plugin {
 
   async loadOptions(): Promise<void> {
     const options = await this.loadData();
+
+    // Migrate old settings: holidayFilepath -> holidayApiUrl + leaveDayTag
+    const migrated: Partial<ISettings> = { ...(options || {}) };
+    if ("holidayFilepath" in migrated) {
+      delete (migrated as any).holidayFilepath;
+      if (!migrated.holidayApiUrl) {
+        migrated.holidayApiUrl = "https://timor.tech/api/holiday/year/";
+      }
+      if (!migrated.leaveDayTag) {
+        migrated.leaveDayTag = "请假";
+      }
+    }
+
     settings.update((old) => {
       return {
         ...old,
-        ...(options || {}),
+        ...migrated,
       };
     });
 
