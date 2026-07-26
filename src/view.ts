@@ -40,6 +40,7 @@ export default class CalendarView extends ItemView {
   private weatherStore: WeatherStore;
   private weatherAutoWriter: WeatherAutoWriter;
   private geoLocator: GeoLocator;
+  private tooltipEl: HTMLElement | null = null;
 
   constructor(leaf: WorkspaceLeaf) {
     super(leaf);
@@ -98,8 +99,22 @@ export default class CalendarView extends ItemView {
     if (this.calendar) {
       this.calendar.$destroy();
     }
+    // Clean up tooltip
+    this.hideCalendarTooltip();
+    if (this.tooltipEl) {
+      this.tooltipEl.remove();
+      this.tooltipEl = null;
+    }
+    // Remove event listeners
+    if (this.contentEl) {
+      this.contentEl.removeEventListener("pointerleave", this.onPointerLeaveBound);
+    }
     return Promise.resolve();
   }
+
+  private onPointerLeaveBound = (): void => {
+    this.hideCalendarTooltip();
+  };
 
   async onOpen(): Promise<void> {
     console.log("[Calendar+] onOpen() started");
@@ -183,6 +198,8 @@ export default class CalendarView extends ItemView {
         },
       });
       console.log("[Calendar+] Calendar component created successfully");
+      // Add pointerleave listener to hide tooltip when mouse leaves calendar
+      this.contentEl.addEventListener("pointerleave", this.onPointerLeaveBound);
     } catch (e) {
       console.error("[Calendar+] FAILED to create Calendar component:", e);
     }
@@ -193,6 +210,13 @@ export default class CalendarView extends ItemView {
     targetEl: EventTarget,
     isMetaPressed: boolean
   ): void {
+    // Show custom tooltip on any hover (not just meta-pressed)
+    const target = targetEl as HTMLElement;
+    if (target && target.classList && target.classList.contains("day")) {
+      this.showCalendarTooltip(date, target);
+    }
+
+    // Also trigger native link-hover when meta is pressed
     if (!isMetaPressed) {
       return;
     }
@@ -205,6 +229,122 @@ export default class CalendarView extends ItemView {
       date.format(format),
       note?.path
     );
+  }
+
+  private showCalendarTooltip(date: Moment, targetEl: HTMLElement): void {
+    // Read data attributes from the day cell
+    const statusEmoji = targetEl.getAttribute("data-status-emoji");
+    const statusLabel = targetEl.getAttribute("data-status-label");
+    const moodEmoji = targetEl.getAttribute("data-mood-emoji");
+    const moodLabel = targetEl.getAttribute("data-mood-label");
+    const weatherEmoji = targetEl.getAttribute("data-weather-emoji");
+    const weatherLabel = targetEl.getAttribute("data-weather-label");
+    const temperature = targetEl.getAttribute("data-temperature");
+    const dayMarker = targetEl.getAttribute("data-day-marker-name");
+    const tags = targetEl.getAttribute("data-tags");
+
+    // Build tooltip content
+    const rows: string[] = [];
+
+    // Date header
+    rows.push(`<div class="ct-header">${date.format("YYYY-MM-DD dddd")}</div>`);
+
+    if (statusEmoji && statusLabel) {
+      rows.push(`<div class="ct-row"><span class="ct-label">状态</span><span class="ct-value">${statusEmoji} ${statusLabel}</span></div>`);
+    }
+    if (moodEmoji && moodLabel) {
+      rows.push(`<div class="ct-row"><span class="ct-label">心情</span><span class="ct-value">${moodEmoji} ${moodLabel}</span></div>`);
+    }
+    if (weatherEmoji && weatherLabel) {
+      const tempStr = temperature ? ` ${temperature}°C` : "";
+      rows.push(`<div class="ct-row"><span class="ct-label">天气</span><span class="ct-value">${weatherEmoji} ${weatherLabel}${tempStr}</span></div>`);
+    }
+    if (dayMarker) {
+      rows.push(`<div class="ct-row"><span class="ct-label">标记</span><span class="ct-value">${dayMarker}</span></div>`);
+    }
+    if (tags) {
+      const tagList = tags.split(" ").filter(t => t.trim()).slice(0, 5).map(t => `#${t}`).join(" ");
+      if (tagList) {
+        rows.push(`<div class="ct-row"><span class="ct-label">标签</span><span class="ct-value">${tagList}</span></div>`);
+      }
+    }
+
+    // Try to parse tasks from daily note
+    const note = getDailyNote(date, get(dailyNotes));
+    if (note) {
+      // Use cached read for synchronous access
+      this.app.vault.cachedRead(note).then((content: string) => {
+        const taskLines = content.match(/^[-*]\s+\[[ xX]\]\s+.+/gm) || [];
+        if (taskLines.length > 0) {
+          const taskItems = taskLines.slice(0, 10).map((line: string) => {
+            const completed = /^[-*]\s+\[[xX]\]/.test(line);
+            const text = line.replace(/^[-*]\s+\[[ xX]\]\s*/, "").replace(/[#*`]/g, "").trim().slice(0, 60);
+            const check = completed ? "\u2611\uFE0F" : "\u2610\uFE0F";
+            return `<div class="ct-task ${completed ? "ct-task-done" : ""}">${check} ${this.escapeHtml(text)}</div>`;
+          }).join("");
+          rows.push(`<div class="ct-tasks">${taskItems}</div>`);
+        }
+
+        // If no content at all, show "无日记" 
+        if (rows.length === 1 && !statusEmoji && !moodEmoji && !weatherEmoji && !dayMarker) {
+          return; // Don't show tooltip for empty days
+        }
+
+        this.renderTooltip(targetEl, rows.join(""));
+      }).catch(() => {
+        if (rows.length > 1) {
+          this.renderTooltip(targetEl, rows.join(""));
+        }
+      });
+    } else {
+      if (rows.length > 1) {
+        this.renderTooltip(targetEl, rows.join(""));
+      }
+    }
+  }
+
+  private escapeHtml(text: string): string {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  private renderTooltip(targetEl: HTMLElement, innerHTML: string): void {
+    if (!this.tooltipEl) {
+      this.tooltipEl = document.createElement("div");
+      this.tooltipEl.id = "calendar-tooltip";
+      this.tooltipEl.style.cssText = "position:fixed; z-index:9999; pointer-events:none; opacity:0; transition:opacity 0.15s ease;";
+      document.body.appendChild(this.tooltipEl);
+    }
+
+    this.tooltipEl.innerHTML = innerHTML;
+
+    // Position below the target
+    const rect = targetEl.getBoundingClientRect();
+    const tooltipWidth = 240;
+    let left = rect.left + rect.width / 2 - tooltipWidth / 2;
+    let top = rect.bottom + 4;
+
+    // Clamp to viewport
+    if (left < 4) left = 4;
+    if (left + tooltipWidth > window.innerWidth - 4) left = window.innerWidth - tooltipWidth - 4;
+    if (top + 100 > window.innerHeight) top = rect.top - 100 - 4;
+
+    this.tooltipEl.style.left = `${left}px`;
+    this.tooltipEl.style.top = `${top}px`;
+    this.tooltipEl.style.width = `${tooltipWidth}px`;
+    this.tooltipEl.style.display = "block";
+
+    // Trigger reflow then fade in
+    void this.tooltipEl.offsetWidth;
+    this.tooltipEl.style.opacity = "1";
+  }
+
+  private hideCalendarTooltip(): void {
+    if (this.tooltipEl) {
+      this.tooltipEl.style.opacity = "0";
+      this.tooltipEl.style.display = "none";
+    }
   }
 
   onHoverWeek(

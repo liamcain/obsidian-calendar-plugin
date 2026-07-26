@@ -216,3 +216,67 @@
 #calendar-container .day.is-makeup-workday {
   --status-color: var(--status-color-overtime);
 }
+
+/* ════════════════════════════════════════════════════════
+   Custom Tooltip — appended (do not modify rules above)
+   ════════════════════════════════════════════════════════ */
+#calendar-tooltip {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  color: var(--text-normal);
+  display: none;
+  font-size: 12px;
+  line-height: 1.4;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 8px 10px;
+  pointer-events: none;
+  position: fixed;
+  width: 240px;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+#calendar-tooltip .ct-header {
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+#calendar-tooltip .ct-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+#calendar-tooltip .ct-label {
+  color: var(--text-muted);
+  font-size: 10px;
+  min-width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+#calendar-tooltip .ct-value {
+  color: var(--text-normal);
+  font-size: 12px;
+}
+#calendar-tooltip .ct-tasks {
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+#calendar-tooltip .ct-task {
+  font-size: 11px;
+  line-height: 1.5;
+  padding: 1px 0;
+  color: var(--text-normal);
+}
+#calendar-tooltip .ct-task.ct-task-done {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  opacity: 0.7;
+}
