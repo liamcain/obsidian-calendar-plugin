@@ -144,9 +144,11 @@ function getHolidayForDate(date: Moment): IHolidayEntry | null {
   const year = date.year();
   const cache = yearCache.get(year);
   if (!cache) return null;
-  // timor.tech API returns keys in "YYYY-MM-DD" format (e.g. "2025-01-01")
-  const dateKey = date.format("YYYY-MM-DD");
-  return cache.holidays[dateKey] || null;
+  // timor.tech API returns keys in "MM-DD" format (e.g. "01-01")
+  // Try both "MM-DD" and "YYYY-MM-DD" for compatibility
+  const mdKey = date.format("MM-DD");
+  const ymdKey = date.format("YYYY-MM-DD");
+  return cache.holidays[mdKey] || cache.holidays[ymdKey] || null;
 }
 
 // ===== Leave Day Detection (from daily note frontmatter tags) =====
