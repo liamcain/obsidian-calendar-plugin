@@ -73,14 +73,21 @@ export class StatusResolver {
     }
   }
 
-  /** Resolve the status for a given date — never throws, returns empty result on error */
-  resolve(date: Moment): IResolvedDayStatus {
+  /** Resolve the status for a given date — never throws, returns empty result on error.
+   * When includeWeather is false, weather is omitted from the result,
+   * allowing the caller to supply live weather data separately.
+   */
+  resolve(date: Moment, includeWeather: boolean = true): IResolvedDayStatus {
     try {
       const dateKey = date.format("YYYY-MM-DD");
-      if (this.cache.has(dateKey)) return this.cache.get(dateKey)!;
 
-      const result = this.resolveFromFrontmatter(date);
-      this.cache.set(dateKey, result);
+      // Cache key includes includeWeather flag so that weatherless lookups
+      // don't poison the cache for lookups that want weather.
+      const cacheKey = includeWeather ? dateKey : `${dateKey}::no-wx`;
+      if (this.cache.has(cacheKey)) return this.cache.get(cacheKey)!;
+
+      const result = this.resolveFromFrontmatter(date, includeWeather);
+      this.cache.set(cacheKey, result);
       return result;
     } catch (e) {
       console.warn("[Calendar+] StatusResolver.resolve failed:", e);
@@ -88,7 +95,7 @@ export class StatusResolver {
     }
   }
 
-  private resolveFromFrontmatter(date: Moment): IResolvedDayStatus {
+  private resolveFromFrontmatter(date: Moment, includeWeather: boolean = true): IResolvedDayStatus {
     const allNotes = getAllDailyNotes();
     const file = getDailyNote(date, allNotes) as TFile | null;
 
@@ -208,39 +215,41 @@ export class StatusResolver {
 
     // 4. Parse weather (from frontmatter — auto-written by WeatherStore)
     let weather: IResolvedDayStatus["weather"] = null;
-    const weatherId = fm.weather as string | undefined;
-    const weatherName = fm.weather_name as string | undefined;
-    const temperature = fm.temperature as number | undefined;
-    const wmoCode = fm.weather_wmo as number | undefined;
+    if (includeWeather) {
+      const weatherId = (fm.weather as string | undefined) || undefined;  // null/"" → undefined
+      const weatherName = (fm.weather_name as string | undefined) || undefined;
+      const temperature = fm.temperature as number | undefined;
+      const wmoCode = fm.weather_wmo as number | undefined;
 
-    if (weatherId || wmoCode !== undefined) {
-      let mapping: IWeatherMapping | null = null;
-      if (wmoCode !== undefined) {
-        mapping = wmoToWeather(Number(wmoCode));
+      if (weatherId || wmoCode !== undefined) {
+        let mapping: IWeatherMapping | null = null;
+        // weather id takes priority over wmoCode — user-edited `weather` field
+        // is the authoritative value. weather_wmo is only a fallback.
+        if (weatherId) {
+          mapping = WMO_WEATHER_MAP.find((w: IWeatherMapping) => w.id === weatherId) || null;
+        }
+        if (!mapping && wmoCode !== undefined) {
+          mapping = wmoToWeather(Number(wmoCode));
+        }
+        if (mapping) {
+          weather = {
+            id: mapping.id,
+            label: mapping.labelZh,
+            emoji: mapping.emoji,
+            wmoCode: wmoCode !== undefined ? Number(wmoCode) : (mapping.wmoCodes[0] || 0),
+            temperature: temperature !== undefined ? Number(temperature) : 0,
+          };
+        } else if (weatherName) {
+          weather = {
+            id: weatherId || "unknown",
+            label: String(weatherName),
+            emoji: "🌡️",
+            wmoCode: wmoCode !== undefined ? Number(wmoCode) : 0,
+            temperature: temperature !== undefined ? Number(temperature) : 0,
+          };
+        }
       }
-      if (!mapping && weatherId) {
-        // Find by id in WMO map
-        mapping = WMO_WEATHER_MAP.find((w: IWeatherMapping) => w.id === weatherId) || null;
-      }
-      if (mapping) {
-        weather = {
-          id: mapping.id,
-          label: mapping.labelZh,
-          emoji: mapping.emoji,
-          wmoCode: wmoCode !== undefined ? Number(wmoCode) : (mapping.wmoCodes[0] || 0),
-          temperature: temperature !== undefined ? Number(temperature) : 0,
-        };
-      } else if (weatherName) {
-        // Fallback: use raw values
-        weather = {
-          id: weatherId || "unknown",
-          label: String(weatherName),
-          emoji: "🌡️",
-          wmoCode: wmoCode !== undefined ? Number(wmoCode) : 0,
-          temperature: temperature !== undefined ? Number(temperature) : 0,
-        };
-      }
-    }
+    } // end if (includeWeather)
 
     // 5. Collect custom fields (exclude known fields)
     const knownKeys = new Set(["date", "tags", "status", moodFieldName, "weather", "weather_name", "temperature", "weather_wmo", "cssclasses", "position"]);

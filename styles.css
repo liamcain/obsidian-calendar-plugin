@@ -153,8 +153,9 @@
   opacity: 0.7;
 }
 
-/* ── Status Label on hover (left bottom) — ::before, overrides weather ── */
-#calendar-container .day[data-status-label]:hover::before {
+/* ── Status Label on hover (left bottom) — ::before
+   Only shows when there's NO weather emoji (to avoid overriding it) ── */
+#calendar-container .day[data-status-label]:not([data-weather-emoji]):hover::before {
   content: attr(data-status-label);
   position: absolute;
   bottom: 1px;
@@ -165,6 +166,23 @@
   font-weight: 400;
   opacity: 0.8;
   line-height: 1;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ── Status Label on hover when weather emoji exists — use bottom offset ── */
+#calendar-container .day[data-status-label][data-weather-emoji]:hover::before {
+  /* Keep weather emoji on top, add status label below it via a second line */
+  content: attr(data-weather-emoji) "\A" attr(data-status-label);
+  white-space: pre;
+  position: absolute;
+  top: 1px;
+  left: 2px;
+  font-size: var(--weather-emoji-size);
+  font-style: normal;
+  font-weight: 400;
+  opacity: 0.8;
+  line-height: 1.2;
   pointer-events: none;
   z-index: 2;
 }

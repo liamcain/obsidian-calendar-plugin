@@ -53,6 +53,7 @@ export default class CalendarView extends ItemView {
     this.onFileDeleted = this.onFileDeleted.bind(this);
     this.onFileModified = this.onFileModified.bind(this);
     this.onFileOpen = this.onFileOpen.bind(this);
+    this.onMetadataChanged = this.onMetadataChanged.bind(this);
 
     this.onHoverDay = this.onHoverDay.bind(this);
     this.onHoverWeek = this.onHoverWeek.bind(this);
@@ -70,6 +71,7 @@ export default class CalendarView extends ItemView {
     this.registerEvent(this.app.vault.on("create", this.onFileCreated));
     this.registerEvent(this.app.vault.on("delete", this.onFileDeleted));
     this.registerEvent(this.app.vault.on("modify", this.onFileModified));
+    this.registerEvent(this.app.metadataCache.on("changed", this.onMetadataChanged));
     this.registerEvent(this.app.workspace.on("file-open", this.onFileOpen));
 
     this.settings = null;
@@ -432,6 +434,10 @@ export default class CalendarView extends ItemView {
     if (getDateFromFile(file, "day")) {
       dailyNotes.reindex();
       invalidateAllCache();
+      // Also invalidate StatusResolver cache (note was deleted)
+      if (this.statusResolver) {
+        this.statusResolver.invalidateCache();
+      }
       this.updateActiveFile();
     }
     if (getDateFromFile(file, "week")) {
@@ -440,18 +446,42 @@ export default class CalendarView extends ItemView {
     }
   }
 
+  /**
+   * metadataCache "changed" fires AFTER frontmatter has been parsed.
+   * This is the correct event to invalidate StatusResolver cache and refresh UI,
+   * because vault "modify" fires before metadataCache updates.
+   */
+  private onMetadataChanged(file: TFile): void {
+    const date = getDateFromFile(file, "day");
+    if (date && this.calendar) {
+      // Invalidate StatusResolver cache for this specific date
+      if (this.statusResolver) {
+        this.statusResolver.invalidateCache(date.format("YYYY-MM-DD"));
+        this.statusResolver.invalidateCache(`${date.format("YYYY-MM-DD")}::no-wx`);
+      }
+      // Invalidate leaveDay cache (frontmatter tags may have changed)
+      invalidateAllCache();
+      // Trigger re-render
+      this.calendar.tick();
+      return;
+    }
+    // Also handle weekly notes
+    const weekDate = getDateFromFile(file, "week");
+    if (weekDate && this.calendar) {
+      this.calendar.tick();
+    }
+  }
+
   private async onFileModified(file: TFile): Promise<void> {
+    // vault "modify" fires immediately on write, but metadataCache may not
+    // have re-parsed frontmatter yet. We DO NOT invalidate StatusResolver
+    // cache here — that would re-populate it with stale frontmatter.
+    // Instead, we just trigger a light tick; the real refresh happens
+    // in onMetadataChanged() when metadataCache reports the update.
     const date = getDateFromFile(file, "day") || getDateFromFile(file, "week");
     if (date && this.calendar) {
-      // Invalidate leave cache when a daily note is modified
-      // (frontmatter tags may have changed)
-      if (getDateFromFile(file, "day")) {
-        invalidateAllCache();
-        // Also invalidate StatusResolver cache for this date
-        if (this.statusResolver) {
-          this.statusResolver.invalidateCache(date.format("YYYY-MM-DD"));
-        }
-      }
+      // Only invalidate leaveDay cache (holiday data is not frontmatter-dependent)
+      // Do NOT invalidate StatusResolver here — wait for metadataCache "changed"
       this.calendar.tick();
     }
   }
