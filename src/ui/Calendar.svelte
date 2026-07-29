@@ -12,7 +12,7 @@
   import type { ISettings } from "src/settings";
   import { activeFile, dailyNotes, settings, weeklyNotes } from "./stores";
 
-  let today: Moment;
+  let today: Moment = window.moment();
 
   $: today = getToday($settings);
 
@@ -25,8 +25,12 @@
   export let onContextMenuDay: (date: Moment, event: MouseEvent) => boolean;
   export let onContextMenuWeek: (date: Moment, event: MouseEvent) => boolean;
 
+  // Incremented to force re-render of all days (used by weather refresh)
+  let refreshTick = 0;
+
   export function tick() {
     today = window.moment();
+    refreshTick++;
   }
 
   function getToday(settings: ISettings) {
@@ -37,6 +41,7 @@
   }
 
   // 1 minute heartbeat to keep `today` reflecting the current day
+  // Also refreshes weather data periodically
   let heartbeat = setInterval(() => {
     tick();
 
@@ -48,8 +53,18 @@
     }
   }, 1000 * 60);
 
+  // Weather refresh: every 10 minutes, force a re-render so that
+  // statusSource.getDailyMetadata can fetch fresh weather from WeatherStore
+  let weatherHeartbeat = setInterval(() => {
+    refreshTick++;
+  }, 10 * 60 * 1000);
+
+  // Reference refreshTick in the template so Svelte re-renders on change
+  $: _ = refreshTick;
+
   onDestroy(() => {
     clearInterval(heartbeat);
+    clearInterval(weatherHeartbeat);
   });
 </script>
 

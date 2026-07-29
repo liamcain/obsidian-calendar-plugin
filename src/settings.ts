@@ -18,6 +18,25 @@ export interface ISettings {
   weeklyNoteFolder: string;
 
   localeOverride: ILocaleOverride;
+
+  // Day Markers
+  showDayMarkers: boolean;
+  holidayApiUrl: string;
+  leaveDayTag: string;
+
+  // Status Tags (Phase 1)
+  enableStatusTags: boolean;
+
+  // Mood Tracking (Phase 2)
+  enableMoodTracking: boolean;
+  moodFieldName: string;
+
+  // Weather (Phase 2)
+  enableWeather: boolean;
+  weatherCity: string;     // user-specified city name (empty = use IP geolocation)
+  weatherLatitude: number;
+  weatherLongitude: number;
+  autoWriteWeather: boolean;  // auto-write weather to daily note frontmatter
 }
 
 const weekdays = [
@@ -42,6 +61,21 @@ export const defaultSettings = Object.freeze({
   weeklyNoteFolder: "",
 
   localeOverride: "system-default",
+
+  showDayMarkers: true,
+  holidayApiUrl: "https://timor.tech/api/holiday/year/",
+  leaveDayTag: "请假",
+
+  enableStatusTags: true,
+
+  enableMoodTracking: false,
+  moodFieldName: "mood",
+
+  enableWeather: false,
+  weatherCity: "",
+  weatherLatitude: 0,
+  weatherLongitude: 0,
+  autoWriteWeather: true,
 });
 
 export function appHasPeriodicNotesPluginLoaded(): boolean {
@@ -98,6 +132,28 @@ export class CalendarSettingsTab extends PluginSettingTab {
       this.addWeeklyNoteTemplateSetting();
       this.addWeeklyNoteFolderSetting();
     }
+
+    this.containerEl.createEl("h3", {
+      text: "Day Markers",
+    });
+    this.addShowDayMarkersSetting();
+    this.addHolidayApiUrlSetting();
+    this.addLeaveDayTagSetting();
+
+    this.containerEl.createEl("h3", {
+      text: "Status Tags",
+    });
+    this.addStatusTagsToggleSetting();
+
+    this.containerEl.createEl("h3", {
+      text: "Mood Tracking",
+    });
+    this.addMoodTrackingSetting();
+
+    this.containerEl.createEl("h3", {
+      text: "Weather (Auto-Fetch)",
+    });
+    this.addWeatherSettings();
 
     this.containerEl.createEl("h3", {
       text: "Advanced Settings",
@@ -209,6 +265,138 @@ export class CalendarSettingsTab extends PluginSettingTab {
         textfield.setValue(this.plugin.options.weeklyNoteFolder);
         textfield.onChange(async (value) => {
           this.plugin.writeOptions(() => ({ weeklyNoteFolder: value }));
+        });
+      });
+  }
+
+  addShowDayMarkersSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Show day markers")
+      .setDesc(
+        "Highlight holidays, leave days, and makeup workdays on the calendar"
+      )
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.options.showDayMarkers);
+        toggle.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({ showDayMarkers: value }));
+        });
+      });
+  }
+
+  addHolidayApiUrlSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Holiday API URL")
+      .setDesc(
+        "API endpoint for fetching public holidays. Year will be appended automatically. Default: https://timor.tech/api/holiday/year/"
+      )
+      .addText((textfield) => {
+        textfield.setValue(this.plugin.options.holidayApiUrl);
+        textfield.setPlaceholder("https://timor.tech/api/holiday/year/");
+        textfield.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({ holidayApiUrl: value }));
+        });
+      });
+  }
+
+  addLeaveDayTagSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Leave day tag")
+      .setDesc(
+        "Tag in daily note frontmatter that marks a leave day (e.g. 请假)"
+      )
+      .addText((textfield) => {
+        textfield.setValue(this.plugin.options.leaveDayTag);
+        textfield.setPlaceholder("请假");
+        textfield.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({ leaveDayTag: value }));
+        });
+      });
+  }
+
+  addStatusTagsToggleSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Enable status tags")
+      .setDesc(
+        "Parse frontmatter status/tags to display status emojis and colors on the calendar"
+      )
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.options.enableStatusTags);
+        toggle.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({ enableStatusTags: value }));
+        });
+      });
+  }
+
+  addMoodTrackingSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Enable mood tracking")
+      .setDesc(
+        "Read mood from daily note frontmatter and display mood emoji on the calendar"
+      )
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.options.enableMoodTracking);
+        toggle.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({ enableMoodTracking: value }));
+        });
+      });
+
+    new Setting(this.containerEl)
+      .setName("Mood field name")
+      .setDesc("Frontmatter field name for mood (default: mood)")
+      .addText((textfield) => {
+        textfield.setValue(this.plugin.options.moodFieldName);
+        textfield.setPlaceholder("mood");
+        textfield.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({ moodFieldName: value }));
+        });
+      });
+  }
+
+  addWeatherSettings(): void {
+    new Setting(this.containerEl)
+      .setName("Enable weather auto-fetch")
+      .setDesc(
+        "Automatically fetch weather data from Open-Meteo and display on the calendar. City is auto-detected via IP, or you can specify manually."
+      )
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.options.enableWeather);
+        toggle.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({ enableWeather: value }));
+        });
+      });
+
+    new Setting(this.containerEl)
+      .setName("City")
+      .setDesc(
+        "Enter your city name for weather lookups. Leave empty to use IP-based auto-detection."
+      )
+      .addText((textfield) => {
+        const city = this.plugin.options.weatherCity;
+        const lat = this.plugin.options.weatherLatitude;
+        const lon = this.plugin.options.weatherLongitude;
+        if (city) {
+          textfield.setValue(city);
+        } else if (lat !== 0 && lon !== 0) {
+          textfield.setPlaceholder(`Auto-detected: ${lat.toFixed(2)}, ${lon.toFixed(2)}`);
+        } else {
+          textfield.setPlaceholder("Auto-detect via IP");
+        }
+        textfield.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({
+            weatherCity: value,
+          }));
+        });
+      });
+
+    new Setting(this.containerEl)
+      .setName("Auto-write to daily note")
+      .setDesc(
+        "Automatically write weather data to daily note frontmatter when creating or opening a note"
+      )
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.options.autoWriteWeather);
+        toggle.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({ autoWriteWeather: value }));
         });
       });
   }

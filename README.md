@@ -1,4 +1,4 @@
-# obsidian-calendar-plugin
+# Calendar+ (obsidian-calendar-plugin fork)
 
 This plugin for [Obsidian](https://obsidian.md/) creates a simple Calendar view for visualizing and navigating between your daily notes.
 
@@ -17,12 +17,99 @@ The plugin reads your Daily Note settings to know your date format, your daily n
 - Visualize your writing. Each day includes a meter to approximate how much you've written that day.
 - Use **Weekly notes** for an added organization layer! They work just like daily notes, but have their own customization options.
 
+## Features (Calendar+ Fork)
+
+### Core Features (from upstream)
+- Go to any **daily note**.
+- Create new daily notes for days that don't have one.
+- Visualize your writing. Each day includes a meter to approximate how much you've written that day.
+- Use **Weekly notes** for an added organization layer.
+
+### Day Markers (v1.1+)
+- **Holidays**: Automatically fetched from [timor.tech](https://timor.tech/) API, cached locally for 7 days. Highlighted in red on the calendar.
+- **Leave Days**: Detected from daily note frontmatter `tags` (configurable tag name, default: `请假`). Highlighted in blue.
+- **Makeup Workdays**: Fetched from the same API, highlighted in orange.
+- Toggle on/off from Settings > Day Markers > Show day markers.
+
+### Status Tags (v2.0+)
+- Parse `status` field and `tags` array in daily note frontmatter to display status emojis and colors.
+- 13 built-in status presets: leave, outing, class, slack, sick, travel, remote, holiday, overtime, meeting, study, rest, exercise.
+- Supports Chinese, English, and emoji aliases (e.g. `请假`/`leave`/`🏖️` all resolve to the same status).
+- Fuzzy matching for typos (edit distance ≤ 2).
+- Custom status tags with user-defined aliases, colors, and emojis.
+- Backward compatible with the `leaveDayTag` setting.
+
+**Example frontmatter:**
+```yaml
+---
+date: 2026-07-24
+tags:
+  - 日报
+  - 请假
+status: leave       # explicit status (highest priority)
+mood: great         # mood tracking
+weather: sunny      # auto-written by Weather module
+temperature: 32
+---
+```
+
+### Mood Tracking (v2.0+)
+- Read `mood` field from daily note frontmatter and display mood emoji on the calendar.
+- 5 built-in mood presets: great (😄), good (🙂), okay (😐), bad (😕), awful (😢).
+- Supports multiple moods per day (array in frontmatter).
+- Mood emoji appears in the bottom-right corner of each day cell.
+
+### Weather Auto-Fetch (v2.0+)
+- Automatically fetch weather data from [Open-Meteo](https://open-meteo.com/) (free, no API key required).
+- **City detection**: IP-based geolocation (automatic) or manual city name input. User input takes priority.
+- **Auto-write**: When enabled, weather data is automatically written to daily note frontmatter (`weather`, `weather_name`, `temperature`, `weather_wmo`).
+- Existing weather data in frontmatter is never overwritten.
+- 14 WMO weather code mappings with emoji and Chinese/English labels.
+- Historical weather data available via Open-Meteo Archive API (for past dates).
+- Caching: Current day weather cached for 2 hours, historical weather cached permanently.
+
+**Settings:**
+- `Enable weather auto-fetch` (toggle, default: off)
+- `City` (text, empty = IP auto-detect)
+- `Auto-write to daily note` (toggle, default: on)
+
+**Frontmatter fields written:**
+```yaml
+weather: sunny        # canonical weather ID
+weather_name: 晴      # Chinese label
+temperature: 32       # temperature in °C
+weather_wmo: 0        # WMO weather code
+```
+
 ## Settings
+
+### General Settings
 
 - **Start week on [default: locale]**: Configure the Calendar view to show Sunday or Monday as the first day of the week. Choosing 'locale' will set the start day to be whatever is the default for your chosen locale (`Settings > About > Language`)
 - **Words per Dot [default: 250]**: Starting in version 1.3, dots reflect the word count of your files. By default, each dot represents 250 words, you can change that value to whatever you want. Set this to `0` to disable the word count entirely. **Note:** There is a max of 5 dots so that the view doesn't get too big!
 - **Confirm before creating new note [default: on]**: If you don't like that a modal prompts you before creating a new daily note, you can turn it off.
 - **Show Week Number [default: off]**: Enable this to add a new column to the calendar view showing the [Week Number](https://en.wikipedia.org/wiki/Week#Week_numbering). Clicking on these cells will open your **weekly note**.
+
+### Day Markers
+
+- **Show day markers [default: on]**: Highlight holidays, leave days, and makeup workdays on the calendar.
+- **Holiday API URL [default: https://timor.tech/api/holiday/year/]**: API endpoint for fetching public holidays. Year is appended automatically.
+- **Leave day tag [default: 请假]**: Tag in daily note frontmatter that marks a leave day.
+
+### Status Tags
+
+- **Enable status tags [default: on]**: Parse frontmatter status/tags to display status emojis and colors on the calendar. Supports 13 built-in presets + custom statuses with alias resolution.
+
+### Mood Tracking
+
+- **Enable mood tracking [default: off]**: Read mood from daily note frontmatter and display mood emoji on the calendar.
+- **Mood field name [default: mood]**: Frontmatter field name for mood data.
+
+### Weather (Auto-Fetch)
+
+- **Enable weather auto-fetch [default: off]**: Automatically fetch weather data from Open-Meteo and display on the calendar. City is auto-detected via IP, or you can specify manually.
+- **City [default: empty]**: Enter your city name for weather lookups. Leave empty to use IP-based auto-detection.
+- **Auto-write to daily note [default: on]**: Automatically write weather data to daily note frontmatter when creating or opening a note.
 
 ## Customization
 
@@ -47,6 +134,12 @@ The following CSS Variables can be overridden in your `obsidian.css` file.
   --color-text-day: var(--text-normal);
   --color-text-today: var(--interactive-accent);
   --color-text-weeknum: var(--text-muted);
+
+  /* Calendar+ Day Markers */
+  --status-emoji-size: 10px;
+  --mood-emoji-size: 10px;
+  --weather-emoji-size: 9px;
+  --status-label-font-size: 8px;
 }
 ```
 
@@ -107,6 +200,43 @@ From the Settings menu, you can toggle "Start week on Monday".
 ### How do I include "unformatted" words in my weekly note filenames?
 
 If you want the weekly note format to include a word (e.g. "Week 21 of Year 2020") you can do so by surrounding the words with `[]` brackets. This tells [moment](https://momentjs.com/docs/#/displaying/format/) to ignore the words. So for the example above, you would set your format to `[Week] ww [of Year] gggg`.
+
+### What do the colored backgrounds mean?
+
+- **Red background**: Public holiday (fetched from timor.tech API)
+- **Blue background**: Leave day (detected from frontmatter tag, e.g. `请假`)
+- **Orange background**: Makeup workday (weekend that is a working day, from API)
+
+You can toggle these markers in Settings > Day Markers > Show day markers.
+
+### How do status tags work?
+
+Write a `status` field or add a status tag to your daily note frontmatter:
+
+```yaml
+---
+status: travel
+tags:
+  - 日报
+  - 出差
+---
+```
+
+The calendar will display the corresponding emoji (✈️ for travel) and color on that day. The plugin recognizes 13 preset statuses in Chinese, English, and emoji. You can also add custom statuses via the StatusConfigStore.
+
+### How does the weather auto-fetch work?
+
+Enable it in Settings > Weather (Auto-Fetch). The plugin will:
+1. Detect your location via IP geolocation (or use a city you specify)
+2. Fetch weather from Open-Meteo (free, no API key)
+3. Auto-write weather data to your daily note frontmatter
+4. Display a weather emoji in the top-left corner of each day cell
+
+Weather data is cached to minimize API calls. The plugin never overwrites weather data you've manually edited.
+
+### Can I use custom status tags?
+
+Yes. The `StatusConfigStore` supports custom statuses with user-defined aliases, colors, and emojis. Custom aliases override preset aliases. You can also disable built-in presets you don't need.
 
 ### I don't like showing the week numbers but I still want to use weekly notes. Can I still use them?
 

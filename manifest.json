@@ -1,10 +1,10 @@
 {
   "id": "calendar",
-  "name": "Calendar",
-  "description": "Calendar view of your daily notes",
-  "version": "1.5.10",
-  "author": "Liam Cain",
-  "authorUrl": "https://github.com/liamcain/",
+  "name": "Calendar+",
+  "description": "Calendar view of your daily notes with day markers (holidays, leave days, non-working days)",
+  "version": "1.6.0",
+  "author": "Liam Cain (fork: holdyounger)",
+  "authorUrl": "https://github.com/holdyounger/obsidian-calendar-plugin",
   "fundingUrl": "https://www.buymeacoffee.com/liamcain",
   "isDesktopOnly": false,
   "minAppVersion": "0.9.11"
