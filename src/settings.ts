@@ -10,6 +10,7 @@ export interface ISettings {
   wordsPerDot: number;
   weekStart: IWeekStartOption;
   shouldConfirmBeforeCreate: boolean;
+  shouldRevealActiveNote: boolean;
 
   // Weekly Note settings
   showWeeklyNote: boolean;
@@ -32,6 +33,7 @@ const weekdays = [
 
 export const defaultSettings = Object.freeze({
   shouldConfirmBeforeCreate: true,
+  shouldRevealActiveNote: false,
   weekStart: "locale" as IWeekStartOption,
 
   wordsPerDot: DEFAULT_WORDS_PER_DOT,
@@ -80,6 +82,7 @@ export class CalendarSettingsTab extends PluginSettingTab {
     this.addDotThresholdSetting();
     this.addWeekStartSetting();
     this.addConfirmCreateSetting();
+    this.addRevealActiveNoteSetting();
     this.addShowWeeklyNoteSetting();
 
     if (
@@ -156,6 +159,22 @@ export class CalendarSettingsTab extends PluginSettingTab {
         toggle.onChange(async (value) => {
           this.plugin.writeOptions(() => ({
             shouldConfirmBeforeCreate: value,
+          }));
+        });
+      });
+  }
+
+  addRevealActiveNoteSetting(): void {
+    new Setting(this.containerEl)
+      .setName("Follow the active note")
+      .setDesc(
+        "Show the month of the periodic note you open, the way the 'Reveal active note' command does"
+      )
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.options.shouldRevealActiveNote);
+        toggle.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({
+            shouldRevealActiveNote: value,
           }));
         });
       });

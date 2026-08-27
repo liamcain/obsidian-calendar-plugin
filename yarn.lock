@@ -602,6 +602,13 @@
   dependencies:
     "@types/tern" "*"
 
+"@types/codemirror@5.60.8":
+  version "5.60.8"
+  resolved "https://registry.yarnpkg.com/@types/codemirror/-/codemirror-5.60.8.tgz#b647d04b470e8e1836dd84b2879988fc55c9de68"
+  integrity sha512-VjFgDF/eB+Aklcy15TtOTLQeMjTo07k7KAjql8OK5Dirr7a6sJY4T1uVBDuTVG9VEmn1uUsohOpYnVfgC6/jyw==
+  dependencies:
+    "@types/tern" "*"
+
 "@types/estree@*":
   version "0.0.47"
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-0.0.47.tgz#d7a51db20f0650efec24cd04994f523d93172ed4"
@@ -3074,6 +3081,11 @@ moment@*, moment@2.29.1:
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.1.tgz#b2be769fa31940be9eeea6469c075e35006fa3d3"
   integrity sha512-kHmoybcPV8Sqy59DwNDY3Jefr64lK/by/da0ViFcuA4DH0vQg5Q6Ze5VimxkfQNSC+Mls/Kx53s7TjP1RhFEDQ==
 
+moment@2.30.1:
+  version "2.30.1"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.30.1.tgz#f8c91c07b7a786e30c59926df530b4eac96974ae"
+  integrity sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==
+
 ms@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
@@ -3219,13 +3231,20 @@ obsidian-daily-notes-interface@0.8.4:
     obsidian obsidianmd/obsidian-api#master
     tslib "2.1.0"
 
-obsidian-daily-notes-interface@0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/obsidian-daily-notes-interface/-/obsidian-daily-notes-interface-0.9.0.tgz#6a8996917899097c99ed62264a28e231a297d3c6"
-  integrity sha512-vzqOLgjTJi+jeT654eRgyEA2PfqeNI23Fe955VwqnRpAjkarr6qcllpC9cs1XBgpjmRm/XRIqXFdLsO+1z1RGg==
+obsidian-daily-notes-interface@0.9.4:
+  version "0.9.4"
+  resolved "https://registry.yarnpkg.com/obsidian-daily-notes-interface/-/obsidian-daily-notes-interface-0.9.4.tgz#df085c5aa4c8c2b2b810185d4d9dc24344cb7604"
+  integrity sha512-PILoRtZUB5wEeGnDQAPMlkVlXwDYoxkLR8Wl4STU2zLNwhcq9kKvQexiXi7sfjGlpTnL+LeAOfEVWyeVndneKg==
   dependencies:
     obsidian obsidianmd/obsidian-api#master
     tslib "2.1.0"
+
+"obsidian@github:obsidianmd/obsidian-api#master":
+  version "1.13.2"
+  resolved "https://codeload.github.com/obsidianmd/obsidian-api/tar.gz/cc1744324150c632416857c98964f87b1574a5fc"
+  dependencies:
+    "@types/codemirror" "5.60.8"
+    moment "2.30.1"
 
 obsidian@obsidianmd/obsidian-api#master:
   version "0.11.11"

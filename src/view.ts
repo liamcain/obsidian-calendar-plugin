@@ -6,6 +6,7 @@ import {
   getWeeklyNote,
   getWeeklyNoteSettings,
 } from "obsidian-daily-notes-interface";
+import type { IGranularity } from "obsidian-daily-notes-interface";
 import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
 import { get } from "svelte/store";
 
@@ -23,6 +24,14 @@ import {
   tasksSource,
   wordCountSource,
 } from "./ui/sources";
+
+const REVEAL_GRANULARITIES: IGranularity[] = [
+  "day",
+  "week",
+  "month",
+  "quarter",
+  "year",
+];
 
 export default class CalendarView extends ItemView {
   private calendar: Calendar;
@@ -216,6 +225,9 @@ export default class CalendarView extends ItemView {
   public onFileOpen(_file: TFile): void {
     if (this.app.workspace.layoutReady) {
       this.updateActiveFile();
+      if (this.settings.shouldRevealActiveNote) {
+        this.revealActiveNote();
+      }
     }
   }
 
@@ -234,21 +246,19 @@ export default class CalendarView extends ItemView {
   }
 
   public revealActiveNote(): void {
-    const { moment } = window;
     const { activeLeaf } = this.app.workspace;
 
-    if (activeLeaf.view instanceof FileView) {
-      // Check to see if the active note is a daily-note
-      let date = getDateFromFile(activeLeaf.view.file, "day");
-      if (date) {
-        this.calendar.$set({ displayedMonth: date });
-        return;
-      }
+    if (!(activeLeaf.view instanceof FileView)) {
+      return;
+    }
 
-      // Check to see if the active note is a weekly-note
-      const { format } = getWeeklyNoteSettings();
-      date = moment(activeLeaf.view.file.basename, format, true);
-      if (date.isValid()) {
+    // Finest granularity first: a format like YYYY-MM can match both a
+    // monthly and a quarterly note, and the narrower reading is the one the
+    // reader means. Coarser notes land on the month they open with, so a
+    // quarterly note shows its first month and a yearly note shows January.
+    for (const granularity of REVEAL_GRANULARITIES) {
+      const date = getDateFromFile(activeLeaf.view.file, granularity);
+      if (date) {
         this.calendar.$set({ displayedMonth: date });
         return;
       }
