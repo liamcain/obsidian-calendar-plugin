@@ -70,3 +70,10 @@ function createSelectedFileStore() {
 }
 
 export const activeFile = createSelectedFileStore();
+
+// Data selecionada na agenda (YYYY-MM-DD). null = hoje
+export const selectedDate = writable<string | null>(null);
+
+export function setSelectedDate(dateStr: string): void {
+  selectedDate.set(dateStr);
+}

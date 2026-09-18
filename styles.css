@@ -9,3 +9,191 @@
 .settings-banner h4 {
   margin: 0;
 }
+
+/* === Agenda / Calendar theme awareness === */
+#calendar-container {
+  --calendar-bg: var(--background-primary);
+  --calendar-border: var(--background-modifier-border);
+  --calendar-text: var(--text-normal);
+  --calendar-muted: var(--text-muted);
+  --calendar-accent: var(--interactive-accent);
+}
+
+/* Wrapper abaixo do calendário */
+.calendar-agenda-wrapper {
+  background: var(--background-primary);
+  color: var(--text-normal);
+}
+
+/* Dots de eventos no calendário - usa cor do evento */
+#calendar-container .event-dot {
+  border-radius: 50%;
+}
+#calendar-container .dot.google-dot {
+  fill: #4285F4 !important;
+  filter: drop-shadow(0 0 2px rgba(66,133,244,0.6));
+}
+#calendar-container .has-events {
+  font-weight: 600;
+}
+
+/* Dia atual (.today da lib) -> apenas cor via --color-text-today (var(--interactive-accent)), sem borda */
+#calendar-container .day.today {
+  /* garante que hoje não herda borda de outro estado */
+  outline: none;
+}
+
+#calendar-container .day.drag-over {
+  background-color: var(--interactive-accent) !important;
+  color: var(--text-on-accent) !important;
+  opacity: 0.85;
+}
+#calendar-container .day.drag-over .event-dot {
+  filter: brightness(1.5);
+}
+
+/* Dia selecionado (agenda) - apenas o dia clicado recebe borda */
+#calendar-container .day.agenda-selected {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: -2px;
+  border-radius: 6px;
+}
+#calendar-container .day.agenda-selected.active {
+  outline: 2px solid var(--text-on-accent);
+  box-shadow: inset 0 0 0 1px var(--interactive-accent);
+}
+#calendar-container .day.today.agenda-selected {
+  /* quando hoje é o dia clicado: mantém cor + adiciona borda */
+  outline: 2px solid var(--interactive-accent);
+}
+
+/* Modal de evento */
+.calendar-event-modal-container .modal {
+  background: var(--background-primary);
+  color: var(--text-normal);
+}
+.calendar-event-modal input,
+.calendar-event-modal select,
+.calendar-event-modal textarea {
+  background: var(--background-primary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+}
+.calendar-event-modal input:focus,
+.calendar-event-modal select:focus,
+.calendar-event-modal textarea:focus {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px var(--background-modifier-border-hover);
+}
+
+/* === Toast elegante === */
+.calendar-toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.calendar-toast {
+  min-width: 320px;
+  max-width: 420px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-left: 4px solid var(--interactive-accent);
+  border-radius: 8px;
+  padding: 14px 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: auto;
+  font-family: var(--font-interface);
+}
+
+.calendar-toast.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.calendar-toast-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95em;
+  color: var(--text-normal);
+}
+
+.calendar-toast-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--interactive-accent);
+  flex-shrink: 0;
+}
+
+.calendar-toast-header strong {
+  flex: 1;
+}
+
+.calendar-toast-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.calendar-toast-message {
+  margin-top: 6px;
+  font-size: 0.85em;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.calendar-toast-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.calendar-toast-actions button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 0.82em;
+}
+
+.calendar-toast-actions button.mod-cta {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
+/* Scroll area da lista */
+.calendar-event-list {
+  max-height: 320px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+@media (max-width: 600px) {
+  .calendar-toast-container {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+  }
+  .calendar-toast {
+    min-width: unset;
+    max-width: unset;
+  }
+}

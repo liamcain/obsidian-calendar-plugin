@@ -2,6 +2,7 @@ import type { Moment, WeekSpec } from "moment";
 import { App, Plugin, WorkspaceLeaf } from "obsidian";
 
 import { VIEW_TYPE_CALENDAR } from "./constants";
+import { eventsStore } from "./events/store";
 import { settings } from "./ui/stores";
 import {
   appHasPeriodicNotesPluginLoaded,
@@ -32,6 +33,21 @@ export default class CalendarPlugin extends Plugin {
     this.register(
       settings.subscribe((value) => {
         this.options = value;
+      })
+    );
+
+    // Sync eventsStore -> settings + persistence (debounced via microtask)
+    this.register(
+      eventsStore.subscribe((record) => {
+        if (!this.options) return;
+        // evita loop inicial: só persiste se houve mudança real
+        if (JSON.stringify(this.options.events) !== JSON.stringify(record)) {
+          this.options.events = record;
+          // fire-and-forget, não bloqueia UI
+          this.saveData(this.options);
+          // também mantém settings store sincronizado
+          settings.update((s) => ({ ...s, events: record }));
+        }
       })
     );
 
@@ -98,8 +114,15 @@ export default class CalendarPlugin extends Plugin {
       return {
         ...old,
         ...(options || {}),
+        events: (options && options.events) || old.events || {},
       };
     });
+
+    // hidrata eventsStore
+    const merged = { ...this.options } as ISettings;
+    if (merged.events) {
+      eventsStore.setEvents(merged.events);
+    }
 
     await this.saveData(this.options);
   }
