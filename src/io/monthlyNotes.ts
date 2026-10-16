@@ -9,6 +9,34 @@ export const DEFAULT_MONTHLY_FORMAT = "YYYY-MM";
 export const DEFAULT_YEARLY_FORMAT = "YYYY";
 
 /**
+ * Find the content range for a day within a specific month section.
+ */
+export function findMonthlyDayRange(
+  content: string,
+  month: string,
+  day: string
+): { start: number; end: number } | null {
+  const lines = content.split("\n");
+  let currentMonth = "";
+  let start = -1;
+
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index];
+    if (/^#{1,2}\s/.test(line)) {
+      if (start !== -1) return { start, end: index };
+      const monthMatch = line.match(/^#\s+(\d{4}-\d{2})(?:\s|$)/);
+      if (/^#\s/.test(line)) currentMonth = monthMatch?.[1] || "";
+      const dayMatch = line.match(/^##\s+(\d{1,2})(?:\s|$)/);
+      if (currentMonth === month && dayMatch && Number(dayMatch[1]) === Number(day)) {
+        start = index + 1;
+      }
+    }
+  }
+
+  return start === -1 ? null : { start, end: lines.length };
+}
+
+/**
  * Get the folder path for monthly notes.
  * Uses the daily notes folder from Obsidian settings.
  */

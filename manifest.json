@@ -2,7 +2,7 @@
   "id": "calendar",
   "name": "Calendar",
   "description": "Calendar view of your daily notes",
-  "version": "1.12.0",
+  "version": "1.12.1",
   "author": "superbaseballman",
   "authorUrl": "https://github.com/superbaseballman",
   "fundingUrl": "https://github.com/superbaseballman/obsidian-calendar-plugin",

@@ -15,9 +15,9 @@
   import type { ISettings } from "src/settings";
   import {
     parseMonthlyNoteSections,
+    findMonthlyDayRange,
     getMonthlyNote,
     tryToCreateMonthlyNote,
-    saveDaySection,
   } from "src/io/monthlyNotes";
   import {
     activeFile,
@@ -55,10 +55,6 @@
   // Monthly note content rendering
   let dayContents: Record<string, string> = {};
   let canvasDaySchedules: Record<string, CanvasSchedule[]> = {};
-
-  // Editing state
-  let editingDay: string | null = null;
-  let editText: string = "";
 
   const unsubSettings = settings.subscribe((val) => {
     currentSettings = val;
@@ -306,63 +302,39 @@
     }
   }
 
-  function startEditDay(day: string) {
-    editingDay = day;
-    editText = dayContents[day] || "";
-    originalEditContent = editText;
-    hasEdited = false;
-    textareaFocused = false;
-    // Auto-focus the textarea after it renders
-    requestAnimationFrame(() => {
-      const textarea = document.querySelector(".mt-edit-textarea") as HTMLTextAreaElement;
-      if (textarea) textarea.focus();
-    });
-  }
+  async function openMonthlyEvent(day: string, event: MouseEvent | KeyboardEvent) {
+    const target = event.target as HTMLElement;
+    const container = event.currentTarget as HTMLElement;
+    if (target.closest("a, button, input, textarea, select")) return;
+    const file = monthFile;
+    const month = displayedMonth.format("YYYY-MM");
+    if (!file) return;
+    event.preventDefault();
 
-  let isCancelling = false;
-  let originalEditContent: string = "";
-  let hasEdited: boolean = false;
-  let textareaFocused: boolean = false;
-
-  function cancelEdit() {
-    isCancelling = true;
-    editingDay = null;
-    editText = "";
-    hasEdited = false;
-    textareaFocused = false;
-    // Reset flag after blur event fires
-    requestAnimationFrame(() => { isCancelling = false; });
-  }
-
-  function onTextareaFocus() {
-    textareaFocused = true;
-  }
-
-  function onTextareaBlur(day: string) {
-    if (isCancelling) return;
-    if (textareaFocused && hasEdited && editText.trim() !== originalEditContent.trim()) {
-      // Textarea was focused and content was modified — save
-      saveEditDay(day);
+    const content = await window.app.vault.cachedRead(file);
+    const range = findMonthlyDayRange(content, month, day);
+    if (!range) return;
+    let line = range.start;
+    const cache = window.app.metadataCache.getFileCache(file);
+    const inDay = (item: { position: { start: { line: number } } }) =>
+      item.position.start.line >= range.start && item.position.start.line < range.end;
+    const listItem = target.closest("li");
+    if (listItem && container.contains(listItem)) {
+      const index = Array.from(container.querySelectorAll("li")).indexOf(listItem);
+      line = cache?.listItems?.filter(inDay)[index]?.position.start.line ?? line;
     } else {
-      // Textarea never focused, or no changes — cancel silently
-      cancelEdit();
+      // Match rendered top-level blocks to the source sections in document order.
+      let block: HTMLElement = target;
+      while (block.parentElement && block.parentElement !== container) {
+        block = block.parentElement;
+      }
+      const index = Array.from(container.children).indexOf(block);
+      line = cache?.sections?.filter(inDay)[index]?.position.start.line ?? line;
     }
-  }
-
-  async function saveEditDay(day: string) {
-    if (!monthFile || isCancelling) return;
-    const newContent = editText.trim();
-    try {
-      await saveDaySection(monthFile, displayedMonth.format("YYYY-MM"), day, newContent);
-      // Update local state immediately
-      dayContents[day] = newContent;
-      dayContents = { ...dayContents };
-      editingDay = null;
-      editText = "";
-      hasEdited = false;
-    } catch (err) {
-      console.log("[Calendar] Failed to save day section", err);
-    }
+    await window.app.workspace.getUnpinnedLeaf().openFile(file, {
+      active: true,
+      eState: { line, focus: true },
+    });
   }
 
   export function refreshMonthlyContent() {
@@ -588,31 +560,20 @@
     {#if monthFile && Object.keys(dayContents).filter(d => dayContents[d]?.trim()).length > 0}
       <div class="mt-content-section">
         {#each daysWithTasks as day}
-          {#if dayContents[day] || editingDay === day}
-            <div class="mt-day-block">
-              <div class="mt-day-label">Day {day}</div>
-              {#if editingDay === day}
-                <div class="mt-edit-area">
-                  <textarea
-                    class="mt-edit-textarea"
-                    bind:value={editText}
-                    placeholder="Enter Markdown content..."
-                    on:focus={onTextareaFocus}
-                    on:input={() => { hasEdited = true; }}
-                    on:blur={() => onTextareaBlur(day)}
-                    on:keydown={(e) => { if (e.key === 'Escape') cancelEdit(); }}
-                  ></textarea>
-                </div>
-              {:else}
-                <div
-                  class="mt-markdown-content"
-                  use:renderMarkdown={dayContents[day]}
-                  on:dblclick={() => startEditDay(day)}
-                  title="Double-click to edit"
-                ></div>
-              {/if}
-            </div>
-          {/if}
+          <div class="mt-day-block">
+            <div class="mt-day-label">Day {day}</div>
+            <div
+              class="mt-markdown-content"
+              use:renderMarkdown={dayContents[day]}
+              role="link"
+              tabindex="0"
+              on:click={(event) => openMonthlyEvent(day, event)}
+              on:keydown={(event) => {
+                if (event.key === 'Enter') openMonthlyEvent(day, event);
+              }}
+              title="点击跳转到月记中的对应段落"
+            ></div>
+          </div>
         {/each}
       </div>
     {/if}
@@ -837,29 +798,12 @@
     text-decoration: underline;
   }
 
-  /* Edit area */
-  .mt-edit-area {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+  .mt-markdown-content {
+    cursor: pointer;
   }
 
-  .mt-edit-textarea {
-    width: 100%;
-    min-height: 80px;
-    padding: 8px;
-    font-size: 13px;
-    font-family: var(--font-monospace);
-    line-height: 1.5;
-    color: var(--text-normal);
-    background: var(--background-primary);
-    border: 1px solid var(--background-modifier-border);
-    border-radius: 4px;
-    resize: vertical;
-  }
-
-  .mt-edit-textarea:focus {
-    border-color: var(--interactive-accent);
-    outline: none;
+  .mt-markdown-content:focus-visible {
+    outline: 2px solid var(--interactive-accent);
+    outline-offset: 2px;
   }
 </style>
