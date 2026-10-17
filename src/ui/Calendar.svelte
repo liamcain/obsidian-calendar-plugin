@@ -304,7 +304,10 @@
 
   async function openMonthlyEvent(day: string, event: MouseEvent | KeyboardEvent) {
     const target = event.target as HTMLElement;
-    const container = event.currentTarget as HTMLElement;
+    const current = event.currentTarget as HTMLElement;
+    // The handler may be bound to the wrapper, so resolve the actual markdown container.
+    const container =
+      current.querySelector<HTMLElement>(".mt-markdown-content") ?? current;
     if (target.closest("a, button, input, textarea, select")) return;
     const file = monthFile;
     const month = displayedMonth.format("YYYY-MM");
@@ -560,14 +563,13 @@
     {#if monthFile && Object.keys(dayContents).filter(d => dayContents[d]?.trim()).length > 0}
       <div class="mt-content-section">
         {#each daysWithTasks as day}
-          <div class="mt-day-block">
+          <div class="mt-day-block" on:click={(event) => openMonthlyEvent(day, event)}>
             <div class="mt-day-label">Day {day}</div>
             <div
               class="mt-markdown-content"
               use:renderMarkdown={dayContents[day]}
               role="link"
               tabindex="0"
-              on:click={(event) => openMonthlyEvent(day, event)}
               on:keydown={(event) => {
                 if (event.key === 'Enter') openMonthlyEvent(day, event);
               }}
@@ -655,6 +657,7 @@
   .mt-day-block {
     padding: 8px 12px;
     border-bottom: 1px solid var(--background-modifier-border);
+    cursor: pointer;
   }
 
   .mt-day-block:last-child {
