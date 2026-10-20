@@ -1,4 +1,5 @@
-import type { Moment, WeekSpec } from "moment";
+import type moment from "moment";
+import type { WeekSpec } from "moment";
 import { App, Plugin, WorkspaceLeaf } from "obsidian";
 
 import { VIEW_TYPE_CALENDAR } from "./constants";
@@ -13,7 +14,7 @@ import CalendarView from "./view";
 declare global {
   interface Window {
     app: App;
-    moment: () => Moment;
+    moment: typeof moment;
     _bundledLocaleWeekSpec: WeekSpec;
   }
 }

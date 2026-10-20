@@ -8,7 +8,7 @@ This plugin for [Obsidian](https://obsidian.md/) creates a simple Calendar view 
 
 After enabling the plugin in the settings menu, you should see the calendar view appear in the right sidebar.
 
-The plugin reads your Daily Note settings to know your date format, your daily note template location, and the location for new daily notes it creates.
+The plugin reads your Daily Note settings to know your date format, your daily note template location, and the location for new daily notes it creates. Existing daily notes must match the configured folder and full date format as well. For example, with folder `Journal` and format `YYYY-MM-DD`, `Journal/Archive/2026-01-14.md` is not treated as `Journal/2026-01-14.md`. To organize daily notes into dated subfolders, include them in the format, such as `YYYY/MM/DD`.
 
 ## Features
 
