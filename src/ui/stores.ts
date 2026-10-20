@@ -1,8 +1,6 @@
 import type { TFile } from "obsidian";
-import {
-  getAllDailyNotes,
-  getAllWeeklyNotes,
-} from "obsidian-daily-notes-interface";
+import { getAllWeeklyNotes } from "obsidian-daily-notes-interface";
+import { getAllDailyNotes } from "src/io/dailyNoteIndex";
 import { writable } from "svelte/store";
 
 import { defaultSettings, ISettings } from "src/settings";
