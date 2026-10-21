@@ -9,3 +9,106 @@
 .settings-banner h4 {
   margin: 0;
 }
+
+/* DateActionModal styles */
+.date-action-modal {
+  width: 20%;
+  max-width: 90vw;
+  min-width: 180px;
+}
+
+.date-action-title {
+  text-align: center;
+  margin-bottom: 16px;
+  color: var(--text-normal);
+  font-size: 18px;
+}
+
+.date-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.date-action-btn {
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 14px;
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.date-action-btn:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+}
+
+.date-action-cancel {
+  width: 100%;
+  padding: 8px 16px;
+  font-size: 13px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.date-action-cancel:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+/* Monthly task dots on calendar */
+.monthly-task {
+  stroke: var(--text-faint) !important;
+  fill: var(--text-faint) !important;
+}
+
+svg.filled.monthly-task {
+  fill: var(--monthly-dot-color, #9b59b6) !important;
+}
+
+svg.hollow.monthly-task {
+  stroke: var(--monthly-dot-color, #9b59b6) !important;
+  fill: none !important;
+}
+
+.active svg.filled.monthly-task {
+  fill: var(--text-on-accent) !important;
+}
+
+.active svg.hollow.monthly-task {
+  stroke: var(--text-on-accent) !important;
+}
+
+svg.filled.canvas-schedule {
+  fill: var(--canvas-schedule-dot-color, #3498db) !important;
+}
+
+.active svg.filled.canvas-schedule {
+  fill: var(--text-on-accent) !important;
+}
+
+svg.filled.canvas-schedule.active {
+  fill: var(--text-on-accent) !important;
+}
+
+/* Override .today to use background color instead of font color */
+.day.today {
+  background-color: var(--interactive-accent) !important;
+  color: var(--text-on-accent) !important;
+}
+
+/* Also override when .today is combined with .active */
+.day.today.active {
+  background-color: var(--interactive-accent) !important;
+  color: var(--text-on-accent) !important;
+}

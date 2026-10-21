@@ -9,6 +9,8 @@ import {
   ISettings,
 } from "./settings";
 import CalendarView from "./view";
+import { initTranslations, t } from "./i18n";
+import { en, zh } from "./i18n/translations";
 
 declare global {
   interface Window {
@@ -29,6 +31,9 @@ export default class CalendarPlugin extends Plugin {
   }
 
   async onload(): Promise<void> {
+    // Initialize i18n
+    initTranslations({ en, zh });
+
     this.register(
       settings.subscribe((value) => {
         this.options = value;
@@ -42,7 +47,7 @@ export default class CalendarPlugin extends Plugin {
 
     this.addCommand({
       id: "show-calendar-view",
-      name: "Open view",
+      name: t('command.openCalendarView'),
       checkCallback: (checking: boolean) => {
         if (checking) {
           return (
@@ -55,7 +60,7 @@ export default class CalendarPlugin extends Plugin {
 
     this.addCommand({
       id: "open-weekly-note",
-      name: "Open Weekly Note",
+      name: t('command.openWeeklyNote'),
       checkCallback: (checking) => {
         if (checking) {
           return !appHasPeriodicNotesPluginLoaded();
@@ -65,8 +70,16 @@ export default class CalendarPlugin extends Plugin {
     });
 
     this.addCommand({
+      id: "open-monthly-note",
+      name: t('command.openMonthlyNote'),
+      callback: () => {
+        this.view.openOrCreateMonthlyNote(window.moment(), false);
+      },
+    });
+
+    this.addCommand({
       id: "reveal-active-note",
-      name: "Reveal active note",
+      name: t('command.revealActiveNote'),
       callback: () => this.view.revealActiveNote(),
     });
 
@@ -95,13 +108,10 @@ export default class CalendarPlugin extends Plugin {
   async loadOptions(): Promise<void> {
     const options = await this.loadData();
     settings.update((old) => {
-      return {
-        ...old,
-        ...(options || {}),
-      };
+      const merged = { ...old, ...(options || {}) };
+      this.options = merged;
+      return merged;
     });
-
-    await this.saveData(this.options);
   }
 
   async writeOptions(

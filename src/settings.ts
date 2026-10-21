@@ -3,6 +3,7 @@ import { appHasDailyNotesPluginLoaded } from "obsidian-daily-notes-interface";
 import type { ILocaleOverride, IWeekStartOption } from "obsidian-calendar-ui";
 
 import { DEFAULT_WEEK_FORMAT, DEFAULT_WORDS_PER_DOT } from "src/constants";
+import { t } from "./i18n";
 
 import type CalendarPlugin from "./main";
 
@@ -16,6 +17,16 @@ export interface ISettings {
   weeklyNoteFormat: string;
   weeklyNoteTemplate: string;
   weeklyNoteFolder: string;
+
+  // Monthly Note settings
+  showMonthlyNote: boolean;
+  monthlyNoteFormat: string;
+  monthlyDotColor: string;
+
+  // Canvas Schedule settings
+  showCanvasSchedules: boolean;
+  canvasSchedulesFolder: string;
+  canvasSchedulesDotColor: string;
 
   localeOverride: ILocaleOverride;
 }
@@ -41,13 +52,20 @@ export const defaultSettings = Object.freeze({
   weeklyNoteTemplate: "",
   weeklyNoteFolder: "",
 
+  showMonthlyNote: false,
+  monthlyNoteFormat: "",
+  monthlyDotColor: "#9b59b6",
+
+  showCanvasSchedules: false,
+  canvasSchedulesFolder: "",
+  canvasSchedulesDotColor: "#3498db",
+
   localeOverride: "system-default",
 });
 
 export function appHasPeriodicNotesPluginLoaded(): boolean {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const periodicNotes = (<any>window.app).plugins.getPlugin("periodic-notes");
-  return periodicNotes && periodicNotes.settings?.weekly?.enabled;
+  const periodicNotes = (window.app as { plugins: { getPlugin: (id: string) => { settings?: { weekly?: { enabled?: boolean } } } | null } }).plugins.getPlugin("periodic-notes");
+  return periodicNotes?.settings?.weekly?.enabled ?? false;
 }
 
 export class CalendarSettingsTab extends PluginSettingTab {
@@ -64,35 +82,45 @@ export class CalendarSettingsTab extends PluginSettingTab {
     if (!appHasDailyNotesPluginLoaded()) {
       this.containerEl.createDiv("settings-banner", (banner) => {
         banner.createEl("h3", {
-          text: "⚠️ Daily Notes plugin not enabled",
+          text: t('settings.banner.dailyNotesDisabled'),
         });
         banner.createEl("p", {
           cls: "setting-item-description",
-          text:
-            "The calendar is best used in conjunction with either the Daily Notes plugin or the Periodic Notes plugin (available in the Community Plugins catalog).",
+          text: t('settings.banner.dailyNotesDisabled.desc'),
         });
       });
     }
 
     this.containerEl.createEl("h3", {
-      text: "General Settings",
+      text: t('settings.general'),
     });
     this.addDotThresholdSetting();
     this.addWeekStartSetting();
     this.addConfirmCreateSetting();
     this.addShowWeeklyNoteSetting();
+    this.addShowMonthlyNoteSetting();
+
+    if (this.plugin.options.showMonthlyNote) {
+      this.addMonthlyDotColorSetting();
+    }
+
+    this.addShowCanvasSchedulesSetting();
+
+    if (this.plugin.options.showCanvasSchedules) {
+      this.addCanvasSchedulesFolderSetting();
+      this.addCanvasSchedulesDotColorSetting();
+    }
 
     if (
       this.plugin.options.showWeeklyNote &&
       !appHasPeriodicNotesPluginLoaded()
     ) {
       this.containerEl.createEl("h3", {
-        text: "Weekly Note Settings",
+        text: t('settings.weekly'),
       });
       this.containerEl.createEl("p", {
         cls: "setting-item-description",
-        text:
-          "Note: Weekly Note settings are moving. You are encouraged to install the 'Periodic Notes' plugin to keep the functionality in the future.",
+        text: t('settings.weekly.moving'),
       });
       this.addWeeklyNoteFormatSetting();
       this.addWeeklyNoteTemplateSetting();
@@ -100,15 +128,15 @@ export class CalendarSettingsTab extends PluginSettingTab {
     }
 
     this.containerEl.createEl("h3", {
-      text: "Advanced Settings",
+      text: t('settings.advanced'),
     });
     this.addLocaleOverrideSetting();
   }
 
   addDotThresholdSetting(): void {
     new Setting(this.containerEl)
-      .setName("Words per dot")
-      .setDesc("How many words should be represented by a single dot?")
+      .setName(t('settings.wordsPerDot'))
+      .setDesc(t('settings.wordsPerDot.desc'))
       .addText((textfield) => {
         textfield.setPlaceholder(String(DEFAULT_WORDS_PER_DOT));
         textfield.inputEl.type = "number";
@@ -129,12 +157,10 @@ export class CalendarSettingsTab extends PluginSettingTab {
     const localeWeekStart = moment.weekdays()[localeWeekStartNum];
 
     new Setting(this.containerEl)
-      .setName("Start week on:")
-      .setDesc(
-        "Choose what day of the week to start. Select 'Locale default' to use the default specified by moment.js"
-      )
+      .setName(t('settings.weekStart'))
+      .setDesc(t('settings.weekStart.desc'))
       .addDropdown((dropdown) => {
-        dropdown.addOption("locale", `Locale default (${localeWeekStart})`);
+        dropdown.addOption("locale", t('settings.weekStart.localeDefault', { day: localeWeekStart }));
         localizedWeekdays.forEach((day, i) => {
           dropdown.addOption(weekdays[i], day);
         });
@@ -149,8 +175,8 @@ export class CalendarSettingsTab extends PluginSettingTab {
 
   addConfirmCreateSetting(): void {
     new Setting(this.containerEl)
-      .setName("Confirm before creating new note")
-      .setDesc("Show a confirmation modal before creating a new note")
+      .setName(t('settings.confirmCreate'))
+      .setDesc(t('settings.confirmCreate.desc'))
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.options.shouldConfirmBeforeCreate);
         toggle.onChange(async (value) => {
@@ -163,8 +189,8 @@ export class CalendarSettingsTab extends PluginSettingTab {
 
   addShowWeeklyNoteSetting(): void {
     new Setting(this.containerEl)
-      .setName("Show week number")
-      .setDesc("Enable this to add a column with the week number")
+      .setName(t('settings.showWeekNumber'))
+      .setDesc(t('settings.showWeekNumber.desc'))
       .addToggle((toggle) => {
         toggle.setValue(this.plugin.options.showWeeklyNote);
         toggle.onChange(async (value) => {
@@ -176,8 +202,8 @@ export class CalendarSettingsTab extends PluginSettingTab {
 
   addWeeklyNoteFormatSetting(): void {
     new Setting(this.containerEl)
-      .setName("Weekly note format")
-      .setDesc("For more syntax help, refer to format reference")
+      .setName(t('settings.weekly.format'))
+      .setDesc(t('settings.weekly.format.desc'))
       .addText((textfield) => {
         textfield.setValue(this.plugin.options.weeklyNoteFormat);
         textfield.setPlaceholder(DEFAULT_WEEK_FORMAT);
@@ -189,10 +215,8 @@ export class CalendarSettingsTab extends PluginSettingTab {
 
   addWeeklyNoteTemplateSetting(): void {
     new Setting(this.containerEl)
-      .setName("Weekly note template")
-      .setDesc(
-        "Choose the file you want to use as the template for your weekly notes"
-      )
+      .setName(t('settings.weekly.template'))
+      .setDesc(t('settings.weekly.template.desc'))
       .addText((textfield) => {
         textfield.setValue(this.plugin.options.weeklyNoteTemplate);
         textfield.onChange(async (value) => {
@@ -203,8 +227,8 @@ export class CalendarSettingsTab extends PluginSettingTab {
 
   addWeeklyNoteFolderSetting(): void {
     new Setting(this.containerEl)
-      .setName("Weekly note folder")
-      .setDesc("New weekly notes will be placed here")
+      .setName(t('settings.weekly.folder'))
+      .setDesc(t('settings.weekly.folder.desc'))
       .addText((textfield) => {
         textfield.setValue(this.plugin.options.weeklyNoteFolder);
         textfield.onChange(async (value) => {
@@ -219,12 +243,10 @@ export class CalendarSettingsTab extends PluginSettingTab {
     const sysLocale = navigator.language?.toLowerCase();
 
     new Setting(this.containerEl)
-      .setName("Override locale:")
-      .setDesc(
-        "Set this if you want to use a locale different from the default"
-      )
+      .setName(t('settings.locale'))
+      .setDesc(t('settings.locale.desc'))
       .addDropdown((dropdown) => {
-        dropdown.addOption("system-default", `Same as system (${sysLocale})`);
+        dropdown.addOption("system-default", t('settings.locale.systemDefault', { locale: sysLocale }));
         moment.locales().forEach((locale) => {
           dropdown.addOption(locale, locale);
         });
@@ -232,6 +254,72 @@ export class CalendarSettingsTab extends PluginSettingTab {
         dropdown.onChange(async (value) => {
           this.plugin.writeOptions(() => ({
             localeOverride: value as ILocaleOverride,
+          }));
+        });
+      });
+  }
+
+  addShowMonthlyNoteSetting(): void {
+    new Setting(this.containerEl)
+      .setName(t('settings.monthly.show'))
+      .setDesc(t('settings.monthly.show.desc'))
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.options.showMonthlyNote);
+        toggle.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({ showMonthlyNote: value }));
+          this.display(); // show/hide monthly settings
+        });
+      });
+  }
+
+  addMonthlyDotColorSetting(): void {
+    new Setting(this.containerEl)
+      .setName(t('settings.monthly.dotColor'))
+      .setDesc(t('settings.monthly.dotColor.desc'))
+      .addText((textfield) => {
+        textfield.setPlaceholder("#9b59b6");
+        textfield.setValue(this.plugin.options.monthlyDotColor);
+        textfield.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({ monthlyDotColor: value || "#9b59b6" }));
+        });
+      });
+  }
+
+  addShowCanvasSchedulesSetting(): void {
+    new Setting(this.containerEl)
+      .setName(t('settings.canvasSchedules.show'))
+      .setDesc(t('settings.canvasSchedules.show.desc'))
+      .addToggle((toggle) => {
+        toggle.setValue(this.plugin.options.showCanvasSchedules);
+        toggle.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({ showCanvasSchedules: value }));
+          this.display(); // show/hide canvas schedule settings
+        });
+      });
+  }
+
+  addCanvasSchedulesFolderSetting(): void {
+    new Setting(this.containerEl)
+      .setName(t('settings.canvasSchedules.folder'))
+      .setDesc(t('settings.canvasSchedules.folder.desc'))
+      .addText((textfield) => {
+        textfield.setValue(this.plugin.options.canvasSchedulesFolder);
+        textfield.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({ canvasSchedulesFolder: value }));
+        });
+      });
+  }
+
+  addCanvasSchedulesDotColorSetting(): void {
+    new Setting(this.containerEl)
+      .setName(t('settings.canvasSchedules.dotColor'))
+      .setDesc(t('settings.canvasSchedules.dotColor.desc'))
+      .addText((textfield) => {
+        textfield.setPlaceholder("#3498db");
+        textfield.setValue(this.plugin.options.canvasSchedulesDotColor);
+        textfield.onChange(async (value) => {
+          this.plugin.writeOptions(() => ({
+            canvasSchedulesDotColor: value || "#3498db",
           }));
         });
       });

@@ -1,6 +1,6 @@
 {
   "name": "calendar",
-  "version": "1.5.10",
+  "version": "1.12.2",
   "description": "Calendar view of your daily notes",
   "author": "liamcain",
   "main": "main.js",
@@ -8,6 +8,7 @@
   "scripts": {
     "lint": "svelte-check && eslint . --ext .ts",
     "build": "npm run lint && rollup -c",
+    "dev": "rollup -c --watch",
     "test": "jest --passWithNoTests",
     "test:watch": "yarn test -- --watch"
   },
