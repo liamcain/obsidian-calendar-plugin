@@ -1,10 +1,13 @@
+import type { Moment } from "moment";
 import type { TFile } from "obsidian";
 import {
   getAllDailyNotes,
   getAllWeeklyNotes,
+  getWeeklyNoteSettings,
 } from "obsidian-daily-notes-interface";
 import { writable } from "svelte/store";
 
+import { hasWeeklyYearInDirectory } from "src/io/weeklyNotes";
 import { defaultSettings, ISettings } from "src/settings";
 
 import { getDateUIDFromFile } from "./utils";
@@ -37,7 +40,10 @@ function createWeeklyNotesStore() {
   return {
     reindex: () => {
       try {
-        const weeklyNotes = getAllWeeklyNotes();
+        const { format } = getWeeklyNoteSettings();
+        const weeklyNotes = hasWeeklyYearInDirectory(format)
+          ? {}
+          : getAllWeeklyNotes();
         store.set(weeklyNotes);
         hasError = false;
       } catch (err) {
@@ -61,8 +67,8 @@ function createSelectedFileStore() {
   const store = writable<string>(null);
 
   return {
-    setFile: (file: TFile) => {
-      const id = getDateUIDFromFile(file);
+    setFile: (file: TFile, selectedWeek?: Moment) => {
+      const id = getDateUIDFromFile(file, selectedWeek);
       store.set(id);
     },
     ...store,

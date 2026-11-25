@@ -3,7 +3,6 @@ import {
   getDailyNote,
   getDailyNoteSettings,
   getDateFromFile,
-  getWeeklyNote,
   getWeeklyNoteSettings,
 } from "obsidian-daily-notes-interface";
 import { FileView, TFile, ItemView, WorkspaceLeaf } from "obsidian";
@@ -11,7 +10,7 @@ import { get } from "svelte/store";
 
 import { TRIGGER_ON_OPEN, VIEW_TYPE_CALENDAR } from "src/constants";
 import { tryToCreateDailyNote } from "src/io/dailyNotes";
-import { tryToCreateWeeklyNote } from "src/io/weeklyNotes";
+import { getWeeklyNote, tryToCreateWeeklyNote } from "src/io/weeklyNotes";
 import type { ISettings } from "src/settings";
 
 import Calendar from "./ui/Calendar.svelte";
@@ -268,7 +267,7 @@ export default class CalendarView extends ItemView {
     if (!existingFile) {
       // File doesn't exist
       tryToCreateWeeklyNote(startOfWeek, inNewSplit, this.settings, (file) => {
-        activeFile.setFile(file);
+        activeFile.setFile(file, startOfWeek);
       });
       return;
     }
@@ -278,8 +277,8 @@ export default class CalendarView extends ItemView {
       : workspace.getUnpinnedLeaf();
     await leaf.openFile(existingFile);
 
-    activeFile.setFile(existingFile);
-    workspace.setActiveLeaf(leaf, true, true)
+    workspace.setActiveLeaf(leaf, true, true);
+    activeFile.setFile(existingFile, startOfWeek);
   }
 
   async openOrCreateDailyNote(

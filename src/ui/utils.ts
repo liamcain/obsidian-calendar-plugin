@@ -1,5 +1,8 @@
+import type { Moment } from "moment";
 import type { TFile } from "obsidian";
 import { getDateFromFile, getDateUID } from "obsidian-daily-notes-interface";
+
+import { getWeeklyNoteDate } from "src/io/weeklyNotes";
 
 export const classList = (obj: Record<string, boolean>): string[] => {
   return Object.entries(obj)
@@ -34,23 +37,25 @@ export function partition(
 }
 
 /**
- * Lookup the dateUID for a given file. It compares the filename
- * to the daily and weekly note formats to find a match.
+ * Look up the date UID for a daily or weekly note.
  *
  * @param file
  */
-export function getDateUIDFromFile(file: TFile | null): string {
+export function getDateUIDFromFile(
+  file: TFile | null,
+  selectedWeek?: Moment
+): string {
   if (!file) {
     return null;
   }
 
-  // TODO: I'm not checking the path!
+  // TODO: Daily notes are still matched by filename.
   let date = getDateFromFile(file, "day");
   if (date) {
     return getDateUID(date, "day");
   }
 
-  date = getDateFromFile(file, "week");
+  date = getWeeklyNoteDate(file, selectedWeek);
   if (date) {
     return getDateUID(date, "week");
   }

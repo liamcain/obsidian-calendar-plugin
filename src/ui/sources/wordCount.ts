@@ -1,10 +1,11 @@
 import type { Moment } from "moment";
 import type { TFile } from "obsidian";
 import type { ICalendarSource, IDayMetadata, IDot } from "obsidian-calendar-ui";
-import { getDailyNote, getWeeklyNote } from "obsidian-daily-notes-interface";
+import { getDailyNote } from "obsidian-daily-notes-interface";
 import { get } from "svelte/store";
 
 import { DEFAULT_WORDS_PER_DOT } from "src/constants";
+import { getWeeklyNote } from "src/io/weeklyNotes";
 
 import { dailyNotes, settings, weeklyNotes } from "../stores";
 import { clamp, getWordCount } from "../utils";
